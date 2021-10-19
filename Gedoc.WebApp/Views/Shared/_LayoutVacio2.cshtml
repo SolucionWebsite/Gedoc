@@ -1,0 +1,54 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <base href='@Url.Content("~/")'>
+    <title>Gestor Documental CMN - @ViewBag.Title</title>
+    <link rel="shortcut icon" href="~/Content/images/favicon.ico" type="image/vnd.microsoft.icon">
+
+    @*Referencias JasvaScript*@
+    <script src="@Url.Content("~/Scripts/kendo/2020.1.114/jquery.min.js")"></script>
+    <script src="@Url.Content("~/Scripts/kendo/2020.1.114/jszip.min.js")"></script>
+    <script src="@Url.Content("~/Scripts/kendo/2020.1.114/kendo.all.min.js")"></script>
+    <script src="@Url.Content("~/Scripts/kendo/2020.1.114/kendo.aspnetmvc.min.js")"></script>
+    <script src="@Url.Content("~/Scripts/bootstrap.min.js")"></script>
+    <script src="@Url.Content("~/Scripts/kendo/2020.1.114/cultures/kendo.culture.es-CL.min.js")"></script>
+    <script src="@Url.Content("~/Scripts/kendo/2020.1.114/messages/kendo.messages.es-CL.min.js")"></script>
+    <script src="@Url.Content("~/libs/moment/moment-with-locales.min.js")"></script>
+    <script src="@Url.Content("~/libs/loading-overlay/loadingoverlay.min.js")"></script>
+    <script src="@Url.Content("~/Scripts/main.js")"></script>
+
+
+    @*Referencias CSS*@
+    @*<link href="@Url.Content("~/libs/fontawesome5-pro/css/all.min.css")" rel="stylesheet" />*@
+    <link href="@Url.Content("~/Content/kendo/2020.1.114/kendo.bootstrap-v4.min.css")" rel="stylesheet" type="text/css" />
+    <link href="@Url.Content("~/Content/bootstrap.min.css")" rel="stylesheet" type="text/css" />
+    <link href="@Url.Content("~/Content/Site.css")" rel="stylesheet" type="text/css" />
+
+
+    <script>
+        kendo.culture("es-CL");
+
+        $(function () {
+
+        });
+
+    </script>
+
+    @RenderSection("scripts", required: false)
+    @RenderSection("styles", required: false)
+
+
+</head>
+<body>
+
+
+    <div class="p-2">
+        @RenderBody()
+    </div>
+
+
+</body>
+</html>

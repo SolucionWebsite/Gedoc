@@ -1,0 +1,138 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{FE77FDB2-C678-4B7A-A409-7DA3F1846EE3}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Gedoc.Helpers</RootNamespace>
+    <AssemblyName>Gedoc.Helpers</AssemblyName>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <Deterministic>true</Deterministic>
+    <TargetFrameworkProfile />
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccProvider>SAK</SccProvider>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="log4net, Version=2.0.8.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
+      <HintPath>..\packages\log4net.2.0.8\lib\net45-full\log4net.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Dto\AccionBandejaDto.cs" />
+    <Compile Include="Dto\AccionPermitidaBandejaDto.cs" />
+    <Compile Include="Dto\AdjuntoDto.cs" />
+    <Compile Include="Dto\BitacoraDto.cs" />
+    <Compile Include="Dto\CalendarioBitacoraDto.cs" />
+    <Compile Include="Dto\CampoSeleccionableDto.cs" />
+    <Compile Include="Dto\CasoDto.cs" />
+    <Compile Include="Dto\CasoFilterDto.cs" />
+    <Compile Include="Dto\ConfigBandejaDto.cs" />
+    <Compile Include="Dto\ControlCambiosEntidad.cs" />
+    <Compile Include="Dto\CustomHttpPostedFile.cs" />
+    <Compile Include="Dto\DatosAjax.cs" />
+    <Compile Include="Dto\DatosArchivo.cs" />
+    <Compile Include="Dto\DespachoDto.cs" />
+    <Compile Include="Dto\DespachoIniciativaDto.cs" />
+    <Compile Include="Dto\GenericoDto.cs" />
+    <Compile Include="Dto\HexEncoding.cs" />
+    <Compile Include="Dto\IdentidadSsoDto.cs" />
+    <Compile Include="Dto\ListaDto.cs" />
+    <Compile Include="Dto\ListaValorDto.cs" />
+    <Compile Include="Dto\LogBitacoraDto.cs" />
+    <Compile Include="Dto\LogSistemaDto.cs" />
+    <Compile Include="Dto\LogWssIntegracionDto.cs" />
+    <Compile Include="Dto\MensajesUI.cs" />
+    <Compile Include="Dto\MonumentoNacionalDto.cs" />
+    <Compile Include="Dto\OficioDto.cs" />
+    <Compile Include="Dto\OficioObservacionDto.cs" />
+    <Compile Include="Dto\PapeleraItemDto.cs" />
+    <Compile Include="Dto\PlantillaOficioDto.cs" />
+    <Compile Include="Dto\NotificacionEmailDto.cs" />
+    <Compile Include="Dto\ParametrosGrillaDto.cs" />
+    <Compile Include="Dto\PrioridadDto.cs" />
+    <Compile Include="Dto\RemitenteDto.cs" />
+    <Compile Include="Dto\ReporteDto.cs" />
+    <Compile Include="Dto\RequerimientoBackupDataDto.cs" />
+    <Compile Include="Dto\RequerimientoDespachoDto.cs" />
+    <Compile Include="Dto\RequerimientoDto.cs" />
+    <Compile Include="Dto\ReservaCorrelativoDto.cs" />
+    <Compile Include="Dto\RolDto.cs" />
+    <Compile Include="Dto\SelectListItemDto.cs" />
+    <Compile Include="Dto\TipoTramiteDto.cs" />
+    <Compile Include="Dto\TokenUsuarioDto.cs" />
+    <Compile Include="Dto\UnidadTecnicaDto.cs" />
+    <Compile Include="Dto\UsuarioActualDto.cs" />
+    <Compile Include="Dto\UsuarioDto.cs" />
+    <Compile Include="Dto\VistaGeneroDto.cs" />
+    <Compile Include="Dto\VistaGeneroGrupoDto.cs" />
+    <Compile Include="Enum\AccionOficio.cs" />
+    <Compile Include="Enum\Bandeja.cs" />
+    <Compile Include="Enum\AspectoCampo.cs" />
+    <Compile Include="Enum\CampoIngreso.cs" />
+    <Compile Include="Enum\CanalLlegada.cs" />
+    <Compile Include="Enum\EstadoOficio.cs" />
+    <Compile Include="Enum\EstadoRegistroEnum.cs" />
+    <Compile Include="Enum\EtapaOficio.cs" />
+    <Compile Include="Enum\PapeleraEnum.cs" />
+    <Compile Include="Enum\Rol.cs" />
+    <Compile Include="Enum\Caracter.cs" />
+    <Compile Include="Enum\EstadoDespacho.cs" />
+    <Compile Include="Enum\EtapaIngreso.cs" />
+    <Compile Include="Enum\EstadoIngreso.cs" />
+    <Compile Include="Enum\FlujoIngreso.cs" />
+    <Compile Include="Enum\Mantenedor.cs" />
+    <Compile Include="Enum\CodigoResultado.cs" />
+    <Compile Include="Enum\EnumDescriptionAttribute.cs" />
+    <Compile Include="Enum\TipoBitacora.cs" />
+    <Compile Include="Enum\TipoNotificacionEmail.cs" />
+    <Compile Include="Enum\TipoPlantillaOficio.cs" />
+    <Compile Include="ExtentionClass.cs" />
+    <Compile Include="GeneralData.cs" />
+    <Compile Include="Logging\ActionLogger.cs" />
+    <Compile Include="Logging\Logger.cs" />
+    <Compile Include="NotificacionesWeb\NotificacionUI.cs" />
+    <Compile Include="NotificacionesWeb\TipoNotificacionEnum.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ResultadoOperacion.cs" />
+    <Compile Include="Seguridad.cs" />
+    <Compile Include="WebConfigValues.cs" />
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

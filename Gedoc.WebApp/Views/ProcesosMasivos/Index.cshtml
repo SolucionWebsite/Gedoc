@@ -1,0 +1,1371 @@
+﻿@using Gedoc.Helpers
+
+@{
+    ViewBag.Title = "Procesos masivos";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    .k-grid {
+        font-size: 0.8em;
+    }
+
+        .k-grid tbody td {
+            padding: 5px;
+        }
+
+    .w-100-2 {
+        width: 100% !important;
+        display: block;
+    }
+</style>
+
+
+<h4 class="header-level1">@ViewBag.Title</h4>
+
+<div class="div-main">
+
+    <div class="row">
+        <div class="col-6">
+
+            <div class="form-row">
+                <div class="col-md-3">
+                    <label class="label-dato-form">
+                        Unidad Técnica Asignada <span class="marca-obligatorio">*</span>
+                    </label>
+                </div>
+                <div class="col-md-7">
+                    @(Html.Kendo().ComboBox()
+                          .Name("UnidadTecnica")
+                          .Filter("contains")
+                          .Enable(false)
+                          .Messages(Gedoc.WebApp.Helpers.KendoHelper.SetComboBoxMessages)
+                          .DataTextField("Text")
+                          .DataValueField("Value")
+                          .Events(e => e.Change("UnidadTecnicaOnChange"))
+                          .BindTo(ViewBag.UnidadTecnicaList)
+                          .Suggest(true)
+                          .HtmlAttributes(new { required = "required", validationmessage = "Este campo es obligatorio", @class = "w-100-2" })
+                          )
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="col-md-3">
+                    <label class="label-dato-form">
+                        Fecha Desde
+                    </label>
+                </div>
+                <div class="col-md-7">
+                    @(Html.Kendo().DatePicker()
+                        .Name("FechaDesde")
+                        .Value(DateTime.Now.AddYears(-1))
+                        .Max(DateTime.Today)
+                        .Format("dd/MM/yyyy")
+                        .Enable(false)
+                        //.Events(e=> e.Change("onChangeFechaDesde").Close("onChangeFechaDesde"))
+                        //.HtmlAttributes(new { required = "required", validationmessage = "Seleccione una fecha" })
+                        .HtmlAttributes(new { style = "width:100%;" })
+                 )
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="col-md-3">
+                    <label class="label-dato-form">
+                        Fecha Hasta
+                    </label>
+                </div>
+                <div class="col-md-7">
+                    @(Html.Kendo().DatePicker()
+                        .Name("FechaHasta")
+                        .Value(DateTime.Now)
+                        .Max(DateTime.Today)
+                        .Format("dd/MM/yyyy")
+                        .Enable(false)
+                        //.Events(e=> e.Change("onChangeFechaDesde").Close("onChangeFechaDesde"))
+                        //.HtmlAttributes(new { required = "required", validationmessage = "Seleccione una fecha" })
+                        .HtmlAttributes(new { style = "width:100%;" })
+                 )
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="col-md-3">
+                    <label class="label-dato-form">
+                        Documento de Ingreso
+                    </label>
+                </div>
+                <div class="col-md-7">
+                    <select id="DocumentoIngreso" name="DocumentoIngreso" multiple></select>
+                    @*@(Html.Kendo().MultiSelect()
+                        .Name("DocumentoIngreso")
+                        .TagTemplateId("tagMultiTemplate")
+                        .Messages(Gedoc.WebApp.Helpers.KendoHelper.SetMultiSelectMessages)
+                        //.Placeholder("Buscar o seleccionar documentos...")
+                        //.DataTextField("Text")
+                        //.DataValueField("Value")
+                        .DataTextField("Titulo")
+                        .DataValueField("Id")
+                        .Filter("contains")
+                        .Height(520)
+                        //.NoDataTemplate("No se encontraron datos.")
+                        .HtmlAttributes(new { style = "width:100%;" })
+                        //.DataSource(source =>
+                        //{
+                        //    source.Custom()
+                        //        .ServerFiltering(true)
+                        //        .ServerPaging(true)
+                        //        .PageSize(80)
+                        //        .Type("aspnetmvc-ajax")
+                        //        .Transport(transport =>
+                        //        {
+                        //            transport.Read("VirtualizationDocumentos_Read", "ProcesosMasivos");
+                        //        })
+                        //        .Schema(schema =>
+                        //        {
+                        //            schema.Data("Data").Total("Total");
+                        //        });
+                        //})
+                        .Virtual(v => v.ItemHeight(26).ValueMapper("valueMapperDocumentos").MapValueTo("dataItem"))
+                    )*@
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="col-md-3">
+                    <label class="label-dato-form">
+                        Estado
+                    </label>
+                </div>
+                <div class="col-md-7">
+                    @(Html.Kendo().ComboBox()
+                          .Name("Estado")
+                          .Filter("contains")
+                          .DataTextField("Text")
+                          .DataValueField("Value")
+                          .Suggest(true)
+                          .Enable(false)
+                          .HtmlAttributes(new { style = "width:100%;" })
+                          .AutoBind(false)
+                          .Messages(Gedoc.WebApp.Helpers.KendoHelper.SetComboBoxMessages)
+                          .DataSource(source =>
+                                  {
+                                      source.Read(read =>
+                                      {
+                                          read.Action("GetEstados", "ProcesosMasivos").Data("extraDataEstado");
+                                      });
+                                  })
+                          )
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="col-md-3">
+                    <label class="label-dato-form">
+                        Etiqueta
+                    </label>
+                </div>
+                <div class="col-md-7">
+                    @(Html.Kendo().ComboBox()
+                          .Name("Etiqueta")
+                          .Filter("contains")
+                          .DataTextField("Text")
+                          .DataValueField("Value")
+                          .Suggest(true)
+                          .Enable(false)
+                          .HtmlAttributes(new { style = "width:100%;" })
+                          .Messages(Gedoc.WebApp.Helpers.KendoHelper.SetComboBoxMessages)
+                          //.Events(e => e.Change("unidadTecnicaOnSelect"))
+                          .BindTo(ViewBag.EtiquetaList)
+                          )
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="col-md-3">
+                    <label class="label-dato-form">
+                        Profesional UT Asignado
+                    </label>
+                </div>
+                <div class="col-md-7">
+                    @(Html.Kendo().ComboBox()
+                          .Name("ProfesionalUTAsignado")
+                          .Filter("contains")
+                          .DataTextField("Text")
+                          .DataValueField("Value")
+                          .Suggest(true)
+                          .Enable(false)
+                          .HtmlAttributes(new { style = "width:100%;" })
+                          .AutoBind(false)
+                          .Messages(Gedoc.WebApp.Helpers.KendoHelper.SetComboBoxMessages)
+                          .DataSource(source =>
+                                  {
+                                      source.Read(read =>
+                                      {
+                                          read.Action("GetProfesionalUt", "ProcesosMasivos").Data("extraDataProfesionalUt");
+                                      });
+                                  })
+                          )
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="col-md-3">
+                    <label class="label-dato-form">
+                        Región
+                    </label>
+                </div>
+                <div class="col-md-7">
+                    @(Html.Kendo().ComboBox()
+                          .Name("Region")
+                          .Filter("contains")
+                          .DataTextField("Text")
+                          .DataValueField("Value")
+                          .Suggest(true)
+                          .Enable(false)
+                          .Messages(Gedoc.WebApp.Helpers.KendoHelper.SetComboBoxMessages)
+                          .HtmlAttributes(new { style = "width:100%;" })
+                          //.Events(e => e.Change("unidadTecnicaOnSelect"))
+                          .BindTo(ViewBag.RegionList)
+                          )
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="col-md-3">
+                    <label class="label-dato-form">
+                        Categoría de Monumento Nacional
+                    </label>
+                </div>
+                <div class="col-md-7">
+                    @(Html.Kendo().ComboBox()
+                          .Name("CatMonNac")
+                          .Filter("contains")
+                          .DataTextField("Text")
+                          .DataValueField("Value")
+                          .Suggest(true)
+                          .Enable(false)
+                          .Messages(Gedoc.WebApp.Helpers.KendoHelper.SetComboBoxMessages)
+                          .HtmlAttributes(new { style = "width:100%;" })
+                          //.Events(e => e.Change("unidadTecnicaOnSelect"))
+                          .BindTo(ViewBag.CatMonNacList)
+                          )
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="col-3 offset-3">
+                    <p>
+                        @(Html.Kendo().Button()
+                            .Name("btnBuscar")
+                            .HtmlAttributes(new { type = "button", @class = "k-primary w-100" })
+                            .Content("Buscar")
+                            .Enable(false)
+                            .Events(ev => ev.Click("btnBuscarOnClick")))
+                    </p>
+                </div>
+
+                <div class="col-3 offset-1">
+                    <p class="text-right">
+                        @(Html.Kendo().Button()
+                            .Name("btnLimpiar")
+                            .HtmlAttributes(new { type = "button", @class = "pull-right w-100" })
+                            .Content("Limpiar Filtros")
+                            .Events(ev => ev.Click("btnLimpiarOnClick")))
+                    </p>
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-6">
+
+            <div class="form-row">
+                <div class="col-md-3">
+                    <label class="label-dato-form">
+                        Acción a ejecutar <span class="marca-obligatorio">*</span>
+                    </label>
+                </div>
+                <div class="col-md-8">
+
+                    <div class="form-row">
+                        <div class="col-10">
+                            @(Html.Kendo().ComboBox()
+                          .Name("AccionEjecutar")
+                          .Filter("contains")
+                          .DataTextField("Text")
+                          .DataValueField("Value")
+                          .Messages(Gedoc.WebApp.Helpers.KendoHelper.SetComboBoxMessages)
+                          .Events(e => e.Change("AccionEjecutarOnSelect"))
+                          .BindTo(ViewBag.AccionesList)
+                          .Suggest(true)
+                          .HtmlAttributes(new { required = "required", validationmessage = "Seleccione una Acción" , style = "width:100%;" })
+                          )
+                        </div>
+                        <div class="col-2 text-right">
+                            <button id="btnAccion" type="button" style="" onclick="btnAccionOnClick()">
+                                <img class="k-image" alt="Edit" height="20" />
+                            </button>
+                        </div>
+                    </div>
+
+
+                </div>
+            </div>
+
+            <div class="form-row" id="Row_UTAsig">
+                <div class="col-md-3">
+                    <label class="label-dato-form">
+                        Unidad Técnica Asignada
+                    </label>
+                </div>
+                <div class="col-md-8">
+                    @(Html.Kendo().ComboBox()
+                          .Name("UnidadTecnicaAsignada")
+                          .Filter("contains")
+                          .DataTextField("Text")
+                          .DataValueField("Value")
+                          .Suggest(true)
+                          .HtmlAttributes(new { style = "width:100%;" })
+                          .AutoBind(false)
+                          .Enable(false)
+                          .Messages(Gedoc.WebApp.Helpers.KendoHelper.SetComboBoxMessages)
+                          .DataSource(source =>
+                                  {
+                                      source.Read(read =>
+                                      {
+                                          read.Action("GetUnidadTecnica", "ProcesosMasivos")
+                                            .Data("extraDataUt");
+                                      });
+                                  })
+                          )
+                </div>
+            </div>
+
+            <div class="form-row" id="Row_NuevaUT">
+                <div class="col-md-3">
+                    <label class="label-dato-form">
+                        Nueva Unidad Técnica
+                    </label>
+                </div>
+                <div class="col-md-8">
+                    @(Html.Kendo().ComboBox()
+                          .Name("NuevaUnidadTecnica")
+                          .Filter("contains")
+                          .DataTextField("Text")
+                          .DataValueField("Value")
+                          .Suggest(true)
+                          .HtmlAttributes(new { style = "width:100%;" })
+                          .AutoBind(false)
+                          .Enable(false)
+                          .Messages(Gedoc.WebApp.Helpers.KendoHelper.SetComboBoxMessages)
+                          .DataSource(source =>
+                                  {
+                                      source.Read(read =>
+                                      {
+                                          read.Action("GetUnidadTecnica", "ProcesosMasivos")
+                                            .Data("extraDataUt");
+                                      });
+                                  })
+                          )
+                </div>
+            </div>
+
+            <div class="form-row" id="Row_ProUtAsig">
+                <div class="col-md-3">
+                    <label class="label-dato-form">
+                        Profesional UT Asignado
+                    </label>
+                </div>
+                <div class="col-md-8">
+                    @(Html.Kendo().ComboBox()
+                          .Name("ProfesionalUTAsignado2")
+                          .Filter("contains")
+                          .DataTextField("Text")
+                          .DataValueField("Value")
+                          .Suggest(true)
+                          .HtmlAttributes(new { style = "width:100%;" })
+                          .AutoBind(false)
+                          .Enable(false)
+                          .Messages(Gedoc.WebApp.Helpers.KendoHelper.SetComboBoxMessages)
+                          .DataSource(source =>
+                                  {
+                                      source.Read(read =>
+                                      {
+                                          read.Action("GetProfesionalUt", "ProcesosMasivos")
+                                            .Data("extraDataProfesionalUt");
+                                      });
+                                  })
+                          )
+                </div>
+            </div>
+
+            <div class="form-row" id="Row_NuevoProUt">
+                <div class="col-md-3">
+                    <label class="label-dato-form">
+                        Nuevo Profesional UT
+                    </label>
+                </div>
+                <div class="col-md-8">
+
+                    @(Html.Kendo().ComboBox()
+                          .Name("NuevoProfesionalUT")
+                          .Filter("contains")
+                          .DataTextField("Text")
+                          .DataValueField("Value")
+                          .Suggest(true)
+                          .HtmlAttributes(new { style = "width:100%;" })
+                          .AutoBind(false)
+                          .Enable(false)
+                          .Messages(Gedoc.WebApp.Helpers.KendoHelper.SetComboBoxMessages)
+                          .DataSource(source =>
+                                  {
+                                      source.Read(read =>
+                                      {
+                                          read.Action("GetProfesionalUt", "ProcesosMasivos")
+                                            .Data("extraDataProfesionalUt");
+                                      });
+                                  })
+                          )
+                </div>
+            </div>
+
+            <div class="form-row" id="Row_NuevaEtiqueta">
+                <div class="col-md-3">
+                    <label class="label-dato-form">
+                        Nueva Etiqueta
+                    </label>
+                </div>
+                <div class="col-md-8">
+
+                    @(Html.Kendo().ComboBox()
+                          .Name("NuevaEtiqueta")
+                          .Filter("contains")
+                          .DataTextField("Text")
+                          .DataValueField("Value")
+                          .Messages(m => m.Clear("limpiar"))
+                          .BindTo(ViewBag.EtiquetaList)
+                          .Suggest(true)
+                          .NoDataTemplate("No se encontraron datos.")
+                          .HtmlAttributes(new { style = "width:100%;" })
+                          )
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <h5 class="header-level2">Selección de Ingresos para proceso masivo</h5>
+            <div id="divGrillaRequerimientos">
+                @(Html.Kendo().Grid<Gedoc.WebApp.Models.RequerimientoModel>()
+                        .Name("gridProcesosMasivos")
+                        .Columns(columns =>
+                        {
+                            columns.Select().Width(50);
+                            columns.Bound(c => c.DocumentoIngreso)
+                            .Title("<center>Documento Ingreso</center>")
+                            .ClientTemplate("#= Main.getTemplateFicha(data.DocumentoIngreso, data.Id, data.DocumentoIngreso) #").Width(135);
+                            columns.Bound(c => c.FechaIngreso).Title("<center>Fecha Ingreso</center>").Format(GeneralData.FORMATO_FECHA_LARGO_GRID).Width(115);
+                            columns.Bound(c => c.RemitenteNombre).Title("<center>Remitente</center>").Width(120);
+                            columns.Bound(c => c.RemitenteInstitucion).Title("<center>Institución Remitente</center>").Width(150);
+                            columns.Bound(c => c.Id)
+                                .Width(70)
+                                   .Title("<center><img src='Content/images/semaforo.png' width='25px'></center>")
+                                   .ClientTemplate("#=semaforoIngreso(data)#");
+                            columns.Bound(c => c.Materia).Title("<center>Materia</center>").Width(350);
+                            columns.Bound(c => c.AsignacionUt).Title("<center>Fecha Asignación UT</center>").Format(GeneralData.FORMATO_FECHA_LARGO_GRID).Width(145);
+                            columns.Bound(c => c.Resolucion).Title("<center>Fecha Resolución Estimada</center>").Format(GeneralData.FORMATO_FECHA_LARGO_GRID).Width(175);
+                            columns.Bound(c => c.EstadoTitulo).Title("<center>Estado</center>").Width(100);
+                            columns.Bound(c => c.CategoriaMonumentoNacTitulo).Title("<center>Categoría Monumento Nacional</center>").Width(205);
+                            columns.Bound(c => c.DenominacionOficial).Title("<center>Denominación oficial</center>").Width(160);
+                        })
+                        .Resizable(resize => resize.Columns(true))
+                        .Pageable()
+                        .Sortable()
+                        .Scrollable(scr => scr.Height("auto"))
+                        .Events(ev => ev.Change("gridOnChange"))
+                        .PersistSelection()
+                        //.HtmlAttributes(new { style = "height:550px;" })
+                        .AutoBind(false)
+                        .DataSource(dataSource => dataSource
+                            .Ajax()
+                            .PageSize(20)
+                            .Model(model => model.Id(p => p.Id))
+                            .Read(read => read.Action("GetDataGrilla", "ProcesosMasivos")
+                            .Data("extraDataGrilla"))
+                            .ServerOperation(false)
+                        )
+                    )
+            </div>
+        </div>
+    </div>
+
+</div>
+
+@Html.Partial("~/Views/Partial/TemplateTagMultiselect.cshtml")
+
+<script src="~/Scripts/accionesbandeja.js"></script>
+<script>
+
+    var seleccionGrilla = [];
+
+    $(document).ready(function () {
+
+        if ($("#DocumentoIngreso").length) {
+
+            $("#DocumentoIngreso").kendoMultiSelect(
+                Main.getMultiSelectConfigVirtual($("#DocumentoIngreso")
+                    , '@Url.Action("RequerimientoResumenPaging", "Json")'
+                    , '@Url.Action("RequerimientoResumenByIds", "Json")'  )
+            ).data("kendoMultiSelect");
+
+            @* $("#DocumentoIngreso").kendoMultiSelect(
+                Main.getMultiSelectConfigVirtual($("#DocumentoIngreso")
+                    , '@Url.Action("DocIngresoPaging", "ProcesosMasivos")'
+                    , '@Url.Action("DocIngresoByIds", "ProcesosMasivos")')
+            );*@
+
+            @*var ds = Main.getDataSourceKendoGenericoVirtual(
+                $("#DocumentoIngreso")
+                , '@Url.Action("RequerimientoResumenPaging", "Json")'
+                , 80);
+            $("#DocumentoIngreso").data("kendoMultiSelect").setDataSource(ds);*@
+        }
+
+        checkAccion();
+
+        var grid = $("#gridProcesosMasivos").data("kendoGrid");
+        grid.thead.on("click", ".k-checkbox", onClickMarcarTodos);
+
+    });
+
+    function gridOnChange(e) {
+        seleccionGrilla = this.selectedKeyNames();
+    }
+
+    function semaforoIngreso(dataItem) {
+        if (!dataItem.Resolucion || dataItem.EstadoTitulo == "Cerrado")
+            return "<center><img src='Content/images/Semaforo-Neutro.png' width='24px' /></center>";
+        if (dataItem.DiasResolucion == 5) {
+            return "<center><img src='Content/images/Semaforo-Amarillo.png' width='24px' /></center>";
+        }
+        if (dataItem.DiasResolucion > 5) {
+            return "<center><img src='Content/images/Semaforo-Verde.png' width='24px' /></center>";
+        }
+        return "<center><img src='Content/images/Semaforo-Rojo.png' width='24px' /></center>";
+    }
+
+    function extraDataGrilla() {
+        var dataExtra =
+        {
+            UnidadTecnica: $("#UnidadTecnica").data('kendoComboBox').value(),
+            FechaDesde: jdate($("#FechaDesde").val()),
+            FechaHasta: jdate($("#FechaHasta").val()),
+            DocumentoIngreso: $("#DocumentoIngreso").data("kendoMultiSelect").value(),
+            Estado: $("#Estado").data("kendoComboBox").value(),
+            Etiqueta: $("#Etiqueta").data("kendoComboBox").value(),
+            ProfesionalUtAsig: $("#ProfesionalUTAsignado").data("kendoComboBox").value(),
+            Region: $("#Region").data("kendoComboBox").value(),
+            CatMonuNac: $("#CatMonNac").data("kendoComboBox").value(),
+
+            AccionEjecutar: $("#AccionEjecutar").data('kendoComboBox').value(),
+            UnidadTecnicaAsignada: $("#UnidadTecnicaAsignada").data('kendoComboBox').value(),
+            NuevaUnidadTecnica: $("#NuevaUnidadTecnica").data('kendoComboBox').value(),
+            ProfesionalUTAsignado2: $("#ProfesionalUTAsignado2").data('kendoComboBox').value(),
+            NuevoProfesionalUT: $("#NuevoProfesionalUT").data('kendoComboBox').value(),
+            NuevaEtiqueta: $("#NuevaEtiqueta").data('kendoComboBox').value(),
+
+            SeleccionGrilla: seleccionGrilla
+        };
+        return dataExtra;
+    }
+
+    function extraDataEstado() {
+        var dataExtra =
+        {
+            AccionEjecutar: $("#AccionEjecutar").data('kendoComboBox').value()
+        };
+        return dataExtra;
+    }
+
+    function extraDataProfesionalUt() {
+        var dataExtra =
+        {
+            UnidadTecnica: $("#UnidadTecnica").data('kendoComboBox').value()
+        };
+        return dataExtra;
+    }
+
+    function extraDataUt() {
+        var dataExtra =
+        {
+        };
+        return dataExtra;
+    }
+
+    function AccionEjecutarOnSelect(control) {
+        checkAccion();
+    }
+
+    function checkAccion() {
+
+        var k_UnidadTecnicaId = $("#UnidadTecnica").data('kendoComboBox');
+        var k_FechaDesde = $("#FechaDesde").data('kendoDatePicker');
+        var k_FechaHasta = $("#FechaHasta").data('kendoDatePicker');
+        var k_DocumentoIngreso = $("#DocumentoIngreso").data('kendoMultiSelect');
+        var k_Estado = $("#Estado").data('kendoComboBox');
+        var k_Etiqueta = $("#Etiqueta").data('kendoComboBox');
+        var k_ProfesionalUTAsignado = $("#ProfesionalUTAsignado").data('kendoComboBox');
+        var k_Region = $("#Region").data('kendoComboBox');
+        var k_CatMonNac = $("#CatMonNac").data('kendoComboBox');
+
+        var k_AccionEjecutar = $("#AccionEjecutar").data('kendoComboBox');
+        //var k_btnAccion = $("#btnAccion").data('kendoButton');
+
+        var k_UnidadTecnicaAsignada = $("#UnidadTecnicaAsignada").data('kendoComboBox');
+        var R_UnidadTecnicaAsignada = $("#Row_UTAsig");
+
+        var k_NuevaUnidadTecnica = $("#NuevaUnidadTecnica").data('kendoComboBox');
+        var R_NuevaUnidadTecnica = $("#Row_NuevaUT");
+
+        var k_ProfesionalUTAsignado2 = $("#ProfesionalUTAsignado2").data('kendoComboBox');
+        var R_ProfesionalUTAsignado2 = $("#Row_ProUtAsig");
+
+        var k_NuevoProfesionalUT = $("#NuevoProfesionalUT").data('kendoComboBox');
+        var R_NuevoProfesionalUT = $("#Row_NuevoProUt");
+
+        var k_NuevaEtiqueta = $("#NuevaEtiqueta").data('kendoComboBox');
+        var R_NuevaEtiqueta = $("#Row_NuevaEtiqueta");
+
+        var k_btnBuscar = $("#btnBuscar").data('kendoButton');
+
+        //$("#ddl").closest(".k-widget").hide();
+        //$("#ddl").closest(".k-widget").show();
+        limpiarControles();
+        if (k_AccionEjecutar) {
+
+            switch (k_AccionEjecutar.value()) {
+                case "1": //Asignar UT
+                    k_UnidadTecnicaId.enable(false);
+
+                    //mostrar [Todos] en select de UT
+                    k_UnidadTecnicaId.items()[0].hidden = false;
+
+                    k_FechaDesde.enable(true);
+                    k_FechaHasta.enable(true);
+
+                    k_DocumentoIngreso.options.placeholder = "";
+                    k_DocumentoIngreso.value([]);
+                    k_DocumentoIngreso.input.blur();
+                    k_DocumentoIngreso.enable(true);
+
+                    k_Estado.value("8");  //8	Ingresado
+                    k_Estado.enable(false);
+                    k_Etiqueta.enable(true);
+                    k_ProfesionalUTAsignado.enable(false);
+                    $(k_ProfesionalUTAsignado.input).attr('placeholder', '');
+
+                    k_Region.enable(true);
+                    k_CatMonNac.enable(true);
+
+                    k_UnidadTecnicaAsignada.enable(true);
+                    R_UnidadTecnicaAsignada.show();
+
+                    k_NuevaUnidadTecnica.enable(false);
+                    R_NuevaUnidadTecnica.hide();
+
+                    k_ProfesionalUTAsignado2.enable(false);
+                    R_ProfesionalUTAsignado2.hide();
+
+                    k_NuevoProfesionalUT.enable(false);
+                    R_NuevoProfesionalUT.hide();
+
+                    k_NuevaEtiqueta.enable(false);
+                    R_NuevaEtiqueta.hide();
+
+                    $("#btnAccion").kendoButton({
+                        imageUrl: "/Content/images/Icono-Asignar.png"
+                    });
+                    $("#btnAccion").attr("title", "Asignar UT");
+
+                    k_btnBuscar.enable(true);
+                    break;
+
+                case "2": //Reasignar UT
+                    k_UnidadTecnicaId.enable(true);
+
+                    //mostrar [Todos] en select de UT
+                    k_UnidadTecnicaId.items()[0].hidden = false;
+
+                    k_FechaDesde.enable(true);
+                    k_FechaHasta.enable(true);
+
+                    k_DocumentoIngreso.options.placeholder = "- Seleccione una UT -";
+                    //k_DocumentoIngreso.value("");
+                    k_DocumentoIngreso.value([]);
+                    k_DocumentoIngreso.input.blur();
+                    k_DocumentoIngreso.enable(false);
+
+                    k_Estado.enable(true);
+                    k_Estado.value("");
+                    k_Etiqueta.enable(true);
+                    k_ProfesionalUTAsignado.enable(false);
+                    $(k_ProfesionalUTAsignado.input).attr('placeholder', '- Seleccione una UT -');
+
+                    k_Region.enable(true);
+                    k_CatMonNac.enable(true);
+
+                    k_UnidadTecnicaAsignada.enable(false);
+                    R_UnidadTecnicaAsignada.hide();
+
+                    k_NuevaUnidadTecnica.enable(true);
+                    R_NuevaUnidadTecnica.show();
+
+                    k_ProfesionalUTAsignado2.enable(false);
+                    R_ProfesionalUTAsignado2.hide();
+
+                    k_NuevoProfesionalUT.enable(false);
+                    R_NuevoProfesionalUT.hide();
+
+                    k_NuevaEtiqueta.enable(false);
+                    R_NuevaEtiqueta.hide();
+
+                    $("#btnAccion").kendoButton({
+                        imageUrl: "/Content/images/Icono-Reasignar.png"
+                    });
+                    $("#btnAccion").attr("title", "Reasignar UT");
+
+                    k_btnBuscar.enable(true);
+
+                    break;
+
+                case "3": //Asignar Profesional UT
+                    k_UnidadTecnicaId.enable(true);
+
+                    //ocultar [Todos] en select de UT
+                    k_UnidadTecnicaId.items()[0].hidden = true;
+
+                    k_FechaDesde.enable(true);
+                    k_FechaHasta.enable(true);
+
+                    k_DocumentoIngreso.options.placeholder = "- Seleccione una UT -";
+                    //k_DocumentoIngreso.value("");
+                    k_DocumentoIngreso.value([]);
+                    k_DocumentoIngreso.input.blur();
+                    k_DocumentoIngreso.enable(false);
+
+                    k_Estado.value("9");  //9	Asignado
+                    k_Estado.enable(false);
+
+                    k_Etiqueta.enable(true);
+                    k_ProfesionalUTAsignado.enable(false);
+                    $(k_ProfesionalUTAsignado2.input).attr('placeholder', '');
+
+                    k_Region.enable(true);
+                    k_CatMonNac.enable(true);
+
+                    k_UnidadTecnicaAsignada.enable(false);
+                    R_UnidadTecnicaAsignada.hide();
+
+                    k_NuevaUnidadTecnica.enable(false);
+                    R_NuevaUnidadTecnica.hide();
+
+                    k_ProfesionalUTAsignado2.enable(false);
+                    $(k_ProfesionalUTAsignado2.input).attr('placeholder', '- Seleccione una UT -');
+
+                    R_ProfesionalUTAsignado2.show();
+
+                    k_NuevoProfesionalUT.enable(false);
+                    R_NuevoProfesionalUT.hide();
+
+                    k_NuevaEtiqueta.enable(false);
+                    R_NuevaEtiqueta.hide();
+
+                    $("#btnAccion").kendoButton({
+                        imageUrl: "/Content/images/Icono-AsignarP.png"
+                    });
+                    $("#btnAccion").attr("title", "Asignar Profesional UT");
+
+                    k_btnBuscar.enable(true);
+
+                    break;
+
+                case "4": //Reasignar Profesional UT
+                    k_UnidadTecnicaId.enable(true);
+
+                    //mostrar [Todos] en select de UT
+                    k_UnidadTecnicaId.items()[0].hidden = false;
+
+                    k_FechaDesde.enable(true);
+                    k_FechaHasta.enable(true);
+
+                    k_DocumentoIngreso.options.placeholder = "- Seleccione una UT -";
+                    //k_DocumentoIngreso.value("");
+                    k_DocumentoIngreso.value([]);
+                    k_DocumentoIngreso.input.blur();
+                    k_DocumentoIngreso.enable(false);
+
+                    k_Estado.value("");
+                    k_Estado.enable(true);
+
+                    k_Etiqueta.enable(true);
+                    k_ProfesionalUTAsignado.enable(false);
+                    $(k_ProfesionalUTAsignado.input).attr('placeholder', '- Seleccione una UT -');
+
+                    k_Region.enable(true);
+                    k_CatMonNac.enable(false); //TODO: esconder
+
+                    k_UnidadTecnicaAsignada.enable(false);
+                    R_UnidadTecnicaAsignada.hide();
+
+                    k_NuevaUnidadTecnica.enable(false);
+                    R_NuevaUnidadTecnica.hide();
+
+                    k_ProfesionalUTAsignado2.enable(false);
+                    R_ProfesionalUTAsignado2.hide();
+
+                    k_NuevoProfesionalUT.enable(false);
+                    $(k_NuevoProfesionalUT.input).attr('placeholder', '- Seleccione una UT -');
+                    R_NuevoProfesionalUT.show();
+
+                    k_NuevaEtiqueta.enable(false);
+                    R_NuevaEtiqueta.hide();
+
+                    $("#btnAccion").kendoButton({
+                        imageUrl: "/Content/images/Icono-ReAsignarP.png"
+                    });
+                    $("#btnAccion").attr("title", "Reasignar Profesional UT");
+
+                    k_btnBuscar.enable(true);
+                    break;
+
+                case "5": //Nuevo despacho
+                    k_UnidadTecnicaId.enable(true);
+
+                    //mostrar [Todos] en select de UT
+                    k_UnidadTecnicaId.items()[0].hidden = false;
+
+                    k_FechaDesde.enable(true);
+                    k_FechaHasta.enable(true);
+
+                    k_DocumentoIngreso.options.placeholder = "- Seleccione una UT -";
+                    //k_DocumentoIngreso.value("");
+                    k_DocumentoIngreso.value([]);
+                    k_DocumentoIngreso.input.blur();
+                    k_DocumentoIngreso.enable(false);
+
+                    k_Estado.value("");
+                    k_Estado.enable(true);
+                    k_Etiqueta.enable(true);
+
+                    k_ProfesionalUTAsignado.enable(false);
+                    $(k_ProfesionalUTAsignado.input).attr('placeholder', '- Seleccione una UT -');
+
+                    k_Region.enable(true);
+                    k_CatMonNac.enable(true);
+
+                    k_UnidadTecnicaAsignada.enable(false);
+                    R_UnidadTecnicaAsignada.hide();
+
+                    k_NuevaUnidadTecnica.enable(false);
+                    R_NuevaUnidadTecnica.hide();
+
+                    k_ProfesionalUTAsignado2.enable(false);
+                    R_ProfesionalUTAsignado2.hide();
+
+                    k_NuevoProfesionalUT.enable(false);
+                    R_NuevoProfesionalUT.hide();
+
+                    k_NuevaEtiqueta.enable(false);
+                    R_NuevaEtiqueta.hide();
+
+                    $("#btnAccion").kendoButton({
+                        imageUrl: "/Content/images/Icono-Despacho.png"
+                    });
+                    $("#btnAccion").attr("title", "Despacho");
+
+                    k_btnBuscar.enable(true);
+                    break;
+
+                case "6": //Modificar Etiqueta
+                    k_UnidadTecnicaId.enable(true);
+
+                    //mostrar [Todos] en select de UT
+                    k_UnidadTecnicaId.items()[0].hidden = false;
+
+                    k_FechaDesde.enable(true);
+                    k_FechaHasta.enable(true);
+
+                    k_DocumentoIngreso.options.placeholder = "- Seleccione una UT -";
+                    //k_DocumentoIngreso.value("");
+                    k_DocumentoIngreso.value([]);
+                    k_DocumentoIngreso.input.blur();
+                    k_DocumentoIngreso.enable(false);
+
+                    k_Estado.value("");
+                    k_Estado.enable(true);
+                    k_Etiqueta.enable(true);
+                    k_ProfesionalUTAsignado.enable(false);
+                    $(k_ProfesionalUTAsignado.input).attr('placeholder', '- Seleccione una UT -');
+                    k_Region.enable(true);
+                    k_CatMonNac.enable(true);
+
+                    k_UnidadTecnicaAsignada.enable(false);
+                    R_UnidadTecnicaAsignada.hide();
+
+                    k_NuevaUnidadTecnica.enable(false);
+                    R_NuevaUnidadTecnica.hide();
+
+                    k_ProfesionalUTAsignado2.enable(false);
+                    R_ProfesionalUTAsignado2.hide();
+
+                    k_NuevoProfesionalUT.enable(false);
+                    R_NuevoProfesionalUT.hide();
+
+                    k_NuevaEtiqueta.enable(true);
+                    R_NuevaEtiqueta.show();
+
+                    $("#btnAccion").kendoButton({
+                        imageUrl: "/Content/images/Icono-Editar.png"
+                    });
+                    $("#btnAccion").attr("title", "Modificar Etiqueta");
+
+                    k_btnBuscar.enable(true);
+                    break;
+
+                case "7": //Abrir Ingresos
+                    k_UnidadTecnicaId.enable(true);
+
+                    //mostrar [Todos] en select de UT
+                    k_UnidadTecnicaId.items()[0].hidden = false;
+
+                    k_FechaDesde.enable(true);
+                    k_FechaHasta.enable(true);
+
+                    k_DocumentoIngreso.options.placeholder = "- Seleccione una UT -";
+                    //k_DocumentoIngreso.value("");
+                    k_DocumentoIngreso.value([]);
+                    k_DocumentoIngreso.input.blur();
+                    k_DocumentoIngreso.enable(false);
+
+                    k_Estado.value("14");  //14	Cerrado
+                    k_Estado.enable(false);
+
+                    k_Etiqueta.enable(true);
+
+                    k_ProfesionalUTAsignado.enable(false);
+                    $(k_ProfesionalUTAsignado.input).attr('placeholder', '- Seleccione una UT -');
+
+                    k_Region.enable(true);
+                    k_CatMonNac.enable(true);
+
+                    k_UnidadTecnicaAsignada.enable(false);
+                    R_UnidadTecnicaAsignada.hide();
+
+                    k_NuevaUnidadTecnica.enable(false);
+                    R_NuevaUnidadTecnica.hide();
+
+                    k_ProfesionalUTAsignado2.enable(false);
+                    R_ProfesionalUTAsignado2.hide();
+
+                    k_NuevoProfesionalUT.enable(false);
+                    R_NuevoProfesionalUT.hide();
+
+                    k_NuevaEtiqueta.enable(false);
+                    R_NuevaEtiqueta.hide();
+
+                    $("#btnAccion").kendoButton({
+                        imageUrl: "/Content/images/Icono-abrir.png"
+                    });
+                    $("#btnAccion").attr("title", "Abrir Ingresos");
+
+                    k_btnBuscar.enable(true);
+                    break;
+
+                default:
+                    k_UnidadTecnicaId.enable(false);
+
+                    //mostrar [Todos] en select de UT
+                    k_UnidadTecnicaId.items()[0].hidden = false;
+
+                    k_UnidadTecnicaId.value("");
+
+                    k_FechaDesde.enable(false);
+                    k_FechaDesde.value("");
+                    k_FechaHasta.enable(false);
+                    k_FechaHasta.value("");
+
+                    k_DocumentoIngreso.options.placeholder = "";
+                    //k_DocumentoIngreso.value("");
+                    k_DocumentoIngreso.value([]);
+                    k_DocumentoIngreso.input.blur();
+                    k_DocumentoIngreso.enable(false);
+
+                    k_Estado.value("");
+                    k_Estado.enable(false);
+
+                    k_Etiqueta.enable(false);
+                    k_Etiqueta.value("");
+
+                    k_ProfesionalUTAsignado.enable(false);
+                    k_ProfesionalUTAsignado.value("");
+
+                    k_Region.enable(false);
+                    k_Region.value("");
+
+                    k_CatMonNac.enable(false);
+                    k_CatMonNac.value("");
+
+                    k_UnidadTecnicaAsignada.enable(false);
+                    k_UnidadTecnicaAsignada.value("");
+                    R_UnidadTecnicaAsignada.hide();
+
+                    k_NuevaUnidadTecnica.enable(false);
+                    k_NuevaUnidadTecnica.value("");
+                    R_NuevaUnidadTecnica.hide();
+
+                    k_ProfesionalUTAsignado2.enable(false);
+                    k_ProfesionalUTAsignado2.value("");
+                    R_ProfesionalUTAsignado2.hide();
+
+                    k_NuevoProfesionalUT.enable(false);
+                    k_NuevoProfesionalUT.value("");
+                    R_NuevoProfesionalUT.hide();
+
+                    k_NuevaEtiqueta.enable(false);
+                    k_NuevaEtiqueta.value("");
+                    R_NuevaEtiqueta.hide();
+
+                    $("#btnAccion").kendoButton({
+                        imageUrl: ""
+                    });
+                    $("#btnAccion").attr("title", "Sin Acción");
+
+                    k_btnBuscar.enable(false);
+            }
+
+            k_Estado.dataSource.read();
+        }
+    }
+
+    function limpiarControles(isfromButtom = false) {
+        $("#UnidadTecnica").data('kendoComboBox').value("");
+        if (isfromButtom) {
+            $("#FechaDesde").data('kendoDatePicker').value("");
+            $("#FechaHasta").data('kendoDatePicker').value("");
+        }
+
+        var kdocIngreso = $("#DocumentoIngreso").data('kendoMultiSelect');
+        //kdocIngreso.value("");
+        kdocIngreso.value([]);
+        kdocIngreso.input.blur();
+
+        $("#Estado").data('kendoComboBox').value("");
+        $("#Etiqueta").data('kendoComboBox').value("");
+        $("#ProfesionalUTAsignado").data('kendoComboBox').value("");
+        $("#Region").data('kendoComboBox').value("");
+        $("#CatMonNac").data('kendoComboBox').value("");
+        //$("#AccionEjecutar").data('kendoComboBox').value("");
+        $("#UnidadTecnicaAsignada").data('kendoComboBox').value("");
+        $("#NuevaUnidadTecnica").data('kendoComboBox').value("");
+        $("#ProfesionalUTAsignado2").data('kendoComboBox').value("");
+        $("#NuevoProfesionalUT").data('kendoComboBox').value("");
+        $("#NuevaEtiqueta").data('kendoComboBox').value("");
+
+        var grid = $("#gridProcesosMasivos").data("kendoGrid");
+        //grid.dataSource.page(0);
+        grid.dataSource.data([]);
+        seleccionGrilla = [];
+    }
+
+    function btnAccionOnClick(e) {
+
+        var accion = $("#AccionEjecutar").data('kendoComboBox').value();
+
+        if (!seleccionGrilla || !seleccionGrilla.length) {
+            Main.showAlert("Debe seleccionar por lo menos un elemento en la Grilla.");
+            return false;
+        }
+
+        if (accion == "5") {
+            var idAccion = "DE";
+            var seleccion = seleccionGrilla.join(";");
+                //Designs/Multiple?ids=24041&ids=24117
+            Acciones.ejecutaAccionNuevaVentana('Agregar Despacho',
+                '@Url.Action("AccionDespacho2", "Despacho")' + '?idAccion=' + idAccion + '&requerimientos=' + seleccion,
+                null,
+                "100vp",
+                idAccion);
+        }
+        else {
+            Main.wait("Procesando, por favor espere...");
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("EjecutarAccion", "ProcesosMasivos")',
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify(extraDataGrilla()),
+                dataType: "json",
+                success: function (data) {
+                    Main.unwait();
+                    if (data.Codigo < 0) {
+                        Main.showError(data.Mensaje);
+                    } else {
+                        Main.showConfirm(data.Mensaje, "Enviar Email", true)
+                            .then(function(isOk) {
+                                if (isOk) {
+                                    enviarEmailNotificacion();
+                                }
+                            });
+                    }
+                },
+                error: function (data) {
+                    Main.unwait();
+                    Main.showError("Lo sentimos, ha ocurrido un error realizando la operación.<br>" +
+                        (seleccionGrilla.length > 500
+                            ? "Intente nuevamente disminuyendo la cantidad de ingresos a procesar."
+                            : "Inténtelo nuevamente."));
+                    console.error(data);
+                }
+            });
+        }
+    }
+
+    function enviarEmailNotificacion() {
+        Main.wait("Enviando notificación...");
+        $.ajax({
+            type: "POST",
+            url: '@Url.Action("EnviarNotificacion", "ProcesosMasivos")',
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify(extraDataGrilla()),
+            dataType: "json",
+            success: function (data) {
+                Main.unwait();
+                if (data.Codigo < 0) {
+                    Main.showError(data.Mensaje);
+                } else {
+                    Main.showInfo(data.Mensaje);
+                }
+            },
+            error: function (data) {
+                Main.unwait();
+                Main.showError("Ha ocurrido un error inesperado al enviar la notificación.");
+            }
+        });
+    }
+
+    function btnBuscarOnClick(e) {
+        if (validateForm()) {
+
+            var grid = $('#gridProcesosMasivos').data('kendoGrid');
+
+            grid.dataSource.data([]);
+            seleccionGrilla = [];
+
+            grid.dataSource.page(0);
+            grid.dataSource.read();
+        }
+    }
+
+    function validateForm() {
+        var ut = $("#UnidadTecnica");
+        var fdesde = $("#FechaDesde");
+        var fhasta = $("#FechaHasta");
+
+        ut.kendoValidator().data("kendoValidator").validate();
+
+        if (!ut.kendoValidator().data("kendoValidator").validate()) {
+             Main.showAlert("Por favor, revise los datos del formulario.");
+            return false;
+        }
+
+        var d_fdesde = jdate(fdesde.val());
+        var d_fhasta = jdate(fhasta.val());
+
+        if (d_fdesde > d_fhasta) {
+             Main.showAlert("Fecha Desde no puede ser mayor que Fecha Hasta");
+            fdesde.setDate(d_fhasta.getDate());
+            return false;
+        }
+        return true;
+    }
+
+    function btnLimpiarOnClick(e) {
+        limpiarControles(true);
+        var k_AccionEjecutar = $("#AccionEjecutar").data('kendoComboBox');
+        k_AccionEjecutar.value("1");
+        k_AccionEjecutar.trigger("change");
+    }
+
+    function UnidadTecnicaOnChange(e) {
+        //TODO: segun la accion seleccionada deberian cargar ciertos combos
+        var accion = $("#AccionEjecutar").data('kendoComboBox').value();
+        var ut = e.sender.value();
+
+        var k_DocumentoIngreso = $("#DocumentoIngreso").data('kendoMultiSelect');
+
+        var k_UnidadTecnicaAsignada = $("#UnidadTecnicaAsignada").data('kendoComboBox');
+        var k_NuevaUnidadTecnica = $("#NuevaUnidadTecnica").data('kendoComboBox');
+
+        var k_ProfesionalUTAsignado = $("#ProfesionalUTAsignado").data('kendoComboBox');
+        var k_ProfesionalUTAsignado2 = $("#ProfesionalUTAsignado2").data('kendoComboBox');
+        var k_NuevoProfesionalUT = $("#NuevoProfesionalUT").data('kendoComboBox');
+
+        if (ut) {
+            switch (accion) {
+                case "1": //Asignar UT
+                    //documento ingreso sin filtrado
+                    k_DocumentoIngreso.options.placeholder = "";
+                    k_DocumentoIngreso.value([]);
+                    k_DocumentoIngreso.input.blur();
+                    k_DocumentoIngreso.enable(true);
+                    k_DocumentoIngreso.dataSource.read();
+
+                    k_UnidadTecnicaAsignada.options.placeholder = "";
+                    k_UnidadTecnicaAsignada.value("");
+                    k_UnidadTecnicaAsignada.input.blur();
+                    k_UnidadTecnicaAsignada.enable(true);
+                    k_UnidadTecnicaAsignada.dataSource.read();
+                    break;
+                case "2"://Reasingnar UT
+                    //documento ingreso sin filtrado
+                    k_DocumentoIngreso.options.placeholder = "";
+                    k_DocumentoIngreso.value([]);
+                    k_DocumentoIngreso.input.blur();
+                    k_DocumentoIngreso.enable(true);
+                    k_DocumentoIngreso.dataSource.read();
+
+                    k_NuevaUnidadTecnica.options.placeholder = "";
+                    k_NuevaUnidadTecnica.value("");
+                    k_NuevaUnidadTecnica.input.blur();
+                    k_NuevaUnidadTecnica.enable(true);
+                    k_NuevaUnidadTecnica.dataSource.read();
+
+                    //profesional ut filtrado por ut seleccionada
+                    k_ProfesionalUTAsignado.options.placeholder = "";
+                    k_ProfesionalUTAsignado.value("");
+                    k_ProfesionalUTAsignado.input.blur();
+                    k_ProfesionalUTAsignado.enable(true);
+                    k_ProfesionalUTAsignado.dataSource.read();
+                    break;
+                case "3": //Asignar Profesional UT
+                    //documento ingreso filtrado por ut seleccionada
+                    k_DocumentoIngreso.options.placeholder = "";
+                    k_DocumentoIngreso.value([]);
+                    k_DocumentoIngreso.input.blur();
+                    k_DocumentoIngreso.enable(true);
+                    k_DocumentoIngreso.dataSource.read();
+
+                    k_ProfesionalUTAsignado2.options.placeholder = "";
+                    k_ProfesionalUTAsignado2.value("");
+                    k_ProfesionalUTAsignado2.input.blur();
+                    k_ProfesionalUTAsignado2.enable(true);
+                    k_ProfesionalUTAsignado2.dataSource.read();
+                    break;
+                case "4": //Reasignar Profesional UT
+                    //documento ingreso filtrado por ut seleccionada
+                    k_DocumentoIngreso.options.placeholder = "";
+                    k_DocumentoIngreso.value([]);
+                    k_DocumentoIngreso.input.blur();
+                    k_DocumentoIngreso.enable(true);
+                    k_DocumentoIngreso.dataSource.read();
+
+                    //profesional ut filtrado por ut seleccionada
+                    k_ProfesionalUTAsignado.options.placeholder = "";
+                    k_ProfesionalUTAsignado.value("");
+                    k_ProfesionalUTAsignado.input.blur();
+                    k_ProfesionalUTAsignado.enable(true);
+                    k_ProfesionalUTAsignado.dataSource.read();
+
+                    //Nuevo profesional ut filtrado por ut seleccionada
+                    k_NuevoProfesionalUT.options.placeholder = "";
+                    k_NuevoProfesionalUT.value([]);
+                    k_NuevoProfesionalUT.input.blur();
+                    k_NuevoProfesionalUT.enable(true);
+                    k_NuevoProfesionalUT.dataSource.read();
+                    break;
+                case "5": //Nuevo Despacho
+                case "6": //Nueva Etiqueta
+                case "7": //Abrir Ingreso
+                    //documento ingreso filtrado por ut seleccionada
+                    k_DocumentoIngreso.options.placeholder = "";
+                    k_DocumentoIngreso.value([]);
+                    k_DocumentoIngreso.input.blur();
+                    k_DocumentoIngreso.enable(true);
+                    k_DocumentoIngreso.dataSource.read();
+
+                    //TODO: profesional ut filtrado por ut seleccionada
+                    k_ProfesionalUTAsignado.options.placeholder = "";
+                    k_ProfesionalUTAsignado.value("");
+                    k_ProfesionalUTAsignado.input.blur();
+                    k_ProfesionalUTAsignado.enable(true);
+                    k_ProfesionalUTAsignado.dataSource.read();
+                    break;
+                default:
+                    //nada
+                    break;
+            }
+        }
+    }
+
+    function jdate(fecha) {
+        var arrayDate = fecha.split("/");
+        if (arrayDate.length == 3)
+            return new Date(arrayDate[2], arrayDate[1] - 1, arrayDate[0])
+        else
+            return null;
+    }
+
+     function valueMapperDocumentos(options) {
+         $.ajax({
+             url: "@Url.Action("RequerimientoResumenByIds", "Json")",
+             type: "POST",
+             data: $.param({ ids: options.value, cerrado: false }, true),
+             success: function (data) {
+                 if (data.Resultado && data.Resultado.Codigo < 0) {
+                     Main.showError(data.Resultado.Mensaje);
+                 } else {
+                     var data = data.Data && data.Data.length > 0 ? data.Data[0] : null;
+                     options.success(data);
+                 }
+             }
+         });
+        @*$.ajax({
+            url: "@Url.Action("Documentos_ValueMapper", "ProcesosMasivos")",
+            data: convertValues(options.value),
+            success: function (data) {
+                options.success(data);
+            }
+        });*@
+    }
+
+    function convertValues(value) {
+        var data = {};
+        value = $.isArray(value) ? value : [value];
+        for (var idx = 0; idx < value.length; idx++) {
+            data["values[" + idx + "]"] = value[idx];
+        }
+        return data;
+    }
+
+    function onClickMarcarTodos(e) {
+
+        var grid = $("#gridProcesosMasivos").data("kendoGrid");
+
+        var oldPageSize = grid.dataSource.pageSize();
+        grid.dataSource.pageSize(grid.dataSource.data().length);
+
+        if (grid.dataSource.data().length === grid.select().length) {
+            grid.clearSelection();
+        } else {
+            grid.select("tr");
+        };
+
+        grid.dataSource.pageSize(oldPageSize);
+    }
+
+</script>
+

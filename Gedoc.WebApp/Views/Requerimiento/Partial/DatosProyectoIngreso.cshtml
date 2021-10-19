@@ -1,0 +1,175 @@
+﻿@using Gedoc.Helpers.Enum
+@using Gedoc.WebApp.Helpers
+@using Kendo.Mvc.UI.Fluent
+@using Newtonsoft.Json
+@model Gedoc.WebApp.Models.RequerimientoModel
+
+@{
+    Layout = null;
+    Dictionary<CampoIngreso, AspectoCampo> accesoCampos = ViewBag.AccesoCampos;
+}
+
+<script>
+
+    function onSelectCaso(e) {
+        $("#lbNumeroCaso").text(e.dataItem.Id);
+    }
+
+    //# sourceURL=PanelProyectoIngreso
+</script>
+
+
+<h4 class="head-datos-form">Proyecto</h4>
+<div class="container-fluid">
+
+    @if (accesoCampos[CampoIngreso.Proy_NombreProy] != AspectoCampo.Oculto)
+    {
+        <div class="form-row">
+            <div class="col-md-3">
+                <label class="label-dato-form">
+                    Nombre de proyecto o programa
+                </label>
+            </div>
+            <div class="col-md-9">
+                @Html.TextBoxFor(a => a.NombreProyectoPrograma, new {@class = "k-textbox w-100"})
+                <span class="help-block" id="leyenda-proyecto">Identificar el proyecto como se indica en el documento.</span>
+            </div>
+        </div>
+    }
+
+    <div class="form-row">
+        <div class="col-md-3">
+            <label class="label-dato-form">
+                Número de caso
+            </label>
+        </div>
+        <div class="col-md-9">
+            <label id="lbNumeroCaso">@(Model.CasoId.HasValue ? Model.CasoId.Value.ToString() : "")</label>
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="col-md-3">
+            <label class="label-dato-form">
+                Nombre de caso
+            </label>
+        </div>
+        <div class="col-md-9">
+            @if (accesoCampos[CampoIngreso.Proy_NombreCaso] == AspectoCampo.SoloLectura)
+            {
+                <label id="lbNombreCaso">@Model.CasoTitulo</label>
+            }
+            else
+            {
+                @(Html.Kendo().ComboBox()
+                    .Name("CasoId")
+                    .DataTextField("Titulo")
+                    .DataValueField("Id")
+                    .Filter("contains")
+                    .HtmlAttributes(new Dictionary<string, object> {{"class", "w-100"}})
+                    .Events(events => events.Select("onSelectCaso"))
+                    .Messages(Gedoc.WebApp.Helpers.KendoHelper.SetComboBoxMessages)
+                    )
+            }
+        </div>
+    </div>
+
+    @if (accesoCampos[CampoIngreso.Proy_Materia] != AspectoCampo.Oculto)
+    {
+        <div class="form-row">
+            <div class="col-md-3">
+                <label class="label-dato-form">
+                    Materia
+                    @if (accesoCampos[CampoIngreso.Proy_Materia] != AspectoCampo.SoloLectura)
+                    {
+                        <span class="marca-obligatorio" title="Este campo es obligatorio."> *</span>
+                    }
+                </label>
+            </div>
+            
+            @if (accesoCampos[CampoIngreso.Proy_Materia] == AspectoCampo.SoloLectura)
+            {
+                <div class="col-md-9">
+                    <div id="lbMateria">@Model.Materia </div>
+                </div>
+            }
+            else
+            {
+                <div class="col-md-9">
+                    <textarea name="Materia" rows="6" cols="20" id="tbMateria" class="form-control texto-largo" data-spanleyenda="leyenda-pnMateria"
+                          data-maxlength="1000" style="width: 100% !important;" required>@Html.Raw(Model.Materia)</textarea>
+
+                    <span class="k-invalid-msg" data-for="Materia"></span>
+                    <span class="help-block-right" id="leyenda-pnMateria"> </span>
+                    <span class="help-block" id="leyenda-materia">Párrafo que identifique la solicitud del usuario.</span>
+                </div>
+            }
+        </div>
+    }
+
+    @if (accesoCampos[CampoIngreso.Proy_ProyActiv] != AspectoCampo.Oculto)
+    {
+        <div class="form-row" style="white-space: nowrap;">
+            <div class="col-md-3">
+                <label class="label-dato-form">
+                    Proyecto o actividad
+                </label>
+            </div>
+            <div class="col-md-9">
+                <textarea name="ProyectoActividad" rows="6" cols="20" id="tbProyectoActividad" class="form-control texto-largo" 
+                              data-spanleyenda="leyenda-pnProyectoActividad"
+                              data-maxlength="255" style="width: 100% !important;">@Html.Raw(Model.ProyectoActividad)</textarea>
+
+                <span class="help-block-right" style="float: right;" id="leyenda-pnProyectoActividad"> </span>
+                <span class="help-block" id="leyenda-ProyectoActividad">Es para ampliar la materia si es necesario, describiendo el proyecto, precisando la solicitud que se hace. </span>
+            </div>
+        </div>
+    }
+
+    @if (accesoCampos[CampoIngreso.Proy_Etiqueta] != AspectoCampo.Oculto)
+    {
+        <div class="form-row">
+            <div class="col-md-3">
+                <label class="label-dato-form">
+                    Etiqueta<span class="marca-obligatorio" title="Este campo es obligatorio."> *</span>
+                </label>
+            </div>
+            <div class="col-md-9">
+                <select id="Etiqueta" name="Etiqueta" multiple required></select>
+
+                <span class="k-invalid-msg" data-for="Etiqueta"></span><br/>
+            </div>
+        </div>
+    }
+
+</div>
+
+
+<script>
+
+    function inicializaPanelProyecto() {
+
+        var ds;
+        if ($("#CasoId").length) {
+            ds = Main.getDataSourceKendoGenerico($("#CasoId"),
+                '@Url.Action("MantenedorGenerico", "Json")?idM=@((int) Mantenedor.Caso)&extra=ACTIVOS');
+            $("#CasoId").data("kendoComboBox").setDataSource(ds);
+
+        }
+
+        if ($("#Etiqueta").length) {
+            $("#Etiqueta").kendoMultiSelect(
+                Main.getMultiSelectConfig($("#Etiqueta"),
+                    '@Url.Action("MantenedorGenerico", "Json")?idM=@((int) Mantenedor.Etiqueta)',
+                    "",
+                    "",
+                    @Html.Raw(JsonConvert.SerializeObject(Model.Etiqueta)))
+            );
+        }
+
+
+    }
+
+
+    //# sourceURL=PanelProyectoIngreso
+</script>

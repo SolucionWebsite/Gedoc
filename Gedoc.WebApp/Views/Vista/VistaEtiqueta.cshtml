@@ -1,0 +1,91 @@
+﻿
+@using Gedoc.Helpers
+@using Gedoc.WebApp.Models
+
+@{
+    ViewBag.Title = "Requerimientos por Etiqueta";
+    Layout = null;
+}
+
+<script>
+
+    $(function () {
+
+    });
+
+    function extraDataGrilla() {
+        return {
+            Dato: '1'
+        };
+    }
+
+</script>
+
+<h4 class="header-level1">@ViewBag.Title</h4>
+
+<div class="div-main">
+    @(Html.Kendo().DataSource<RequerimientoModel>()
+        .Name("dataSourceGrid")
+        .Ajax(dataSource => dataSource
+            .Read(read =>
+            {
+                read.Action("DatosVista", "Vista")
+                    .Type(HttpVerbs.Post)
+                    .Data("extraDataGrilla");
+            })
+            .Events(ev =>
+            {
+                ev.RequestEnd("function(e) {  Main.enEspera($('#gridVistaEtiqueta'), false); Main.notificaResultado(e); }");
+            })
+            .PageSize(10)
+        )
+        )
+    @(Html.Kendo().Grid<RequerimientoModel>()
+        .Name("gridVistaEtiqueta")
+        .HtmlAttributes(new Dictionary<string, object> { { "class", "grilla-datos" } })
+        .ToolBar(tools => tools.Excel().Text("Exportar a Excel"))
+        .Excel(excel => {
+                            excel.FileName("VistaEtiquetas.xlsx");
+                            excel.AllPages(true);
+        })
+        .EnableCustomBinding(true)
+        .DataSource("dataSourceGrid")
+        .Scrollable(scr => scr.Height("auto"))
+        .Pageable(p => p.AlwaysVisible(true).PageSizes(new int[3] {10, 50, 100}).Enabled(true))
+        .Sortable()
+        .Navigatable()
+        //.Filterable()
+        //.Groupable()
+        .Columns(columns =>
+        {
+            columns.Bound(c => c.EtiquetaTitulos).Width(200).Title("<center>Etiqueta</center>");
+            columns.Bound(c => c.DocumentoIngreso).Width(100).Title("<center>Documento<br>de Ingreso</center>");
+            columns.Bound(c => c.FechaIngreso).Width(150).Title("<center>Fecha de<br>Ingreso</center>").Format(GeneralData.FORMATO_FECHA_LARGO_GRID);
+            columns.Bound(c => c.RemitenteNombre).Width(130).Title("<center>Remitente</center>");
+            columns.Bound(c => c.RemitenteInstitucion).Width(180).Title("<center>Remitente: Institución</center>");
+            columns.Bound(c => c.Materia)
+                .Title("<center>Materia</center>")
+                .Width(250)
+                .ClientTemplate("<span title='#:data.Materia#'> #=Main.acortaTexto(data.Materia, 100)#" + "</span>");
+            columns.Bound(c => c.UtAsignadaTitulo).Width(100).Title("<center>UT</center>");
+            columns.Bound(c => c.ResponsableNombre).Width(120).Title("<center>Responsable<br>UT</center>");
+            columns.Bound(c => c.ProfesionalNombre).Width(120).Title("<center>Profesional<br>en área</center>");
+            columns.Bound(c => c.UtCopiaTitulos).Width(200).Title("<center>Unidad Técnica en copia</center>");
+            columns.Bound(c => c.EstadoTitulo).Width(100).Title("<center>Estado</center>");
+            columns.Bound(c => c.MotivoCierreTitulo).Width(100).Title("<center>Motivo<br>de cierre</center>");
+            columns.Bound(c => c.TipoIngreso).Width(100).Title("<center>Tipo<br>Ingreso</center>");
+            columns.Bound(c => c.CasoId).Width(100).Title("<center>Número<br>de caso</center>");
+            columns.Bound(c => c.TipoTramiteTitulo).Width(100).Title("<center>Tipo<br>de trámite</center>");
+            columns.Bound(c => c.CanalLlegadaTramiteTitulo).Width(150).Title("<center>Canal de llegada<br>del trámite</center>");
+            columns.Bound(c => c.CategoriaMonumentoNacTitulo).Width(150).Title("<center>Categoría<br>de monumento</center>");
+            columns.Bound(c => c.MonumentoNacionalDenominacionOficial).Width(150).Title("<center>Denominación<br>oficial</center>");
+            columns.Bound(c => c.MonumentoNacionalNombreUsoActual).Width(100).Title("<center>Nombre o<br>uso actual</center>");
+            columns.Bound(c => c.MonumentoNacionalReferenciaLocalidad).Width(200).Title("<center>Referencia de<br>localización o localidad</center>");
+            columns.Bound(c => c.RegionTitulos).Width(200).Title("<center>Región</center>");
+            columns.Bound(c => c.ComunaTitulos).Width(100).Title("<center>Comuna</center>");
+
+        })
+        )
+
+
+</div>

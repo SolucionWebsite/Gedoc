@@ -1,0 +1,1100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:tm="http://microsoft.com/wsdl/mime/textMatching/" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:tns="http://tempuri.org/" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" xmlns:s="http://www.w3.org/2001/XMLSchema" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" targetNamespace="http://tempuri.org/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+  <wsdl:types>
+    <s:schema elementFormDefault="qualified" targetNamespace="http://tempuri.org/">
+      <s:element name="GetByFecha">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="fechadesde" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="fechahasta" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="categoriaMn" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="nombreMn" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetByFechaResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetByFechaResult" type="tns:ArrayOfDespachoBL" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:complexType name="ArrayOfDespachoBL">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="unbounded" name="DespachoBL" nillable="true" type="tns:DespachoBL" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="DespachoBL">
+        <s:sequence>
+          <s:element minOccurs="1" maxOccurs="1" name="FechaIngreso" nillable="true" type="s:dateTime" />
+          <s:element minOccurs="1" maxOccurs="1" name="FechaEmisionOficio" nillable="true" type="s:dateTime" />
+          <s:element minOccurs="0" maxOccurs="1" name="Destinatario" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="MateriaDespacho" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="ProveedorDespacho" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Etiqueta" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Region" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Comuna" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="UT" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="DocumentoIngreso" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="DestinatarioCopia" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="TipoAdjunto" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Adjuntos" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="ProfesionalAsignado" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Estado" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="InstitucionDestinario" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Nombre" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="FechaRecepcion" nillable="true" type="s:dateTime" />
+          <s:element minOccurs="1" maxOccurs="1" name="FechaDespacho" nillable="true" type="s:dateTime" />
+          <s:element minOccurs="0" maxOccurs="1" name="NumeroDespacho" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Folio" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="FechaResolucion" nillable="true" type="s:dateTime" />
+          <s:element minOccurs="1" maxOccurs="1" name="FechaCierre" nillable="true" type="s:dateTime" />
+          <s:element minOccurs="0" maxOccurs="1" name="ComentarioCierre" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="EstadoRequerimiento" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="DiasRespuesta" type="s:int" />
+          <s:element minOccurs="0" maxOccurs="1" name="TipoInstitucionDestinario" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="MedioVerificacion" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="TipoTramite" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="CanalLlegadaTramite" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="CategoriaMonNac" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="CodigoMonNac" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="DenominacionOf" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="OtrasDenominaciones" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="NombreUsoActual" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="DireccionMonNac" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="ReferenciaLocalidad" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Provincia" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Rol" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="NumeroCaso" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="NombreCaso" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="FechaReferenciaCaso" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="FechaIngresoStr" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="FechaEmisionOficioStr" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="FechaRecepcionStr" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="FechaDespachoStr" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="FechaResolucionStr" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="FechaCierreStr" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:element name="RequerimientoGetByFecha">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="fechadesde" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="fechahasta" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="etiqueta" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="RequerimientoGetByFechaResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="RequerimientoGetByFechaResult" type="tns:ArrayOfRequerimientoBL" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:complexType name="ArrayOfRequerimientoBL">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="unbounded" name="RequerimientoBL" nillable="true" type="tns:RequerimientoBL" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="RequerimientoBL">
+        <s:sequence>
+          <s:element minOccurs="1" maxOccurs="1" name="FechaIngreso" nillable="true" type="s:dateTime" />
+          <s:element minOccurs="0" maxOccurs="1" name="TipoMonumento" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="ObservacionesTipoDocumento" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="FechaDocumento" nillable="true" type="s:dateTime" />
+          <s:element minOccurs="0" maxOccurs="1" name="NombreComuna" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="NombreRegion" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Etiqueta" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="MonumentoNacionalinvolucrado" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="DirMonumentoNacionalinvolucrado" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="UT" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="UTAsignada" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="DocumentoIngreso" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="RemitenteNombre" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="RemitenteCargoProfesión" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Adjuntos" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="ProfesionalAsignado" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Estado" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Etapa" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Materia" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="RemitenteInstitucion" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="ultima_fecha_acuerdo_comisión" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="ultimo_acuerdo_comision" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="ultima_fecha_acuerdo_sesion" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="ultima_fecha_oficio" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="ultima_fecha_despacho" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="ultima_fecha_respuesta" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="FechaCierre" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="MotivoCierre" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="CerradoPor" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="NombreProgramaProyecto" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="ProyectoActividad" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="ultimo_acuerdo_sesion" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="TipoDocumento" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="TipoAdjuntos" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="ObservacionTipoAdjunto" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="NombreArchivo" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="FechaResolEstimada" nillable="true" type="s:dateTime" />
+          <s:element minOccurs="1" maxOccurs="1" name="FechaUltimoAcuerdoComision" nillable="true" type="s:dateTime" />
+          <s:element minOccurs="1" maxOccurs="1" name="FechaUltimoAcuerdoSesion" nillable="true" type="s:dateTime" />
+          <s:element minOccurs="1" maxOccurs="1" name="FechaEmisionUltimoOficio" nillable="true" type="s:dateTime" />
+          <s:element minOccurs="1" maxOccurs="1" name="FechaUltimaRespuesta" nillable="true" type="s:dateTime" />
+          <s:element minOccurs="0" maxOccurs="1" name="RequiereRespuesta" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="ResponsableUt" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="UtCopia" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="ComentarioCierre" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="AsignadoResponsable" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="RequiereTimbraje" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="FechaAsignacionUt" nillable="true" type="s:dateTime" />
+          <s:element minOccurs="1" maxOccurs="1" name="FechaLiberacionUtTemporal" nillable="true" type="s:dateTime" />
+          <s:element minOccurs="1" maxOccurs="1" name="FechaRecepcionUt" nillable="true" type="s:dateTime" />
+          <s:element minOccurs="0" maxOccurs="1" name="Desde" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Hasta" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="PromedioDias" type="s:double" />
+          <s:element minOccurs="1" maxOccurs="1" name="SumaDias" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="CantidadProcesados" type="s:int" />
+          <s:element minOccurs="0" maxOccurs="1" name="PrioridaddelRequerimiento" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="NumeroIngreso" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Plazo" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="UtTemporal" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="UtConocimiento" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="NumeroDespacho" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="DestinatarioDesp" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="InstDestinatarioDesp" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="MateriaDesp" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="ComentarioAsignacion" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="FechaAsignacionProfesional" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="FechaAsignacionProfAnterior" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="FechaAsignacionUtAnterior" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="ProfesionalUtAnterior" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="UnidadTecnicaAnterior" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="ModalidadProceso" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="CanalTramite" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="extraData" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Formulario" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="FechaCierreAnt" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="CerradoPorAnt" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="MotivoCierreAnt" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="ComentarioCierreAnt" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="EtiquetaAnt" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="TipoReporte" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="AnnoIngreso" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="FechaIngresoStr" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="FechaDocumentoStr" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="FechaResolEstimadaStr" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="FechaUltimoAcuerdoComisionStr" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="FechaUltimoAcuerdoSesionStr" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="FechaEmisionUltimoOficioStr" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="FechaUltimaRespuestaStr" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="FechaAsignacionUtStr" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="FechaLiberacionUtTemporalStr" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="FechaRecepcionUtStr" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="TipoTramite" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="CanalLlegadaTramite" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="CanalLlegada" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="CategoriaMonNac" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="CodigoMonNac" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="DenominacionOf" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="OtrasDenominaciones" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="NombreUsoActual" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="DireccionMonNac" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="ReferenciaLocalidad" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Provincia" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Rol" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="NumeroCaso" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="NombreCaso" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="FechaReferenciaCaso" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="EstadoRequerimiento" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Remitente" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="CargoProfesionremitente" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Institucionremitente" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="NombreProyectoActividad" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="CategoriaMonumento" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="CodigoMonumento" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="DenominacionOficial" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="DireccionMonumento" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Region" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Comuna" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="UnidadTecnica" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="ProfesionalUtAsignado" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="ProyectooActividad" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="FechaUltimaComision" nillable="true" type="s:dateTime" />
+          <s:element minOccurs="0" maxOccurs="1" name="UltimoAcuerdoComision" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="FechaUltimaSesion" nillable="true" type="s:dateTime" />
+          <s:element minOccurs="0" maxOccurs="1" name="UltimoAcuerdoSesion" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="NumeroOficio" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="FechaEmisionOficio" nillable="true" type="s:dateTime" />
+          <s:element minOccurs="0" maxOccurs="1" name="Destinatario" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="MateriaDespacho" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="AdjuntaDocumentacion" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="EstadoDespacho" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:element name="GetBySesion">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="id" type="s:int" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetBySesionResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetBySesionResult" type="tns:ArrayOfRequerimientoBL" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetUTByUser">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="name" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetUTByUserResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetUTByUserResult" type="tns:ArrayOfSessionBL" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:complexType name="ArrayOfSessionBL">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="unbounded" name="SessionBL" nillable="true" type="tns:SessionBL" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="SessionBL">
+        <s:sequence>
+          <s:element minOccurs="1" maxOccurs="1" name="idSession" type="s:int" />
+          <s:element minOccurs="0" maxOccurs="1" name="Nombre" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="IdUT" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="UT" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:element name="GetUTAll">
+        <s:complexType />
+      </s:element>
+      <s:element name="GetUTAllResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetUTAllResult" type="tns:ArrayOfSessionBL" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetSessionByUT">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="idut" type="s:int" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetSessionByUTResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetSessionByUTResult" type="tns:ArrayOfSessionBL" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetRequerimientosFechaUtProf">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="fechadesde" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="fechahasta" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="ut" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="profesional" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="estado" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="categoriaMn" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="nombreMn" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetRequerimientosFechaUtProfResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetRequerimientosFechaUtProfResult" type="tns:ArrayOfRequerimientoBL" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetRequerimientosContables">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="fechadesde" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="fechahasta" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetRequerimientosContablesResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetRequerimientosContablesResult" type="tns:ArrayOfRequerimientoBL" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetRequerimientosUtCopia">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="fechadesde" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="fechahasta" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="UtsCopia" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetRequerimientosUtCopiaResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetRequerimientosUtCopiaResult" type="tns:ArrayOfRequerimientoBL" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetRequerimientoReporteGenerico">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="fechad" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="fechah" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="ut" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="tipo" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetRequerimientoReporteGenericoResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetRequerimientoReporteGenericoResult" type="tns:ArrayOfRequerimientoBL" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetRequerimientosFechaUtGrupo">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="fechadesde" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="fechahasta" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="ut" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="estado" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="prioridad" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="nombreproyectoprograma" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="instRemitente" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="etiqueta" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="region" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="comuna" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="mnInvolucrado" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="profesionalUt" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="utCopia" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="requiereRespuesta" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="motivoCierre" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="requiereTimbraje" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="requiereAcuerdo" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="despachoInicSiNo" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="despachoSiNo" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="instDestinatario" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="tipoInstRemitente" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="tipoInstDestinatario" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="semaforo" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="fechaResolucionDesde" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="fechaResolucionHasta" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="relacionDesdeHasta" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetRequerimientosFechaUtGrupoResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetRequerimientosFechaUtGrupoResult" type="tns:ArrayOfRequerimientoBL" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetResumenGrupo">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="fechadesde" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="fechahasta" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="ut" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="estado" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="prioridad" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="nombreproyectoprograma" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="instRemitente" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="etiqueta" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="region" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="comuna" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="mnInvolucrado" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="profesionalUt" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="utCopia" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="requiereRespuesta" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="motivoCierre" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="requiereTimbraje" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="requiereAcuerdo" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="despachoInicSiNo" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="despachoSiNo" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="instDestinatario" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="tipoInstRemitente" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="tipoInstDestinatario" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="semaforo" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="fechaResolucionDesde" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="fechaResolucionHasta" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="relacionDesdeHasta" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetResumenGrupoResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetResumenGrupoResult" type="tns:ArrayOfResumenGrupo" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:complexType name="ArrayOfResumenGrupo">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="unbounded" name="ResumenGrupo" nillable="true" type="tns:ResumenGrupo" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="ResumenGrupo">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" name="Desde" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Hasta" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="PromedioDias" type="s:double" />
+          <s:element minOccurs="1" maxOccurs="1" name="SumaDias" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="CantidadProcesados" type="s:int" />
+        </s:sequence>
+      </s:complexType>
+      <s:element name="CMNEstado">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="fechadesde" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="fechahasta" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="categoriaMn" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="nombreMn" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="CMNEstadoResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="CMNEstadoResult" type="tns:ArrayOfDespachoBL" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetProcesosMasivos">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="fechadesde" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="fechahasta" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="ut" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="profesional" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="estado" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="etapa" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="etiqueta" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="tipomon" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="region" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="accionpm" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetProcesosMasivosResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetProcesosMasivosResult" type="tns:ArrayOfRequerimientoBL" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetDatosSearch">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="tipoSearch" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetDatosSearchResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetDatosSearchResult" type="tns:ArrayOfDatosSearch" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:complexType name="ArrayOfDatosSearch">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="unbounded" name="DatosSearch" nillable="true" type="tns:DatosSearch" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="DatosSearch">
+        <s:sequence>
+          <s:element minOccurs="1" maxOccurs="1" name="Id" type="s:int" />
+          <s:element minOccurs="0" maxOccurs="1" name="Titulo" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:element name="GetRequerimientosTramites">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="fechadesde" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="fechahasta" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="tipotramite" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="canalllegada" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="numerocaso" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="nobrecaso" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="documentoingreso" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="estado" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="etapa" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="remitente" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="institucionremitente" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="categoriamonumento" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="denominacionoficial" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="direccionmonumento" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="region" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="provincia" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="comuna" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="materia" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="etiqueta" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="unidadtecnica" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="profesionalut" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetRequerimientosTramitesResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetRequerimientosTramitesResult" type="tns:ArrayOfRequerimientoBL" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="LogTransacciones">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="fechaD" type="s:dateTime" />
+            <s:element minOccurs="1" maxOccurs="1" name="fechaH" type="s:dateTime" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="LogTransaccionesResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="LogTransaccionesResult" type="tns:ArrayOfLogTransacciones" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:complexType name="ArrayOfLogTransacciones">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="unbounded" name="LogTransacciones" nillable="true" type="tns:LogTransacciones" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="LogTransacciones">
+        <s:sequence>
+          <s:element minOccurs="1" maxOccurs="1" name="Id_Log" type="s:int" />
+          <s:element minOccurs="0" maxOccurs="1" name="Formulario" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Accion" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Estado" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Etapa" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="Fecha" nillable="true" type="s:dateTime" />
+          <s:element minOccurs="0" maxOccurs="1" name="Usuario" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="DocumentoIngreso" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="DireccionIp" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="TipoTramite" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="CanalLlegadaTramite" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="CategoriaMonNac" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="CodigoMonNac" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="DenominacionOf" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="OtrasDenominaciones" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="NombreUsoActual" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="DireccionMonNac" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="ReferenciaLocalidad" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Comuna" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Region" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Rol" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="NumeroCaso" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="NombreCaso" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="FechaReferenciaCaso" nillable="true" type="s:dateTime" />
+        </s:sequence>
+      </s:complexType>
+    </s:schema>
+  </wsdl:types>
+  <wsdl:message name="GetByFechaSoapIn">
+    <wsdl:part name="parameters" element="tns:GetByFecha" />
+  </wsdl:message>
+  <wsdl:message name="GetByFechaSoapOut">
+    <wsdl:part name="parameters" element="tns:GetByFechaResponse" />
+  </wsdl:message>
+  <wsdl:message name="RequerimientoGetByFechaSoapIn">
+    <wsdl:part name="parameters" element="tns:RequerimientoGetByFecha" />
+  </wsdl:message>
+  <wsdl:message name="RequerimientoGetByFechaSoapOut">
+    <wsdl:part name="parameters" element="tns:RequerimientoGetByFechaResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetBySesionSoapIn">
+    <wsdl:part name="parameters" element="tns:GetBySesion" />
+  </wsdl:message>
+  <wsdl:message name="GetBySesionSoapOut">
+    <wsdl:part name="parameters" element="tns:GetBySesionResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetUTByUserSoapIn">
+    <wsdl:part name="parameters" element="tns:GetUTByUser" />
+  </wsdl:message>
+  <wsdl:message name="GetUTByUserSoapOut">
+    <wsdl:part name="parameters" element="tns:GetUTByUserResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetUTAllSoapIn">
+    <wsdl:part name="parameters" element="tns:GetUTAll" />
+  </wsdl:message>
+  <wsdl:message name="GetUTAllSoapOut">
+    <wsdl:part name="parameters" element="tns:GetUTAllResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetSessionByUTSoapIn">
+    <wsdl:part name="parameters" element="tns:GetSessionByUT" />
+  </wsdl:message>
+  <wsdl:message name="GetSessionByUTSoapOut">
+    <wsdl:part name="parameters" element="tns:GetSessionByUTResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetRequerimientosFechaUtProfSoapIn">
+    <wsdl:part name="parameters" element="tns:GetRequerimientosFechaUtProf" />
+  </wsdl:message>
+  <wsdl:message name="GetRequerimientosFechaUtProfSoapOut">
+    <wsdl:part name="parameters" element="tns:GetRequerimientosFechaUtProfResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetRequerimientosContablesSoapIn">
+    <wsdl:part name="parameters" element="tns:GetRequerimientosContables" />
+  </wsdl:message>
+  <wsdl:message name="GetRequerimientosContablesSoapOut">
+    <wsdl:part name="parameters" element="tns:GetRequerimientosContablesResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetRequerimientosUtCopiaSoapIn">
+    <wsdl:part name="parameters" element="tns:GetRequerimientosUtCopia" />
+  </wsdl:message>
+  <wsdl:message name="GetRequerimientosUtCopiaSoapOut">
+    <wsdl:part name="parameters" element="tns:GetRequerimientosUtCopiaResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetRequerimientoReporteGenericoSoapIn">
+    <wsdl:part name="parameters" element="tns:GetRequerimientoReporteGenerico" />
+  </wsdl:message>
+  <wsdl:message name="GetRequerimientoReporteGenericoSoapOut">
+    <wsdl:part name="parameters" element="tns:GetRequerimientoReporteGenericoResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetRequerimientosFechaUtGrupoSoapIn">
+    <wsdl:part name="parameters" element="tns:GetRequerimientosFechaUtGrupo" />
+  </wsdl:message>
+  <wsdl:message name="GetRequerimientosFechaUtGrupoSoapOut">
+    <wsdl:part name="parameters" element="tns:GetRequerimientosFechaUtGrupoResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetResumenGrupoSoapIn">
+    <wsdl:part name="parameters" element="tns:GetResumenGrupo" />
+  </wsdl:message>
+  <wsdl:message name="GetResumenGrupoSoapOut">
+    <wsdl:part name="parameters" element="tns:GetResumenGrupoResponse" />
+  </wsdl:message>
+  <wsdl:message name="CMNEstadoSoapIn">
+    <wsdl:part name="parameters" element="tns:CMNEstado" />
+  </wsdl:message>
+  <wsdl:message name="CMNEstadoSoapOut">
+    <wsdl:part name="parameters" element="tns:CMNEstadoResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetProcesosMasivosSoapIn">
+    <wsdl:part name="parameters" element="tns:GetProcesosMasivos" />
+  </wsdl:message>
+  <wsdl:message name="GetProcesosMasivosSoapOut">
+    <wsdl:part name="parameters" element="tns:GetProcesosMasivosResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetDatosSearchSoapIn">
+    <wsdl:part name="parameters" element="tns:GetDatosSearch" />
+  </wsdl:message>
+  <wsdl:message name="GetDatosSearchSoapOut">
+    <wsdl:part name="parameters" element="tns:GetDatosSearchResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetRequerimientosTramitesSoapIn">
+    <wsdl:part name="parameters" element="tns:GetRequerimientosTramites" />
+  </wsdl:message>
+  <wsdl:message name="GetRequerimientosTramitesSoapOut">
+    <wsdl:part name="parameters" element="tns:GetRequerimientosTramitesResponse" />
+  </wsdl:message>
+  <wsdl:message name="LogTransaccionesSoapIn">
+    <wsdl:part name="parameters" element="tns:LogTransacciones" />
+  </wsdl:message>
+  <wsdl:message name="LogTransaccionesSoapOut">
+    <wsdl:part name="parameters" element="tns:LogTransaccionesResponse" />
+  </wsdl:message>
+  <wsdl:portType name="WsDespachosSoap">
+    <wsdl:operation name="GetByFecha">
+      <wsdl:input message="tns:GetByFechaSoapIn" />
+      <wsdl:output message="tns:GetByFechaSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="RequerimientoGetByFecha">
+      <wsdl:input message="tns:RequerimientoGetByFechaSoapIn" />
+      <wsdl:output message="tns:RequerimientoGetByFechaSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetBySesion">
+      <wsdl:input message="tns:GetBySesionSoapIn" />
+      <wsdl:output message="tns:GetBySesionSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetUTByUser">
+      <wsdl:input message="tns:GetUTByUserSoapIn" />
+      <wsdl:output message="tns:GetUTByUserSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetUTAll">
+      <wsdl:input message="tns:GetUTAllSoapIn" />
+      <wsdl:output message="tns:GetUTAllSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetSessionByUT">
+      <wsdl:input message="tns:GetSessionByUTSoapIn" />
+      <wsdl:output message="tns:GetSessionByUTSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetRequerimientosFechaUtProf">
+      <wsdl:input message="tns:GetRequerimientosFechaUtProfSoapIn" />
+      <wsdl:output message="tns:GetRequerimientosFechaUtProfSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetRequerimientosContables">
+      <wsdl:input message="tns:GetRequerimientosContablesSoapIn" />
+      <wsdl:output message="tns:GetRequerimientosContablesSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetRequerimientosUtCopia">
+      <wsdl:input message="tns:GetRequerimientosUtCopiaSoapIn" />
+      <wsdl:output message="tns:GetRequerimientosUtCopiaSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetRequerimientoReporteGenerico">
+      <wsdl:input message="tns:GetRequerimientoReporteGenericoSoapIn" />
+      <wsdl:output message="tns:GetRequerimientoReporteGenericoSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetRequerimientosFechaUtGrupo">
+      <wsdl:input message="tns:GetRequerimientosFechaUtGrupoSoapIn" />
+      <wsdl:output message="tns:GetRequerimientosFechaUtGrupoSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetResumenGrupo">
+      <wsdl:input message="tns:GetResumenGrupoSoapIn" />
+      <wsdl:output message="tns:GetResumenGrupoSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="CMNEstado">
+      <wsdl:input message="tns:CMNEstadoSoapIn" />
+      <wsdl:output message="tns:CMNEstadoSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetProcesosMasivos">
+      <wsdl:input message="tns:GetProcesosMasivosSoapIn" />
+      <wsdl:output message="tns:GetProcesosMasivosSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetDatosSearch">
+      <wsdl:input message="tns:GetDatosSearchSoapIn" />
+      <wsdl:output message="tns:GetDatosSearchSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetRequerimientosTramites">
+      <wsdl:input message="tns:GetRequerimientosTramitesSoapIn" />
+      <wsdl:output message="tns:GetRequerimientosTramitesSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="LogTransacciones">
+      <wsdl:input message="tns:LogTransaccionesSoapIn" />
+      <wsdl:output message="tns:LogTransaccionesSoapOut" />
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="WsDespachosSoap" type="tns:WsDespachosSoap">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="GetByFecha">
+      <soap:operation soapAction="http://tempuri.org/GetByFecha" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="RequerimientoGetByFecha">
+      <soap:operation soapAction="http://tempuri.org/RequerimientoGetByFecha" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetBySesion">
+      <soap:operation soapAction="http://tempuri.org/GetBySesion" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetUTByUser">
+      <soap:operation soapAction="http://tempuri.org/GetUTByUser" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetUTAll">
+      <soap:operation soapAction="http://tempuri.org/GetUTAll" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetSessionByUT">
+      <soap:operation soapAction="http://tempuri.org/GetSessionByUT" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetRequerimientosFechaUtProf">
+      <soap:operation soapAction="http://tempuri.org/GetRequerimientosFechaUtProf" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetRequerimientosContables">
+      <soap:operation soapAction="http://tempuri.org/GetRequerimientosContables" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetRequerimientosUtCopia">
+      <soap:operation soapAction="http://tempuri.org/GetRequerimientosUtCopia" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetRequerimientoReporteGenerico">
+      <soap:operation soapAction="http://tempuri.org/GetRequerimientoReporteGenerico" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetRequerimientosFechaUtGrupo">
+      <soap:operation soapAction="http://tempuri.org/GetRequerimientosFechaUtGrupo" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetResumenGrupo">
+      <soap:operation soapAction="http://tempuri.org/GetResumenGrupo" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="CMNEstado">
+      <soap:operation soapAction="http://tempuri.org/CMNEstado" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetProcesosMasivos">
+      <soap:operation soapAction="http://tempuri.org/GetProcesosMasivos" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetDatosSearch">
+      <soap:operation soapAction="http://tempuri.org/GetDatosSearch" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetRequerimientosTramites">
+      <soap:operation soapAction="http://tempuri.org/GetRequerimientosTramites" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="LogTransacciones">
+      <soap:operation soapAction="http://tempuri.org/LogTransacciones" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:binding name="WsDespachosSoap12" type="tns:WsDespachosSoap">
+    <soap12:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="GetByFecha">
+      <soap12:operation soapAction="http://tempuri.org/GetByFecha" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="RequerimientoGetByFecha">
+      <soap12:operation soapAction="http://tempuri.org/RequerimientoGetByFecha" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetBySesion">
+      <soap12:operation soapAction="http://tempuri.org/GetBySesion" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetUTByUser">
+      <soap12:operation soapAction="http://tempuri.org/GetUTByUser" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetUTAll">
+      <soap12:operation soapAction="http://tempuri.org/GetUTAll" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetSessionByUT">
+      <soap12:operation soapAction="http://tempuri.org/GetSessionByUT" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetRequerimientosFechaUtProf">
+      <soap12:operation soapAction="http://tempuri.org/GetRequerimientosFechaUtProf" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetRequerimientosContables">
+      <soap12:operation soapAction="http://tempuri.org/GetRequerimientosContables" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetRequerimientosUtCopia">
+      <soap12:operation soapAction="http://tempuri.org/GetRequerimientosUtCopia" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetRequerimientoReporteGenerico">
+      <soap12:operation soapAction="http://tempuri.org/GetRequerimientoReporteGenerico" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetRequerimientosFechaUtGrupo">
+      <soap12:operation soapAction="http://tempuri.org/GetRequerimientosFechaUtGrupo" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetResumenGrupo">
+      <soap12:operation soapAction="http://tempuri.org/GetResumenGrupo" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="CMNEstado">
+      <soap12:operation soapAction="http://tempuri.org/CMNEstado" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetProcesosMasivos">
+      <soap12:operation soapAction="http://tempuri.org/GetProcesosMasivos" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetDatosSearch">
+      <soap12:operation soapAction="http://tempuri.org/GetDatosSearch" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetRequerimientosTramites">
+      <soap12:operation soapAction="http://tempuri.org/GetRequerimientosTramites" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="LogTransacciones">
+      <soap12:operation soapAction="http://tempuri.org/LogTransacciones" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="WsDespachos">
+    <wsdl:port name="WsDespachosSoap" binding="tns:WsDespachosSoap">
+      <soap:address location="http://127.0.0.1/WSGEDOC/WsDespachos.asmx" />
+    </wsdl:port>
+    <wsdl:port name="WsDespachosSoap12" binding="tns:WsDespachosSoap12">
+      <soap12:address location="http://127.0.0.1/WSGEDOC/WsDespachos.asmx" />
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

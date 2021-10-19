@@ -1,0 +1,87 @@
+﻿@using Gedoc.Helpers
+@using Gedoc.Helpers.Dto
+@using Gedoc.Helpers.Enum
+
+@{
+    Layout = null; // "~/Views/Shared/_LayoutVacio.cshtml";
+    ViewBag.Title = "Observaciones Oficio";
+    int oficioId = ViewBag.OficioId ?? 0;
+}
+
+<style>
+    .k-grid {
+        font-size: 0.8em;
+    }
+</style>
+
+<script src="~/Scripts/form.js"></script>
+<script src="~/Scripts/accionesbandeja.js"></script>
+
+@*@section scripts{
+    }*@
+
+
+<script>
+
+    $(function() {
+
+    });
+
+    function refrescaGrid() {
+        var gridK = $("#gridObservacionesOfic").data("kendoGrid");
+        if (gridK) {
+            gridK.dataSource.read();
+        }
+    }
+
+    function extraDataGrilla() {
+        return {
+        };
+    }
+
+    //# sourceURL=GrillaOficios
+
+</script>
+
+<div id="divGrillaOficios">
+    @(Html.Kendo().DataSource<OficioObservacionDto>()
+        .Name("dataSourceGridOfic")
+        .Ajax(dataSource => dataSource
+            .Read(read =>
+            {
+                read.Action("ObservacionesOficio", "Oficio", new { oficioId = oficioId })
+                    .Type(HttpVerbs.Post)
+                    .Data("extraDataGrilla");
+            })
+            .Events(ev =>
+            {
+                //ev.RequestStart("function() { Main.enEspera($('#gridObservacionesOfic'), true) }")
+                ev.RequestEnd("function(e) {  Main.enEspera($('#gridObservacionesOfic'), false); Main.notificaResultado(e); }");
+            })
+            .PageSize(10)
+            .ServerOperation(false)
+            .Sort(sort => sort.Add("Fecha").Descending()) 
+        )
+        )
+    @(Html.Kendo().Grid<OficioObservacionDto>()
+        .Name("gridObservacionesOfic")
+        .EnableCustomBinding(true)
+        .DataSource("dataSourceGridOfic")
+        .Scrollable(scr => scr.Height("auto"))
+        .Pageable(p => p.AlwaysVisible(false).PageSizes(new int[3] {10, 50, 100}).Enabled(true))
+        .Sortable()
+        .Navigatable()
+        .NoRecords("No existen documentos.")
+        //.NoRecords(x => x.Template("<div class='empty-grid'>No existen Oficios asociados al presente ingreso.</div>"))
+        .Columns(columns =>
+        {
+            //columns.Bound(c => c.Id).Title("<center>Descargar</center>").Width(100).ClientTemplate("#=buildUrlDescarga(data.Id)#");
+            columns.Bound(c => c.Observaciones).Width(300).Title("<center>Observaciones</center>");
+            columns.Bound(c => c.Fecha).Width(120).Title("<center>Fecha</center>").Format(GeneralData.FORMATO_FECHA_LARGO_GRID);
+            columns.Bound(c => c.UsuarioNombresApellidos).Width(150).Title("<center>Usuario</center>");
+            columns.Bound(c => c.EstadoOficioTitulo).Width(130).Title("<center>Estado</center>"); 
+        })
+        )
+
+
+</div>

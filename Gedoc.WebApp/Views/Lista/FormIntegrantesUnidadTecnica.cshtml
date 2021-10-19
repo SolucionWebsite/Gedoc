@@ -1,0 +1,217 @@
+﻿@using Gedoc.Helpers
+@using Gedoc.Helpers.Dto
+
+@{
+    Layout = null;
+    ViewBag.Title = "Integrantes UT";
+    var utId = ViewBag.UtId ?? 0;
+    ResultadoOperacion accesoForm = ViewBag.AccesoForm ?? new ResultadoOperacion(1, "OK", null);
+}
+
+
+<style>
+    #gridIntegUt.k-grid { font-size: 0.8em; }
+</style>
+
+<script src="~/Scripts/form.js"></script>
+
+<script>
+
+    @if (accesoForm.Codigo < 0)
+    {
+        <text>
+            Main.showAlert("@Html.Raw(accesoForm.Mensaje)")
+                .then(function(result) {
+                    Main.cierraModal(null, false, "winFormIngreso");
+                });
+        </text>
+    }
+
+    //function gridIntegUtSave(e) {
+
+    //}
+
+    function addNewUsuario(e) {
+        var gridK = $("#gridIntegUt").data("kendoGrid");
+        if (gridK) {
+            gridK.addRow();
+        }
+    }
+
+    function sacarUsuario(utId, userId) {
+        var ctrol = "#btnDelUsr" + userId;
+        var data = { utId: '@utId', userId: userId };
+        var url = "@Url.Action("EliminaUsuarioUnidadTecnica")";
+        Main.wait("", ctrol);
+        $.ajax({
+            type: "POST",
+            url: url,
+            data: data,
+            //dataType: "json"
+        }).done(function (response) {
+            Main.unwait(ctrol);
+            if (response.Codigo) {
+                if (response.Codigo > 0) {
+                    Main.showInfoPopup(response.Mensaje);
+                    var gridK = $("#gridIntegUt").data("kendoGrid");
+                    if (gridK) {
+                        gridK.cancelRow();
+                        gridK.dataSource.read();
+                    }
+                } else {
+                    Main.showError(response.Mensaje, "Error");
+                }
+            } else {
+                Main.showAlert("Error inesperado al realizar la operación, por favor, vuelva a intentarlo",
+                    "Error");
+            }
+        }).fail(function (error) {
+            Main.unwait(ctrol);
+            Main.showError("Ha ocurrido un error al realizar la operación, por favor, vuelva a intentarlo.",
+                "Error");
+        });
+    }
+
+    function gridBeforeEdit(e) {
+        $("#btnAddUser").hide();
+    }
+
+    function grabarUsuario(e) {
+        var ctrol = "#divAccionUsr0";
+        var userId = 0;
+        var userK = $("#UsuarioId").data("kendoComboBox");
+        if (userK) {
+            userId = userK.value();
+        }
+        if (!userId) {
+            Main.showAlert("Debe seleccionar un usuario antes de grabar.")
+            return false;
+        }
+        var data = { utId: '@utId', userId: userId };
+        var url = "@Url.Action("SaveUsuarioUnidadTecnica")";
+        Main.wait("", ctrol);
+        $.ajax({
+            type: "POST",
+            url: url,
+            data: data,
+            //dataType: "json"
+        }).done(function (response) {
+            Main.unwait(ctrol);
+            if (response.Codigo) {
+                if (response.Codigo > 0) {
+                    Main.showInfoPopup(response.Mensaje);
+                    $("#btnAddUser").show();
+                    var gridK = $("#gridIntegUt").data("kendoGrid");
+                    if (gridK) {
+                        gridK.cancelRow();
+                        gridK.dataSource.read();
+                    }
+                } else {
+                    Main.showError(response.Mensaje, "Error");
+                }
+            } else {
+                Main.showAlert("Error inesperado al realizar la operación, por favor, vuelva a intentarlo",
+                    "Error");
+            }
+        }).fail(function (error) {
+            Main.unwait(ctrol);
+            $("#btnAddUser").show();
+            Main.showError("Ha ocurrido un error al realizar la operación, por favor, vuelva a intentarlo.",
+                "Error");
+        });
+    }
+
+    function cancelarUsuario(e) {
+        $("#btnAddUser").show();
+        var gridK = $("#gridIntegUt").data("kendoGrid");
+        if (gridK) {
+            gridK.cancelRow();
+        }
+    }
+
+    //# sourceURL=IntegrantesUt
+</script>
+
+
+<div>
+    @(Html.Kendo().DataSource<UsuarioDto>()
+        .Name("dataSourceGridIntegUt")
+        .Ajax(dataSource => dataSource
+            .Read(read =>
+            {
+                read.Action("GetIntegrantesUt", "Lista", new {utId = utId})
+                    .Type(HttpVerbs.Post);
+            })
+            //.Create(create => create.Action("SaveUsuarioUnidadTecnica", "Lista", new { utId = utId }))
+            .ServerOperation(false)
+            .PageSize(10)
+            .Model(model =>
+            {
+                model.Field(f => f.Username).Editable(false);
+                model.Field(f => f.Id).Editable(false);
+            })
+        ))
+    @(Html.Kendo().Grid<UsuarioDto>()
+        .Name("gridIntegUt")
+        .DataSource("dataSourceGridIntegUt")
+        .Scrollable(scr => scr.Height("auto"))
+        .Pageable(p => p.AlwaysVisible(true).PageSizes(new int[3] {10, 50, 100}).Enabled(true)
+            .Messages(m => m.ItemsPerPage("registros por página")))
+        .Sortable()
+        .Navigatable()
+        .ToolBar(t =>
+        {
+            t.Create().Text("Añadir").IconClass("k-icon k-i-plus-outline").HtmlAttributes(new { @title = "Añadir usuario a la UT", id = "btnAddUser" });
+            t.Search();
+        })
+        .Columns(columns =>
+        {
+            columns.Bound(c => c.NombresApellidos)
+                .Title("<center>Nombre(s) y Apellidos</center>")
+                .EditorTemplateName("UsuariosCombobox");
+            columns.Bound(c => c.Username)
+                .Title("<center>Username</center>");
+            columns.Bound(c => c.Id)
+                .HtmlAttributes(new { @class = "text-center" })
+                .Title("<center>Acción</center>")
+                .Width(120)
+                .ClientTemplate(
+                    "<button style='display: #= Id ? 'block' : 'none' #' class='k-button mr-1' id='btnDelUsr#= Id #' onclick='sacarUsuario(\"" + @utId + "\", \"#= Id #\")' title='Eliminar de los integrantes de la UT' type='button' data-role='button' role='button'><span class='k-icon k-i-delete'></span></button>"
+                    + "<div id='divAccionUsr#= Id #' style='display: #= Id ? 'none' : 'inline-flex' #;'>"
+                    + "<button class='k-button mr-1' onclick='grabarUsuario()' title='Grabar' type='button' data-role='button' role='button'><span class='k-icon k-i-check'></span></button>"
+                    + "<button class='k-button mr-1' onclick='cancelarUsuario()' title='Cancelar' type='button' data-role='button' role='button'><span class='k-icon k-i-close'></span></button>"
+                    + "</div>"
+                );
+            //columns.Command(command =>
+            //{
+            //    command.Custom("Quitar")
+            //        .HtmlAttributes(new { display = "#=data.Id ? 'block' : 'none'#" })
+            //        .Template("<button class='k-button mr-1' onclick='quitarUsuario(\"" + @utId + "\", \"#= data.Id #\")' title='Quitar usuario de la UT' type='button' data-role='button' role='button'><span class='k-icon k-i-minus-outline'></span></button>");
+            //    //.Click("quitarUsuario").IconClass("k-icon k-i-minus-outline");
+            //})
+            //    .Title("<center>Acción</center>")
+            //    .Width(100);
+        })
+        .Events(
+            events =>
+            {
+                //events.Save("gridIntegUtSave");
+                events.BeforeEdit("gridBeforeEdit");
+            }
+        )
+        )
+
+
+</div>
+
+
+<script>
+
+    $(function() {
+        $(".k-grid-search input").prop("placeholder", "Buscar...");
+        $(".k-grid-search input").prop("title", "Buscar...");
+    });
+
+    //# sourceURL=IntegrantesUt2
+
+</script>

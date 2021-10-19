@@ -1,0 +1,268 @@
+﻿@using Gedoc.Helpers
+@using Gedoc.Helpers.Enum
+@using Gedoc.WebApp.Models
+@model Gedoc.WebApp.Models.AdjuntoModel
+
+@{
+    Culture = "es-ES";
+    ViewBag.Title = "Mantenedor de Remitentes / Destinatarios";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<script src="~/Scripts/form.js"></script>
+
+
+@Html.Partial("~/Views/Partial/TemplateTagMultiselect.cshtml", Model)
+<script>
+    function EditarRemitente(e) {
+        e.preventDefault();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        var result = Main.muestraVentanaModal(
+            "Editar remitente o destinatario",
+            '@Url.Action("EditarRemitente", "Remitente")?Id=' + dataItem.Id,
+            "700px",
+            "100vp",
+            undefined,
+            "winFormRemit"); //, "80%", "90%");
+        result.then(function(result) {
+            if (result) {
+                $('#gridRemitentes').data('kendoGrid').dataSource.read();
+                //muestraDatosRemitente(result);
+                //$("#DestinatarioId").data("kendoComboBox").value(result.Id);
+                //setTimeout(function() {
+                //    $("#DestinatarioId").data("kendoComboBox").dataSource.read();
+                //}, 50);
+            }
+        });
+    }
+
+    function DesactivarRemitente(e) {
+        e.preventDefault();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+
+        Main.showConfirm("¿Está seguro que desea eliminar el elemento?", "Eliminar", true).then(function (isOk) {
+            if (!isOk) return false;
+            $.ajax({
+                url: '@Url.Action("DesactivarRemitente")',
+                type: "POST",
+                async: false,
+                data: { Id: dataItem.Id },
+                success: function (data) {
+                    if (data) {
+                         Main.showAlert("Elemento eliminado exitosamente.");
+                        $('#gridRemitentes').data('kendoGrid').dataSource.read();
+                        $("#gridRemitentes").data("kendoGrid").dataSource.page(0);
+                    }
+                    else
+                         Main.showAlert("Ocurrió un error al eliminar el elemento. Intente nuevamente.");
+                },
+                error: function (data) {
+                     Main.showAlert('Ocurrió un error...');
+                }
+            });
+
+            Main.cierraModal($(e.currentTarget), { resultado: true });
+        }, function () {
+            //Main.cierraModal($(e.currentTarget), { resultado: true });
+        });
+    }
+
+    function NuevoRemitente() {
+        var result = Main.muestraVentanaModal(
+            "Nuevo remitente o destinatario",
+            '@Url.Action("NuevoRemitente", "Remitente")',
+            "700px",
+            "100vp",
+            undefined,
+            "winFormRemit"); //, "80%", "90%");
+        result.then(function(result) {
+            if (result) {
+                //muestraDatosRemitente(result);
+                //$("#DestinatarioId").data("kendoComboBox").value(result.Id);
+                //setTimeout(function() {
+                //    $("#DestinatarioId").data("kendoComboBox").dataSource.read();
+                //}, 50);
+            }
+        });
+    }
+
+    function formateaBotones(e) {
+        botonEditarRemitente(e);
+        botonDesactivarRemitente(e);
+    }
+
+    function botonEditarRemitente(e) {
+        $(".k-grid-editarRemitente").each(function () {
+            $(this).removeClass("k-button");
+            $(this).removeClass("k-button-icontext");
+            $(this).attr("href", null);
+            $(this).css("cursor", "pointer");
+            $(this).html('<img width="20" height="20" src="Content/images/Icono-Editar.png" />');
+        });
+    }
+
+    function botonDesactivarRemitente(e) {
+        $(".k-grid-desactivarRemitente").each(function () {
+            $(this).removeClass("k-button");
+            $(this).removeClass("k-button-icontext");
+            $(this).attr("href", null);
+            $(this).css("cursor", "pointer");
+            $(this).css("margin-left", "20px");
+            $(this).html('<img width="20" height="20" src="Content/images/Icono-Eliminar.png" />');
+        });
+    }
+
+</script>
+<style>
+    #gridRemitentes {
+        font-size: 13px;
+    }
+
+        #gridRemitentes td {
+            line-height: 1.1em;
+        }
+
+        #gridRemitentes .k-grid-header .k-header .k-link {
+            height: auto;
+        }
+
+        #gridRemitentes .k-grid-header .k-header {
+            white-space: normal;
+        }
+
+        #gridRemitentes .k-grid-header th > .k-link > .k-icon {
+            float: right;
+        }
+
+        #gridRemitentes .k-grid-toolbar > span {
+            float: left !important;
+        }
+
+        #gridRemitentes .k-grid-toolbar > button {
+            float: left !important;
+        }
+</style>
+
+<h4 class="header-level1">@ViewBag.Title</h4>
+
+<div class="div-main">
+    <form id="formRemitentes" class="form-datos">
+
+        <div class="form-row">
+            <div class="col-md-3">
+                <label class="label-dato-form">
+                    Nombre Remitente / Destinatario
+                </label>
+                @(Html.Kendo().TextBox()
+                    .Name("RemitenteFilter")
+                )
+            </div>
+            <div class="col-md-7">
+
+            </div>
+            <div class="col-md-1" style="float:right">
+                <input type="button" onclick="NuevoRemitente();" class="btn btn-primary" value="Agregar nuevo elemento" />
+            </div>
+        </div>
+
+        <div id="divGrillaAdjuntos">
+            @(Html.Kendo().Grid<Gedoc.Helpers.Dto.RemitenteDto>()
+                    .Name("gridRemitentes")
+                    .Columns(columns =>
+                    {
+                        //columns.Bound(c => c.Id)
+                        //    .Title("<center><input type='checkbox' /></center>")
+                        //    .HeaderTemplate("<center><input type='checkbox' id='header-chb' class='k-checkbox header-checkbox'><label class='k-checkbox-label' for='header-chb'></label></center>")
+                        //    .Width(40)
+                        //    .ClientTemplate("<center><input type='checkbox' id='adj#=Id#' class='k-checkbox row-checkbox' /><label class='k-checkbox-label' for='adj#=Id#'></label></center>")
+                        //    .Sortable(false)
+                        //    .Filterable(false);
+                        columns.Command(c => { c.Custom("editarRemitente").Click("EditarRemitente"); c.Custom("desactivarRemitente").Click("DesactivarRemitente"); })
+                            .Title("Acciones")
+                            .Width(90)
+                            .HeaderHtmlAttributes(new { style = "text-align:center;" })
+                            .HtmlAttributes(new { style = "text-align:center;" });
+
+                        columns.Bound(c => c.Nombre).Width(180).Title("Nombre");
+                        columns.Bound(c => c.Genero).Width(90).Title("Género");
+                        columns.Bound(c => c.Cargo).Width(220).Title("Cargo o Profesión");
+                        columns.Bound(c => c.Institucion).Width(230).Title("Institución");
+                        columns.Bound(c => c.TipoInstitucion).Width(180).Title("Tipo de Institución");
+                        columns.Bound(c => c.Direccion).Width(220).Title("Dirección");
+                        columns.Bound(c => c.Email).Width(180).Title("Correo Electrónico");
+                        columns.Bound(c => c.Telefono).Width(130).Title("Teléfono");
+                        columns.Bound(c => c.UsuarioCreacionNombre).Width(140).Title("Creado Por");
+                        columns.Bound(c => c.FechaCreacion).Width(120).Title("Creado").Format("{0:dd/MM/yyyy HH:mm}");
+                        columns.Bound(c => c.UsuarioModificacionNombre).Width(150).Title("Modificado Por");
+                        columns.Bound(c => c.FechaModificacion).Width(125).Title("Modificado").Format("{0:dd/MM/yyyy HH:mm}");
+                    })
+                    .HtmlAttributes(new { style = "height: 600px;", @class = "grilla-datos" })
+                    //.ToolBar(t => t.Search())
+                    //.Editable(editable=>editable.Mode(GridEditMode.PopUp))
+                    .Events(e => e.DataBound("formateaBotones"))
+                    .Pageable(pager => pager.AlwaysVisible(true).PageSizes(new List<object> { 10, 30, 100, 250 }))
+                    .Sortable(sortable =>
+                    {
+                        sortable.SortMode(GridSortMode.SingleColumn);
+
+                    })
+                    .Resizable(resize => resize.Columns(true))
+                    .Scrollable()
+                    .DataSource(dataSource => dataSource
+                        .Ajax()
+                        .ServerOperation(false)
+                        //.Model(model =>
+                        //{
+                        //    model.Id(u => u.Id);
+                        //    model.Field(u => u.Id).Editable(false);
+                        //})
+                        .Read(read => read.Action("GridBuscarRemitente_Read", "Remitente").Data("currentFilters"))
+                        //.Update(update => update.Action("Grid_Update", "Adjunto").Data("currentFilters"))
+                        .Model(m => m.Id(id => id.Id))
+                        .PageSize(30)
+                    )
+                )
+        </div>
+    </form>
+</div>
+<script>
+    function currentFilters() {
+        return {
+            sFilter: $("#RemitenteFilter").val()
+        }
+    }
+</script>
+<script>
+    function consultar() {
+        $('#gridRemitentes').data('kendoGrid').dataSource.read();
+        $("#gridRemitentes").data("kendoGrid").dataSource.page(0);
+    }
+
+    $("#RemitenteFilter").change(function () {
+        if ($("#RemitenteFilter").val().trim() != "")
+            consultar();
+    });
+
+    $("#RemitenteFilter").keydown(function (e) {
+        if (e.keyCode == 13) {
+            e.preventDefault();
+            consultar();
+            return false;
+        }
+    });
+
+    $(document).ready(function () {
+        $("#gridRemitentes th.k-header a.k-link").each(function () {
+            var colText = $(this).html();
+            var newText = colText + '<span class="k-icon k-i-kpi" style="color: lightgray;"></span>';
+            $(this).html(newText);
+        });
+
+        $('body :not(script)').contents().filter(function () {
+            return this.nodeType === 3;
+        }).replaceWith(function () {
+            return this.nodeValue.replace('items per page', 'elementos por página');
+        });
+    });
+
+</script>

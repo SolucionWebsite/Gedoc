@@ -1,0 +1,221 @@
+﻿body {
+    /*padding-top: 50px;
+    padding-bottom: 20px;
+    font-size: 0.9em;*/
+}
+
+/* Set padding to keep content from hitting the edges */
+.body-content {
+    padding: 10px;
+}
+
+.opcion-clickable {
+    cursor: pointer
+}
+
+i {
+
+}
+
+.enlace-accion {
+    font-weight: normal;
+    font-style: normal !important;
+    color: crimson;
+}
+
+.enlace-grilla {
+    Color: Blue !important;
+    text-decoration: underline !important;
+}
+
+/*clases param mensajes del dialogo*/
+.info-msg {
+    background-color: lightyellow;
+}
+
+.alert-msg {
+    background-color: lightyellow;
+}
+
+.error-msg {
+    background-color: bisque;
+}
+
+.label-error {
+    color: red;
+}
+
+.confirm-msg {
+    background-color: aliceblue;
+}
+
+.footer-modal  {
+    border-top: 1px solid lightgray;
+    padding-top: 1rem !important;
+    margin-top: .5rem !important;
+}
+
+/* fix para posición a la derecha de botones del KendoUi Dialog en versión 2017 */
+.k-dialog .k-dialog-buttongroup.k-dialog-button-layout-normal {
+    display: flex;
+    justify-content: flex-end;
+    border-top: solid 1px lightgray;
+}
+
+/* clases para botones Kendo */
+.k-button.k-danger,
+.k-button.k-danger:active {
+    background-color: #D94F47;
+    color: #fff;
+    border-color: #D94F47;
+}
+
+.k-button.k-primary-blue,
+.k-button.k-primary-blue:active {
+    background-color: #0066CD;
+    color: #fff;
+    border-color: #0066CD;
+}
+
+.k-button.k-primary-green,
+.k-button.k-primary-green:active {
+    background-color: #3e8f3e;
+    color: #fff;
+    border-color: #3e8f3e;
+}
+
+.k-button.k-primary-orange,
+.k-button.k-primary-orange:active {
+    background-color: #ED9729;
+    color: #fff;
+    border-color: #ED9729;
+}
+
+.head-datos-form {
+    border-bottom: 1px solid lightcoral;
+}
+
+.label-dato {
+    font-weight: 500;
+}
+
+.label-dato-form {
+}
+
+.form-datos {
+    font-size: 0.9em;
+}
+
+.marca-obligatorio {
+    color: red;
+}
+
+.help-block, .help-block-right {
+    font-weight: bold !important;
+    color: black !important;
+    font-size: 0.8em;
+}
+
+.help-block-right {
+    float: right
+}
+
+/*estilos control del texto enriquecido multilinea*/
+.text-area-out {
+    margin-bottom: 0px;
+    padding: 2px;
+    background-color: white;
+}
+
+.text-area-in {
+    height: 80px;
+    overflow: auto;
+}
+
+.texto-largo {
+
+}
+
+.form-row {
+    padding-bottom: 8px;
+}
+
+/*El sistema de columnas del Bootstrap no funciona bien dentro de algunos widgets de Kendo UI, por ej. dentro del PanelBar*/
+/* set a border-box model only to elements that need it */
+.form-control, /* if this class is applied to a Kendo UI widget, its layout may change */
+.container,
+.container-fluid,
+.row,
+.form-row,
+.col-xs-1, .col-sm-1, .col-md-1, .col-lg-1,
+.col-xs-2, .col-sm-2, .col-md-2, .col-lg-2,
+.col-xs-3, .col-sm-3, .col-md-3, .col-lg-3,
+.col-xs-4, .col-sm-4, .col-md-4, .col-lg-4,
+.col-xs-5, .col-sm-5, .col-md-5, .col-lg-5,
+.col-xs-6, .col-sm-6, .col-md-6, .col-lg-6,
+.col-xs-7, .col-sm-7, .col-md-7, .col-lg-7,
+.col-xs-8, .col-sm-8, .col-md-8, .col-lg-8,
+.col-xs-9, .col-sm-9, .col-md-9, .col-lg-9,
+.col-xs-10, .col-sm-10, .col-md-10, .col-lg-10,
+.col-xs-11, .col-sm-11, .col-md-11, .col-lg-11,
+.col-xs-12, .col-sm-12, .col-md-12, .col-lg-12 {
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+}
+
+.k-icon-32 {
+    font-size: 32px; /* Sets icon size to 32px */
+}
+
+.k-icon-48 {
+    font-size: 48px; /* Sets icon size to 48px */
+}
+
+.k-icon-64 {
+    font-size: 64px; /* Sets icon size to 64px */
+}
+
+/*estiolos tabla de priorización*/
+.tb-prioridad-cabecera-izq {
+    height: 20px;
+    background-color: #e24650;
+    font-weight: bold;
+}
+
+.tb-prioridad-cabecera-der {
+    height: 20px;
+    background-color: #e24650;
+    font-weight: bold;
+}
+
+.tb-prioridad-detalle-izq {
+    height: 14px;
+    padding: 0;
+}
+
+.tb-prioridad-detalle-der {
+    text-align: center;
+    padding: 0;
+}
+
+.tb-prioridad-detalle-rayado-izq {
+    background-color: #dadbc3;
+    padding: 0;
+}
+
+.tb-prioridad-detalle-rayado-der {
+    text-align: center;
+    background-color: #dadbc3;
+    padding: 0;
+}
+
+
+.col-icono-msg {
+    -ms-flex: 0 0 48px;
+    flex: 0 0 48px;
+}
+
+.button-dlg {
+    width: 65px !important;
+}

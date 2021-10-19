@@ -1,0 +1,1737 @@
+﻿
+@using System.Globalization
+@using Gedoc.Helpers
+@using Gedoc.Helpers.Dto
+@using Gedoc.Helpers.Enum
+@using Gedoc.WebApp.Models
+@using Telerik.Windows.Documents.Spreadsheet.Expressions.Functions
+@model Gedoc.Helpers.Dto.RequerimientoDto
+
+@{
+    ViewBag.Title = "Ficha";
+    Layout = null;
+    ResultadoOperacion resultado = ViewBag.Resultado ?? new ResultadoOperacion(1, "", null);
+    // Interoperación con Trámites
+    var idSolicitud = Model.SolicitudTramId.GetValueOrDefault(0).ToString();
+    var urlAuthTramitesWeb = (WebConfigValues.UrlAuthTramitesWeb ?? "").Replace("%solicitud%", idSolicitud);
+    var userName = ViewBag.CurrentUserName ?? "";
+    userName = userName.Contains(@"\") ? userName.Remove(0, userName.IndexOf(@"\") + 1) : userName;
+    var secretKeyTramitesWeb = WebConfigValues.SecretKeyTramitesWeb;
+    var urlTramitesWeb = (WebConfigValues.UrlTramitesWeb ?? "").Replace("%solicitud%", idSolicitud);
+    var textoReasignacion = Model.AsignacionAnterior.HasValue
+        ? "UT asignada anterior: " + Model.UtAnteriorTitulo + 
+          " Fecha asignación anterior: " + (Model.AsignacionAnterior.HasValue ? Model.AsignacionAnterior.Value.ToString(GeneralData.FORMATO_FECHA_CORTO) : "") +
+          " Fecha de devolución: " + (Model.Devolucion.HasValue ? Model.Devolucion.Value.ToString(GeneralData.FORMATO_FECHA_CORTO) : "")
+        : "";
+
+
+}
+
+
+@functions {
+
+    public static string DevuelveSiNo(bool? valor)
+    {
+        return valor.HasValue
+            ? (valor.GetValueOrDefault(false) ? "Sí" : "No")
+            : "";
+    }
+}
+
+<style>
+
+    .ficha {
+    }
+
+    .k-panelbar .k-item {
+        border: 1px solid lightgrey !important;
+    }
+
+    .k-panelbar {
+        background-color: white;
+        border: 0px;
+    }
+
+    .data-header-ficha {
+        margin-top: 10px !important;
+    }
+
+    .panel-datos {
+        font-size: 0.8em;
+    }
+
+    .label-dato {
+        font-weight: bold;
+    }
+
+    .k-link.k-header {
+        background-color: azure !important;
+    }
+
+    .empty-grid {
+        padding: 1em;
+        /*line-height: 3em;*/
+        width: 100%;
+        font-weight: bold;
+    }
+
+    .gridDatos {
+        font-size: 0.85em;
+    }
+
+    .gridDatos .k-grid-content .k-alt {
+        background-color: #EFF3FB; /* specify the alternate background-color */
+    }
+
+    .gridDatos .k-grid-header .k-header {
+        background-color: #ebe8e8;
+    }
+    
+    /*Sin esto no se muestra en el pager del grid de bitácoras el combo de cantidad de registros a mostrar ni 
+    el texto de "Elementos mostrados X de T" a pesar de q aparentemente esta bien configurado para q se muestre*/
+    #gridLogBitacorasIngreso .k-pager-sizes.k-label,
+    #gridLogBitacorasIngreso .k-pager-info.k-label {
+        display: flex !important;
+    }
+
+    /*El sistema de columnas del Bootstrap no funciona bien dentro de algunos widgets de Kendo UI, por ej. dentro del PanelBar*/
+    /* set a border-box model only to elements that need it */
+    .form-control, /* if this class is applied to a Kendo UI widget, its layout may change */
+    .container,
+    .container-fluid,
+    .row,
+    .col-xs-1, .col-md-1, .col-md-1, .col-lg-1,
+    .col-xs-2, .col-md-2, .col-md-2, .col-lg-2,
+    .col-xs-3, .col-md-3, .col-md-3, .col-lg-3,
+    .col-xs-4, .col-md-4, .col-md-4, .col-lg-4,
+    .col-xs-5, .col-md-5, .col-md-5, .col-lg-5,
+    .col-xs-6, .col-md-6, .col-md-6, .col-lg-6,
+    .col-xs-7, .col-md-7, .col-md-7, .col-lg-7,
+    .col-xs-8, .col-md-8, .col-md-8, .col-lg-8,
+    .col-xs-9, .col-md-9, .col-md-9, .col-lg-9,
+    .col-xs-10, .col-md-10, .col-md-10, .col-lg-10,
+    .col-xs-11, .col-md-11, .col-md-11, .col-lg-11,
+    .col-xs-12, .col-md-12, .col-md-12, .col-lg-12 {
+        -webkit-box-sizing: border-box;
+        -moz-box-sizing: border-box;
+        box-sizing: border-box;
+    }
+</style>
+
+<script>
+    @if (resultado.Codigo < 0)
+    {
+        <text>
+    Main.showAlert("@Html.Raw(resultado.Mensaje)")
+        .then(function (result) {
+            Main.cierraModal(null, false, "winFormFichaIng");
+        });
+        </text>
+    }
+
+    var onSelect = function (e) {
+        var header = $(e.item).find("span.k-state-selected");
+        header.removeClass("k-state-selected"); // evitar el color del header al seleccionarlo
+        header.blur(); // .focusout();
+    };
+
+    function tramitesWeb() {
+        if (@Json.Encode(string.IsNullOrWhiteSpace(urlAuthTramitesWeb))) {
+            Main.showError("No es posible conectar al sistema de Trámites. Es necesario configurar en la aplicación el enlace al sistema de Trámites.");
+            return false;
+        }
+        var urlAuth = "@urlAuthTramitesWeb";
+        var user = "@userName";
+        var secretKey = "@secretKeyTramitesWeb";
+        var urlSolicitud = "@urlTramitesWeb";
+        abreUrlTramite(urlAuth, user, secretKey, urlSolicitud);
+    }
+
+    /* Abre la URL de la solicitud del sistema de trámites asociada al ingreso*/
+    function abreUrlTramite(urlAuth, user, secretKey, urlSolicitud) {
+        if (@Json.Encode(Model.SolicitudTramId.GetValueOrDefault(0) == 0)) {
+            Main.showAlert('El ingreso no está asociado a una solicitud en el Sistema de Trámites.');
+            return false;
+        }
+        //kendo.ui.progress($("#btTramites"), true);
+        Main.wait("", "#btTramites");
+
+        var data = { "UserName": user, "SecretKey": secretKey };
+
+        $.ajax({
+            type: "POST",
+            url: urlAuth,
+            data: data,
+            dataType: 'text'
+        }).done(function (token) {
+            //kendo.ui.progress($("#btTramites"), false);
+            Main.unwait("#btTramites");
+            if (token) {
+                urlSolicitud = urlSolicitud.replace('%token%', token);
+                window.open(urlSolicitud, '_blank');
+            } else {
+                Main.showAlert('No se recibió respuesta del sistema de trámites, por favor, reintente la operación.');
+            }
+        }).fail(function (xhr, result, status) {
+            //kendo.ui.progress($("#btTramites"), false);
+            Main.unwait("#btTramites");
+            if (xhr.status == 0) {
+                Main.showAlert('No fue posible contactar la URL del sistema de trámite.');
+            } else if (xhr.status == 404) {
+                Main.showAlert('No es posible abrir la página. El sistema de trámite ha devuelto Error 404.');
+            } else if (xhr.status == 500) {
+                Main.showAlert('No es posible abrir la página. El sistema de trámite ha devuelto Error 500.');
+            } else {
+                Main.showAlert('No es posible abrir la página. Error desconocido devuelto por el sistema de trámite:\n' + xhr.responseText);
+            }
+        });
+    }
+
+    function fichaPdf() {
+        Main.muestraVentanaModal("Ficha PDF", "@(Url.Action("FichaPdf"))?id=@Model.Id", 600, 200, false, "winFichaPdf");
+    }
+
+    function plegarPaneles() {
+        var panelBar = $("#panelDatosFicha").data("kendoPanelBar");
+        panelBar.collapse($(".data-header-ficha"));
+    }
+
+    function desplegarPaneles() {
+        var panelBar = $("#panelDatosFicha").data("kendoPanelBar");
+        panelBar.expand($(".data-header-ficha"));
+    }
+
+    function extraDataGrillaDespacho() {
+        return { Take: 100, Dato: "@Model.Id" }
+    }
+
+    function extraDataGrillaAdjunto() {
+        return {
+            reqId: "@Model.Id"
+        };
+    }
+
+    function extraDataGrillaBitacora() {
+        return {
+            reqId: "@Model.Id"
+        };
+    }
+
+    function buildUrlDescargaDesp(idDespacho, idEstado)
+    {
+        var enlace = "@Url.Action("GetArchivo", "Despacho")" + "?idDespacho=" + idDespacho;
+        enlace = '<a href="' + enlace + '"  class="k-button mr-1" title="Descargar"><span class="k-icon k-i-download"></span></a>';
+
+        var onclick = idEstado == @((int)EstadoDespacho.Despachado)
+            ? 'Main.showAlert(\'Atención. El documento ya se encuentra en estado Despacho.\'); return false;'
+            : 'deleteDespacho(\'' + idDespacho + '\'); return false;';
+        enlace += '<button class="k-button" onclick="' + onclick + '" title="Eliminar" type="button" data-role="button" role="button"><span class="k-icon k-i-trash"></span></button>';
+
+        enlace = '<div style="display: inline-flex;">' + enlace + '</div>';
+
+        return enlace;
+    }
+
+    function buildUrlDescargaAdj(idAdjunto, urlArchivo)
+    {
+        var enlace = "";
+        if (urlArchivo) {
+            enlace = "@Url.Action("GetArchivo", "Adjunto")" + "?idAdjunto=" + idAdjunto;
+            enlace = '<a href="' + enlace + '"  class="k-button" title="Descargar"><span class="k-icon k-i-download"></span></a>';
+        }
+
+        if (idAdjunto) {
+            enlace += '<button class="k-button" onclick="deleteAdjunto(' + idAdjunto + ')" title="Eliminar" type="button" data-role="button" role="button"><span class="k-icon k-i-trash"></span></button>';
+        }
+        enlace = '<div style="display: inline-flex;">' + enlace + '</div>';
+        return enlace;
+    }
+
+    function buildUrlDescargaBit(idBitacora, urlArchivo, nombreArchivo)
+    {
+        if (!urlArchivo || !nombreArchivo) {
+            return "";
+        }
+        var enlace = "@Url.Action("GetArchivo", "Bitacora")" + "?idBitacora=" + idBitacora;
+        enlace = "<a href='" + enlace + "'  class='text-center enlace-grilla' target='_blank'>Descargar</a>";
+        return enlace;
+    }
+
+    function buildUrlDescargaLogBit(idBitacora, origen, accion)
+    {
+        var enlace = "";
+        if (origen == "BITACORA" && accion.endsWith("_ADJ")) {
+            enlace = "@Url.Action("GetArchivo", "Bitacora")" + "?idBitacora=" + idBitacora;
+            enlace = '<a href="' + enlace + '"  class="k-button mr-1" title="Descargar"><span class="k-icon k-i-download"></span></a>';
+        }
+        if (origen == "BITACORA" && accion.startsWith("CREACION")) {
+            enlace += '<button class="k-button" onclick="deleteBitacora(' + idBitacora + ')" title="Eliminar" type="button" data-role="button" role="button"><span class="k-icon k-i-trash"></span></button>';
+        }
+        enlace = '<div style="display: inline-flex;">' + enlace + '</div>';
+        return enlace;
+    }
+
+    function deleteBitacora(idBitacora) {
+        Main.showConfirm("¿Desea eliminar la Bitácora?", "Eliminar Bitácora")
+            .then(function(isOk) {
+                if (isOk) {
+                    kendo.ui.progress($("#gridLogBitacorasIngreso"), true);
+                    $.ajax({
+                        type: "POST",
+                        url: '@Url.Action("BitacoraEliminar", "Bitacora")',
+                        contentType: "application/json; charset=utf-8",
+                        data: JSON.stringify({
+                            id: idBitacora
+                        }),
+                        dataType: "json",
+                        success: function (data) {
+                            kendo.ui.progress($("#gridLogBitacorasIngreso"), false);
+                            Main.showInfo(data.Mensaje);
+                            var gridK = $("#gridLogBitacorasIngreso").data("kendoGrid");
+                            if (gridK) {
+                                gridK.dataSource.read();
+                            }
+                        },
+                        error: function (data) {
+                            kendo.ui.progress($("#gridLogBitacorasIngreso"), false);
+                            Main.showError("Ha ocurrido un error inesperado al eliminar la bitácora.");
+                        }
+                    });
+                }
+            });
+    }
+
+    function deleteDespacho(idDespacho) {
+        Main.showConfirm("¿Desea eliminar el Despacho?", "Eliminar Despacho")
+            .then(function (isOk) {
+                if (isOk) {
+                    kendo.ui.progress($("#gridDespachosIngreso"), true);
+                    $.ajax({
+                        type: "POST",
+                        url: '@Url.Action("EliminarDespacho", "Despacho")',
+                        contentType: "application/json; charset=utf-8",
+                        data: JSON.stringify({
+                            id: idDespacho
+                        }),
+                        dataType: "json",
+                        success: function (data) {
+                            kendo.ui.progress($("#gridDespachosIngreso"), false);
+                            Main.showInfo(data.Mensaje);
+                            var gridK = $("#gridDespachosIngreso").data("kendoGrid");
+                            if (gridK) {
+                                gridK.dataSource.read();
+                            }
+                        },
+                        error: function (data) {
+                            kendo.ui.progress($("#gridDespachosIngreso"), false);
+                            Main.showError("Ha ocurrido un error inesperado al eliminar el despacho.");
+                        }
+                    });
+                }
+            });
+    }
+
+    function deleteAdjunto(idAdjunto) {
+        Main.showConfirm("¿Desea eliminar el Adjunto?", "Eliminar Adjunto")
+            .then(function (isOk) {
+                if (isOk) {
+                    var eliminado = [];
+                    eliminado.push(idAdjunto);
+                    kendo.ui.progress($("#gridAdjuntosIngreso"), true);
+                    $.ajax({
+                        type: "POST",
+                        url: '@Url.Action("EliminaAdjunto", "Adjunto")',
+                        contentType: "application/json; charset=utf-8",
+                        data: JSON.stringify({
+                            Adjuntos_Ids: eliminado
+                        }),
+                        dataType: "json",
+                        success: function (data) {
+                            kendo.ui.progress($("#gridAdjuntosIngreso"), false);
+                            if (data == 1) {
+                                Main.showInfo("Adjunto eliminado");
+                                var gridK = $("#gridAdjuntosIngreso").data("kendoGrid");
+                                if (gridK) {
+                                    gridK.dataSource.read();
+                                }
+                            } else {
+                                Main.showError("Ha ocurrido un error al eliminar el adjunto.");
+                            }
+                        },
+                        error: function (data) {
+                            kendo.ui.progress($("#gridAdjuntosIngreso"), false);
+                            Main.showError("Ha ocurrido un error inesperado al eliminar el adjunto.");
+                        }
+                    });
+                }
+            });
+    }
+
+    function onChangeDataSourceLogBit(e) {
+        dataSourceSharedLogBit.data(e.items);
+    }
+
+    function onFilterMenuInit(e) {
+        var ds = dataSourceSharedLogBit;
+        $(e.container).find('.k-check-all').click();
+        var grid = e.sender;
+        e.container.data("kendoPopup").bind("open", function () {
+            ds.sort({ field: e.field, dir: "asc" });
+            var uniqueDsResult = removeDuplicates(grid.dataSource.view(), e.field);
+            ds.data(uniqueDsResult);
+        })
+        function removeDuplicates(items, field) {
+            var getter = function (item) { return item[field] },
+                result = [],
+                index = 0,
+                seen = {};
+            while (index < items.length) {
+                var item = items[index++],
+                    text = getter(item);
+                if (text !== undefined && text !== null && !seen.hasOwnProperty(text)) {
+                    result.push(item);
+                    seen[text] = true;
+                }
+            }
+            return result;
+        }
+    }
+
+
+    //# sourceURL=Ficha
+</script>
+@*}*@
+
+
+<div class="container-fluid ficha">
+    <div class="row">
+        <div class="col-md">
+            <span class="badge badge-info w-100" style="white-space: normal; text-align: left;">
+                Requerimiento en etapa "@Model.EtapaTitulo" y estado "@Model.EstadoTitulo";
+                última modificación: @Model.ModificadoPorFecha.ToString(GeneralData.FORMATO_FECHA_LARGO, CultureInfo.InvariantCulture)
+            </span>
+        </div>
+    </div>
+    <div class="row mt-1">
+        <div class="col-md" style="text-align: right !important; ">
+
+            <button id="btTramites" type="button" class="btn btn-primary btn-sm" aria-label="Left Align"
+                    data-toggle="tooltip" title="Trámites Web @(Model.SolicitudTramId.GetValueOrDefault(0) > 0 ? $"(Id Solicitud: {Model.SolicitudTramId.Value})" : "")" style="margin-right: 30px;"
+                    onclick="tramitesWeb(); ">
+                <span class="k-icon k-i-globe"></span>
+            </button>
+            <span id="waitLinkTramites" class="glyphicon glyphicon-refresh glyphicon-refresh-animate"
+                  style="margin-right: 30px; font-size: 18px;"></span>
+
+
+            <button id="btImprimir" type="button" class="btn btn-secondary btn-sm" aria-label="Left Align"
+                    data-toggle="tooltip" title="Imprimir" style="margin-right: 30px;"
+                    onclick="fichaPdf(); ">
+                <span class="k-icon k-i-print"></span>
+            </button>
+
+            <button type="button" class="btn btn-outline-dark btn-sm" aria-label="Left Align" onclick="plegarPaneles()"
+                    data-toggle="tooltip" title="Plegar todos los paneles">
+                <span class="k-icon k-i-arrow-chevron-up"></span>
+            </button>
+            <button type="button" class="btn btn-outline-dark btn-sm" aria-label="Left Align" onclick="desplegarPaneles()"
+                    data-toggle="tooltip" title="Desplegar todos los paneles">
+                <span class="k-icon k-i-arrow-chevron-down"></span>
+            </button>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md">
+            <ul id="panelDatosFicha">
+                <!-- ******* PANEL DOCUMENTO *********** -->
+                <li class="data-header-ficha k-state-active">
+                    <span class="k-link"><b>Documento</b></span>
+                    <div class="container-fluid panel-datos">
+                        <div class="row">
+                            <div class="col-md-3 text-right">
+                                <label class="label-dato">
+                                    Documento de Ingreso
+                                </label>
+                            </div>
+                            <div class="col-md-3">
+                                <label style="color: red;">@Model.DocumentoIngreso</label>
+                            </div>
+                            <div class="col-md-3 text-right">
+                                <label class="label-dato">
+                                    Fecha de Ingreso
+                                </label>
+                            </div>
+                            <div class="col-md-3">
+                                <label>@Model.FechaIngreso.ToString(GeneralData.FORMATO_FECHA_LARGO, CultureInfo.InvariantCulture)</label>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-3 text-right">
+                                <label class="label-dato">
+                                    Tipo de trámite
+                                </label>
+                            </div>
+                            <div class="col-md-9">
+                                <label>@Model.TipoTramiteTitulo</label>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-3 text-right">
+                                <label class="label-dato">
+                                    Canal de llegada del trámite
+                                </label>
+                            </div>
+                            <div class="col-md-9">
+                                <label>@Model.CanalLlegadaTramiteTitulo</label>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-3 text-right">
+                                <label class="label-dato">
+                                    Tipo de documento
+                                </label>
+                            </div>
+                            <div class="col-md-9">
+                                <label>@Model.TipoDocumentoTitulo</label>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-3 text-right">
+                                <label class="label-dato">
+                                    Tipo de ingreso
+                                </label>
+                            </div>
+                            <div class="col-md-9">
+                                <label>@Model.TipoIngreso</label>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-3 text-right">
+                                <label class="label-dato">
+                                    Observaciones al tipo de documento
+                                </label>
+                            </div>
+                            <div class="col-md-9">
+                                <label class="pre-wrap">@Html.Raw(Model.ObservacionesTipoDoc)</label>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-3 text-right">
+                                <label class="label-dato">
+                                    Fecha de documento
+                                </label>
+                            </div>
+                            <div class="col-md-9">
+                                <label>@Model.FechaDocumento.ToString(GeneralData.FORMATO_FECHA_CORTO, CultureInfo.InvariantCulture)</label>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-3 text-right">
+                                <label class="label-dato">
+                                    Fecha(s) de emisión de Oficio(s)
+                                </label>
+                            </div>
+                            <div class="col-md-5">
+                                <label> @(Model.FechasEmisionOficio)</label>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-3 text-right">
+                                <label class="label-dato">
+                                    Adjunta documentación
+                                </label>
+                            </div>
+                            <div class="col-md-3">
+                                <label>@(Model.AdjuntaDocumentacion ? "Si" : "No")</label>
+                            </div>
+                            <div class="col-md-3 text-right">
+                                <label class="label-dato">
+                                    Cantidad de adjuntos
+                                </label>
+                            </div>
+                            <div class="col-md-3">
+                                <label>@Model.CantidadAdjuntos</label>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-3 text-right">
+                                <label class="label-dato">
+                                    Tipos de adjuntos
+                                </label>
+                            </div>
+                            <div class="col-md-9">
+                                <label id="lbTiposAdjuntos">@Model.TipoAdjuntoTitulos</label>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-3 text-right">
+                                <label class="label-dato">
+                                    Soporte
+                                </label>
+                            </div>
+                            <div class="col-md-9">
+                                <label id="lbSoporte">@Model.SoporteTitulos</label>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-3 text-right">
+                                <label class="label-dato">
+                                    Observaciones de adjuntos
+                                </label>
+                            </div>
+                            <div class="col-md-9">
+                                <label id="lbObservacionesAdj" class="pre-wrap">@Html.Raw(Model.ObservacionesAdjuntos) </label>
+                            </div>
+                        </div>
+
+
+
+                    </div>
+
+                </li>
+
+                <!-- ******* PANEL REMITENTE *********** -->
+                <li class=" data-header-ficha">
+                    <span class="k-link"><b>Remitente</b></span>
+                    <div class="container-fluid panel-datos">
+
+                        <div class="row">
+                            <div class="col-md-3 text-right">
+                                <label class="label-dato">
+                                    Remitente
+                                </label>
+                            </div>
+                            <div class="col-md-9">
+                                <label>@Model.RemitenteNombre</label>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-3 text-right">
+                                <label class="label-dato">
+                                    RUT
+                                </label>
+                            </div>
+                            <div class="col-md-9">
+                                <label>@Model.RemitenteRut</label>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-3 text-right">
+                                <label class="label-dato">
+                                    Género
+                                </label>
+                            </div>
+                            <div class="col-md-9">
+                                <label>@Model.RemitenteGenero</label>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-3 text-right">
+                                <label class="label-dato">
+                                    Cargo o Profesión
+                                </label>
+                            </div>
+                            <div class="col-md-9">
+                                <label>@Model.RemitenteCargo</label>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-3 text-right">
+                                <label class="label-dato">
+                                    Institución
+                                </label>
+                            </div>
+                            <div class="col-md-9">
+                                <label>@Model.RemitenteInstitucion</label>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-3 text-right">
+                                <label class="label-dato">
+                                    Tipo de Institución
+                                </label>
+                            </div>
+                            <div class="col-md-9">
+                                <label>@Model.RemitenteTipoInstitucion</label>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-3 text-right">
+                                <label class="label-dato">
+                                    Dirección
+                                </label>
+                            </div>
+                            <div class="col-md-9">
+                                <label>@Model.RemitenteDireccion</label>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-3 text-right">
+                                <label class="label-dato">
+                                    Correo electrónico
+                                </label>
+                            </div>
+                            <div class="col-md-9">
+                                <label>@Model.RemitenteEmail</label>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-3 text-right">
+                                <label class="label-dato">
+                                    Teléfono
+                                </label>
+                            </div>
+                            <div class="col-md-9">
+                                <label>@Model.RemitenteTelefono</label>
+                            </div>
+                        </div>
+
+                    </div>
+                </li>
+
+                <!-- ******* PANEL PROYECTO *********** -->
+                <li class=" data-header-ficha">
+                    <span class="k-link"><b>Proyecto</b></span>
+                    <div class="container-fluid panel-datos">
+
+                        <div class="row">
+                            <div class="col-md-3 text-right">
+                                <label class="label-dato">
+                                    Nombre de Proyecto o Programa
+                                </label>
+                            </div>
+                            <div class="col-md-9">
+                                <label>@Model.NombreProyectoPrograma</label>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-3 text-right">
+                                <label class="label-dato">
+                                    Número del caso
+                                </label>
+                            </div>
+                            <div class="col-md-9">
+                                <label>@Model.CasoId</label>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-3 text-right">
+                                <label class="label-dato">
+                                    Nombre del caso
+                                </label>
+                            </div>
+                            <div class="col-md-9">
+                                <label>@Model.CasoTitulo</label>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-3 text-right">
+                                <label class="label-dato">
+                                    Materia
+                                </label>
+                            </div>
+                            <div class="col-md-9">
+                                <label class="pre-wrap">@Model.Materia</label>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-3 text-right">
+                                <label class="label-dato">
+                                    Etiqueta
+                                </label>
+                            </div>
+                            <div class="col-md-9">
+                                <label>@Model.EtiquetaTitulos</label>
+                            </div>
+                        </div>
+
+                    </div>
+                </li>
+
+                <!-- ******* PANEL MONUMENTO NACIONAL *********** -->
+                <li class=" data-header-ficha">
+                    <span class="k-link"><b>Monumento Nacional</b></span>
+                    <div class="container-fluid panel-datos">
+
+                        <div class="row">
+                            <div class="col-md-3 text-right">
+                                <label class="label-dato">
+                                    Categoría de monumento nacional
+                                </label>
+                            </div>
+                            <div class="col-md-9">
+                                <label>@(Model.MonumentoNacional?.CategoriaMonumentoNacCod)</label>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-3 text-right">
+                                <label class="label-dato">
+                                    Código de Monumento Nacional
+                                </label>
+                            </div>
+                            <div class="col-md-9">
+                                <label>@(Model.MonumentoNacional?.CodigoMonumentoNac)</label>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-3 text-right">
+                                <label class="label-dato">
+                                    Denominación oficial
+                                </label>
+                            </div>
+                            <div class="col-md-9">
+                                <label>@(Model.MonumentoNacional?.DenominacionOficial)</label>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-3 text-right">
+                                <label class="label-dato">
+                                    Otras denominaciones
+                                </label>
+                            </div>
+                            <div class="col-md-9">
+                                <label>@(Model.MonumentoNacional?.OtrasDenominaciones)</label>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-3 text-right">
+                                <label class="label-dato">
+                                    Nombre o uso actual
+                                </label>
+                            </div>
+                            <div class="col-md-9">
+                                <label>@(Model.MonumentoNacional?.NombreUsoActual)</label>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-3 text-right">
+                                <label class="label-dato">
+                                    Dirección monumento nacional
+                                </label>
+                            </div>
+                            <div class="col-md-9">
+                                <label>@(Model.MonumentoNacional?.DireccionMonumentoNac)</label>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-3 text-right">
+                                <label class="label-dato">
+                                    Referencia de localización o localidad
+                                </label>
+                            </div>
+                            <div class="col-md-9">
+                                <label>@(Model.MonumentoNacional?.ReferenciaLocalidad)</label>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-3 text-right">
+                                <label class="label-dato">
+                                    Región
+                                </label>
+                            </div>
+                            <div class="col-md-9">
+                                <label>@(Model.MonumentoNacional?.RegionTitulo)</label>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-3 text-right">
+                                <label class="label-dato">
+                                    Provincia
+                                </label>
+                            </div>
+                            <div class="col-md-9">
+                                <label>@(Model.MonumentoNacional?.ProvinciaTitulo)</label>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-3 text-right">
+                                <label class="label-dato">
+                                    Comuna
+                                </label>
+                            </div>
+                            <div class="col-md-9">
+                                <label>@(Model.MonumentoNacional?.ComunaTitulo)</label>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-3 text-right">
+                                <label class="label-dato">
+                                    Rol SII propiedad
+                                </label>
+                            </div>
+                            <div class="col-md-9">
+                                <label>@(Model.MonumentoNacional?.RolSii)</label>
+                            </div>
+                        </div>
+
+                    </div>
+                </li>
+
+                <!-- ******* PANEL GENERAL *********** -->
+                <li class=" data-header-ficha">
+                    <span class="k-link"><b>General</b></span>
+                    <div class="container-fluid panel-datos">
+
+                        <div class="row">
+                            <div class="col-md-3 text-right">
+                                <label class="label-dato">
+                                    Forma de llegada
+                                </label>
+                            </div>
+                            <div class="col-md-9">
+                                <label>@Model.FormaLlegadaTitulo</label>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-3 text-right">
+                                <label class="label-dato">
+                                    Observaciones de la forma de llegada
+                                </label>
+                            </div>
+                            <div class="col-md-9">
+                                <label class="pre-wrap">@Html.Raw(Model.ObservacionesFormaLlegada)</label>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-3 text-right">
+                                <label class="label-dato">
+                                    Carácter
+                                </label>
+                            </div>
+                            <div class="col-md-9">
+                                <label>@Model.CaracterTitulo</label>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-3 text-right">
+                                <label class="label-dato">
+                                    Observaciones del carácter
+                                </label>
+                            </div>
+                            <div class="col-md-9">
+                                <label class="pre-wrap">@Html.Raw(Model.ObservacionesCaracter)</label>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-3 text-right">
+                                <label class="label-dato">
+                                    Redireccionado
+                                </label>
+                            </div>
+                            <div class="col-md-9">
+                                <label>@(DevuelveSiNo(Model.Redireccionado) )</label>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-3 text-right">
+                                <label class="label-dato">
+                                    Número de ticket
+                                </label>
+                            </div>
+                            <div class="col-md-9">
+                                <label>@Model.NumeroTicket</label>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-3 text-right">
+                                <label class="label-dato">
+                                    Requiere acuerdo
+                                </label>
+                            </div>
+                            <div class="col-md-9">
+                                <label>@(DevuelveSiNo(Model.RequiereAcuerdo) )</label>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-3 text-right">
+                                <label class="label-dato">
+                                    Requerimiento anterior
+                                </label>
+                            </div>
+                            <div class="col-md-9">
+                                <label>@Model.RequerimientoAnteriorDocIng</label>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-3 text-right">
+                                <label class="label-dato">
+                                    Requerimiento no registrado
+                                </label>
+                            </div>
+                            <div class="col-md-9">
+                                <label>@Model.RequerimientoNoRegistrado</label>
+                            </div>
+                        </div>
+
+                    </div>
+                </li>
+
+                <!-- ******* PANEL ASGINACIÓN *********** -->
+                <li class=" data-header-ficha">
+                    <span class="k-link"><b>Asignación</b></span>
+                    <div class="container-fluid panel-datos">
+
+                        <div class="row">
+                            <div class="col-md-3 text-right">
+                                <label class="label-dato">
+                                    Asignación Anterior
+                                </label>
+                            </div>
+                            <div class="col-md-9">
+                                <label>@textoReasignacion</label>
+
+
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-3 text-right">
+                                <label class="label-dato">
+                                    Unidad Técnica Asignada
+                                </label>
+                            </div>
+                            <div class="col-md-3">
+                                <label>@Model.UtAsignadaTitulo</label>
+                            </div>
+                            <div class="col-md-3 text-right">
+                                <label class="label-dato">
+                                    Fecha de asignación UT
+                                </label>
+                            </div>
+                            <div class="col-md-3">
+                                <label>@(Model.AsignacionUt.HasValue ? Model.AsignacionUt.Value.ToString(GeneralData.FORMATO_FECHA_LARGO, CultureInfo.InvariantCulture) : "")</label>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-3 text-right">
+                                <label class="label-dato">
+                                    Unidad Técnica en copia
+                                </label>
+                            </div>
+                            <div class="col-md-9">
+                                <label>@Model.UtCopiaTitulos</label>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-3 text-right">
+                                <label class="label-dato">
+                                    UT en Conocimiento
+                                </label>
+                            </div>
+                            <div class="col-md-9">
+                                <label>@Model.UtConocimientoTitulo</label>
+                            </div>
+                        </div>
+
+                        @if (Model.EnAsignacionTemp)
+                        {
+                            <div class="row">
+                                <div class="col-md-3 text-right">
+                                    <label class="label-dato">
+                                        UT de Asignación Temporal
+                                    </label>
+                                </div>
+                                <div class="col-md-9">
+                                    <label>@Model.UtTemporalTitulo</label>
+                                </div>
+                            </div>
+                        }
+
+                        <div class="row">
+                            <div class="col-md-3 text-right">
+                                <label class="label-dato">
+                                    Requiere respuesta
+                                </label>
+                            </div>
+                            <div class="col-md-9">
+                                <label>@(DevuelveSiNo(Model.RequiereRespuesta) )</label>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-3 text-right">
+                                <label class="label-dato">
+                                    Comentario de Asignación
+                                </label>
+                            </div>
+                            <div class="col-md-9">
+                                <label class="pre-wrap">@Html.Raw(Model.ComentarioAsignacion)</label>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-3 text-right">
+                                <label class="label-dato">
+                                    UT de Apoyo
+                                </label>
+                            </div>
+                            <div class="col-md-9">
+                                <label>@Model.UtApoyoTitulo</label>
+                            </div>
+                        </div>
+
+                    </div>
+                </li>
+
+                <!-- ******* PANEL PRIORIZACIÓN *********** -->
+                <li class=" data-header-ficha">
+                    <span class="k-link"><b>Priorización</b></span>
+                    <div class="container-fluid panel-datos">
+
+                        <div class="row">
+                            <div class="col-md-3 text-right">
+                                <label class="label-dato">
+                                    Plazo (días)
+                                </label>
+                            </div>
+                            <div class="col-md-9">
+                                <label>@Model.Plazo</label>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-3 text-right">
+                                <label class="label-dato">
+                                    Prioridad del requerimiento
+                                </label>
+                            </div>
+                            <div class="col-md-9">
+                                <label>@Model.PrioridadTitulo</label>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-3 text-right">
+                                <label class="label-dato">
+                                    Solicitante de urgencia
+                                </label>
+                            </div>
+                            <div class="col-md-9">
+                                <label>@Model.SolicitanteUrgenciaNombre</label>
+                            </div>
+                        </div>
+
+                    </div>
+                </li>
+
+                <!-- ******* PANEL ASIGNACIÓN TEMPORAL *********** -->
+                @if (Model.EnAsignacionTemp)
+                {
+                    <li class=" data-header-ficha">
+                        <span class="k-link"><b>Asignación Temporal</b></span>
+                        <div class="container-fluid panel-datos">
+
+                            <div class="row">
+                                <div class="col-md-3 text-right">
+                                    <label class="label-dato">
+                                        UT de asignación temporal
+                                    </label>
+                                </div>
+                                <div class="col-md-3">
+                                    <label>@Model.UtTemporalTitulo</label>
+                                </div>
+                                <div class="col-md-3 text-right">
+                                    <label class="label-dato">
+                                        Fecha de asignación UT temporal
+                                    </label>
+                                </div>
+                                <div class="col-md-3">
+                                    <label>@(Model.AsignacionUtTemp.HasValue ? Model.AsignacionUtTemp.Value.ToString(GeneralData.FORMATO_FECHA_LARGO, CultureInfo.InvariantCulture) : "")</label>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-3 text-right">
+                                    <label class="label-dato">
+                                        Responsable UT Temporal
+                                    </label>
+                                </div>
+                                <div class="col-md-3">
+                                    <label>@Model.ResponsableUtTempNombresApellidos</label>
+                                </div>
+                                <div class="col-md-3 text-right">
+                                    <label class="label-dato">
+                                        Fecha de recepción UT temporal
+                                    </label>
+                                </div>
+                                <div class="col-md-3">
+                                    <label>@(Model.RecepcionUtTemp.HasValue ? Model.RecepcionUtTemp.Value.ToString(GeneralData.FORMATO_FECHA_LARGO, CultureInfo.InvariantCulture) : "")</label>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-3 text-right">
+                                    <label class="label-dato">
+                                        Profesional UT asignación temporal
+                                    </label>
+                                </div>
+                                <div class="col-md-3">
+                                    <label>@Model.ProfesionalTempNombresApellidos</label>
+                                </div>
+                                <div class="col-md-3 text-right">
+                                    <label class="label-dato">
+                                        Fecha de asignación profesional UT temporal
+                                    </label>
+                                </div>
+                                <div class="col-md-3">
+                                    <label>@(Model.AsignacionProfesionalTemp.HasValue ? Model.AsignacionProfesionalTemp.Value.ToString(GeneralData.FORMATO_FECHA_LARGO, CultureInfo.InvariantCulture) : "")</label>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-3 text-right">
+                                    <label class="label-dato">
+                                        Fecha de liberación ingreso
+                                    </label>
+                                </div>
+                                <div class="col-md-9">
+                                    <label>@Model.Liberacion</label>
+                                </div>
+                            </div>
+
+                        </div>
+                    </li>
+                }
+
+                <!-- ******* PANEL TRANSPARENCIA *********** -->
+                @if (Model.EsTransparencia)
+                {
+                    <li class=" data-header-ficha">
+                        <span class="k-link"><b>SIAC / Transparencia</b></span>
+                        <div class="container-fluid panel-datos">
+
+                            <div class="row">
+                                <div class="col-md-3 text-right">
+                                    <label class="label-dato">
+                                        Unidad Técnica Apoyo Transparencia
+                                    </label>
+                                </div>
+                                <div class="col-md-9">
+                                    <label>@Model.UtTransparenciaTitulo</label>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-3 text-right">
+                                    <label class="label-dato">
+                                        Profesional en UT Apoyo Transparencia
+                                    </label>
+                                </div>
+                                <div class="col-md-9">
+                                    <label>@Model.ProfesionalTranspNombresApellidos</label>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-3 text-right">
+                                    <label class="label-dato">
+                                        Observaciones de SIAC / Transparencia
+                                    </label>
+                                </div>
+                                <div class="col-md-9">
+                                    <label class="pre-wrap">@Html.Raw(Model.ObservacionesTransparencia)</label>
+                                </div>
+                            </div>
+
+                        </div>
+                    </li>
+                }
+
+                <!-- ******* PANEL UNIDAD TÉCNICA *********** -->
+                <li class=" data-header-ficha">
+                    <span class="k-link"><b>Unidad Técnica</b></span>
+                    <div class="container-fluid panel-datos">
+
+                        <div class="row">
+                            <div class="col-md-3 text-right">
+                                <label class="label-dato">
+                                    Responsable de UT
+                                </label>
+                            </div>
+                            <div class="col-md-3">
+                                <label>@Model.ResponsableNombre</label>
+                            </div>
+                            <div class="col-md-3 text-right">
+                                <label class="label-dato">
+                                    Fecha de recepción UT
+                                </label>
+                            </div>
+                            <div class="col-md-3">
+                                <label>@(Model.RecepcionUt.HasValue ? Model.RecepcionUt.Value.ToString(GeneralData.FORMATO_FECHA_LARGO, CultureInfo.InvariantCulture) : "")</label>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-3 text-right">
+                                <label class="label-dato">
+                                    Profesional en UT
+                                </label>
+                            </div>
+                            <div class="col-md-3">
+                                <label>@Model.ProfesionalNombre</label>
+                            </div>
+                            <div class="col-md-3 text-right">
+                                <label class="label-dato">
+                                    Fecha de asignación profesional UT
+                                </label>
+                            </div>
+                            <div class="col-md-3">
+                                <label>@(Model.AsignacionResponsable.HasValue ? Model.AsignacionResponsable.Value.ToString(GeneralData.FORMATO_FECHA_LARGO, CultureInfo.InvariantCulture) : "")</label>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-3 text-right">
+                                <label class="label-dato">
+                                    Comentario de Encargado UT
+                                </label>
+                            </div>
+                            <div class="col-md-9">
+                                <label class="pre-wrap">@Html.Raw(Model.ComentarioEncargadoUt)</label>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-3 text-right">
+                                <label class="label-dato">
+                                    Requiere timbraje de plano
+                                </label>
+                            </div>
+                            <div class="col-md-9">
+                                <label>@(DevuelveSiNo(Model.RequiereTimbrajePlano))</label>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-3 text-right">
+                                <label class="label-dato">
+                                    Requiere acuerdo / Acta CMN
+                                </label>
+                            </div>
+                            <div class="col-md-9">
+                                <label>@(DevuelveSiNo(Model.RequiereAcuerdo) )</label>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-3 text-right">
+                                <label class="label-dato">
+                                    Nueva Fecha de Resolución Estimada
+                                </label>
+                            </div>
+                            <div class="col-md-9">
+                                <label>@(Model.ForzarPrioridadFecha.HasValue ? Model.ForzarPrioridadFecha.Value.ToString(GeneralData.FORMATO_FECHA_CORTO, CultureInfo.InvariantCulture) : "")</label>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-3 text-right">
+                                <label class="label-dato">
+                                    Motivo
+                                </label>
+                            </div>
+                            <div class="col-md-9">
+                                <label>@Model.ForzarPrioridadMotivo</label>
+                            </div>
+                        </div>
+
+                    </div>
+                </li>
+
+                <!-- ******* PANEL CIERRE *********** -->
+                <li class=" data-header-ficha">
+                    <span class="k-link"><b>Cierre</b></span>
+                    <div class="container-fluid panel-datos">
+
+                        <div class="row">
+                            <div class="col-md-3 text-right">
+                                <label class="label-dato">
+                                    Fecha de cierre
+                                </label>
+                            </div>
+                            <div class="col-md-9">
+                                <label>@Model.Cierre</label>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-3 text-right">
+                                <label class="label-dato">
+                                    Cerrado por
+                                </label>
+                            </div>
+                            <div class="col-md-9">
+                                <label>@Model.CerradoPor</label>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-3 text-right">
+                                <label class="label-dato">
+                                    Motivo de cierre
+                                </label>
+                            </div>
+                            <div class="col-md-9">
+                                <label>@Model.MotivoCierreTitulo</label>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-3 text-right">
+                                <label class="label-dato">
+                                    Comentario de cierre
+                                </label>
+                            </div>
+                            <div class="col-md-9">
+                                <label class="pre-wrap">@Html.Raw(Model.ComentarioCierre)</label>
+                                <pre>@*@Html.Raw(Model.ComentarioCierre)*@</pre>
+                            </div>
+                        </div>
+
+                    </div>
+                </li>
+
+                <!-- ******* PANEL DESPACHOS *********** -->
+                <li class=" data-header-ficha">
+                    <span class="k-link"><b>Despachos</b></span>
+                    <div class="container-fluid panel-datos">
+                        <div class="row">
+                            <div class="col-md-12">
+
+                                @(Html.Kendo().DataSource<DespachoModel>()
+                                    .Name("dataSourceGridDesp")
+                                    .Ajax(dataSource => dataSource
+                                        .Read(read =>
+                                        {
+                                            read.Action("DespachosIngreso", "Despacho")
+                                                .Type(HttpVerbs.Post)
+                                                .Data("extraDataGrillaDespacho");
+                                        })
+                                        .PageSize(100)
+                                    )
+                                    )
+                                @(Html.Kendo().Grid<DespachoModel>()
+                                    .Name("gridDespachosIngreso")
+                                    .HtmlAttributes(new { @class= "gridDatos k-grid-alternate" })
+                                    .EnableCustomBinding(true)
+                                    .DataSource("dataSourceGridDesp")
+                                    .Scrollable(scr => scr.Height("auto"))
+                                    .Pageable(p => p.AlwaysVisible(false).PageSizes(new int[3] {10, 50, 100}).Enabled(true)
+                                        .Messages(m => m.ItemsPerPage("registros por página")))
+                                    .Sortable()
+                                    .Navigatable()
+                                    .NoRecords(x => x.Template("<div class='empty-grid'>No existen Despachos asociados al presente ingreso.</div>"))
+                                    .Columns(columns =>
+                                    {
+                                        columns.Bound(c => c.Id)
+                                            .Title("<center>Descargar</center>")
+                                            .Width(100)
+                                            .ClientTemplate("#=buildUrlDescargaDesp(data.Id , data.EstadoId)#");
+                                        columns.Bound(c => c.NumeroDespacho)
+                                            .Title("<center>Número del <br/>Oficio</center>");
+                                        columns.Bound(c => c.FechaEmisionOficio)
+                                            .Title("<center>Fecha Emisión <br/>Oficio</center>")
+                                            .Format(GeneralData.FORMATO_FECHA_CORTO_GRID);
+                                        columns.Bound(c => c.RemitenteNombre)
+                                            .Title("<center>Destinatario</center>");
+                                        columns.Bound(c => c.RemitenteInstitucion)
+                                            .Title("<center>Institución</center>");
+                                        columns.Bound(c => c.Materia)
+                                            .Title("<center>Materia</center>")
+                                            .ClientTemplate("<span title='#:data.Materia#'> #=Main.acortaTexto(data.Materia, 100)#" + "</span>");
+                                        columns.Bound(c => c.EstadoDespachoTitulo)
+                                            .Title("<center>Estado <br/>Despacho</center>");
+                                        columns.Bound(c => c.ProveedorDespachoTitulo)
+                                            .Title("<center>Proveedor <br/>Despacho</center>");
+
+                                    })
+                                    )
+
+                            </div>
+                        </div>
+
+                    </div>
+                </li>
+
+                <!-- ******* PANEL ARCHIVOS ADJUNTOS *********** -->
+                <li class=" data-header-ficha">
+                    <span class="k-link"><b>Archivos Adjuntos</b></span>
+                    <div class="container-fluid panel-datos">
+                        <div class="row">
+                            <div class="col-md-12">
+                                @(Html.Kendo().DataSource<AdjuntoModel>()
+                                    .Name("dataSourceGridAdj")
+                                    .Ajax(dataSource => dataSource
+                                        .Read(read =>
+                                        {
+                                            read.Action("AdjuntosIngreso", "Adjunto")
+                                                .Type(HttpVerbs.Post)
+                                                .Data("extraDataGrillaAdjunto");
+                                        })
+                                        .PageSize(100)
+                                        .ServerOperation(false)
+                                    )
+                                    )
+                                @(Html.Kendo().Grid<AdjuntoModel>()
+                                    .Name("gridAdjuntosIngreso")
+                                    .HtmlAttributes(new { @class = "gridDatos k-grid-alternate" })
+                                    .DataSource("dataSourceGridAdj")
+                                    .Scrollable(scr => scr.Height("auto"))
+                                    .Pageable(p => p.AlwaysVisible(false).PageSizes(new int[3] { 10, 50, 100 }).Enabled(true).Info(true)
+                                        .Messages(m => m.ItemsPerPage("registros por página")))
+                                    .Sortable()
+                                    .Navigatable()
+                                    .NoRecords(x => x.Template("<div class='empty-grid'>No existen Adjuntos asociados al presente ingreso.</div>"))
+                                    .Columns(columns =>
+                                    {
+                                        columns.Bound(c => c.Id)
+                                            .Title("<center>Acción</center>")
+                                            .ClientTemplate("#=buildUrlDescargaAdj(data.Id, data.UrlArchivo)#");
+                                        columns.Bound(c => c.UsuarioCreacionNombresApellidos)
+                                            .Title("<center>Creado por</center>");
+                                        columns.Bound(c => c.NombreArchivo)
+                                            .Title("<center>Nombre Archivo</center>");
+                                        columns.Bound(c => c.OrigenAdjunto)
+                                            .Title("<center>Origen de adjunto</center>");
+                                        columns.Bound(c => c.FechaCarga)
+                                            .Title("<center>Fecha de carga</center>")
+                                            .Format(GeneralData.FORMATO_FECHA_CORTO_GRID);
+                                        ;
+
+                                    })
+                                    )
+
+                            </div>
+                        </div>
+
+                    </div>
+                </li>
+
+                <!-- ******* PANEL BITÁCORA *********** -->
+                @*<li class=" data-header-ficha mb-3">
+            <span class="k-link"><b>Bitácora</b></span>
+            <div class="container-fluid panel-datos">
+                <div class="row">
+                    <div class="col-md-12">
+                        @(Html.Kendo().DataSource<BitacoraModel>()
+                            .Name("dataSourceGridBit")
+                            .Ajax(dataSource => dataSource
+                                .Read(read =>
+                                {
+                                    read.Action("BitacorasIngreso", "Bitacora")
+                                        .Type(HttpVerbs.Post)
+                                        .Data("extraDataGrillaBitacora");
+                                })
+                                .PageSize(100)
+                                .ServerOperation(false)
+                            )
+                            )
+                        @(Html.Kendo().Grid<BitacoraModel>()
+                            .Name("gridBitacorasIngreso")
+                            .HtmlAttributes(new { @class = "gridDatos k-grid-alternate" })
+                            .DataSource("dataSourceGridBit")
+                            .Scrollable(scr => scr.Height("auto"))
+                            .Pageable(p => p.AlwaysVisible(false).PageSizes(new int[3] { 10, 50, 100 }).Enabled(true).Info(true))
+                            .Sortable()
+                            .Navigatable()
+                            .NoRecords(x => x.Template("<div class='empty-grid'>No existen Bitácoras asociados al presente ingreso.</div>"))
+                            .Columns(columns =>
+                            {
+                                columns.Bound(c => c.Id)
+                                    .Title("<center>Acción</center>")
+                                    .ClientTemplate("#=buildUrlDescargaBit(data.Id, data.UrlArchivo, data.NombreArchivo)#");
+                                columns.Bound(c => c.TipoContenido)
+                                    .Title("<center>Tipo</center>");
+                                columns.Bound(c => c.UsuarioCreacionNombresApellidos)
+                                    .Title("<center>Creado por</center>");
+                                columns.Bound(c => c.ObsAcuerdoComentario)
+                                    .Title("<center>Observaciones</center>");
+                                columns.Bound(c => c.Fecha)
+                                    .Title("<center>Fecha de carga</center>")
+                                    .Format(GeneralData.FORMATO_FECHA_CORTO_GRID);
+                                ;
+
+                            })
+                            )
+
+                    </div>
+                </div>
+
+            </div>
+        </li>*@
+
+                <!-- ******* PANEL BITÁCORA NUEVA *********** -->
+                <li class=" data-header-ficha mb-3">
+                    <span class="k-link"><b>Bitácora</b></span>
+                    <div class="container-fluid panel-datos">
+                        <div class="row">
+                            <div class="col-md-12">
+
+                                @(Html.Kendo().DataSource<LogBitacoraDto>()
+                                    .Name("dataSourceGridLogBit")
+                                    .Ajax(dataSource => dataSource
+                                        .Read(read =>
+                                        {
+                                            read.Action("LogBitacoraRequerimiento", "Json")
+                                                .Type(HttpVerbs.Post)
+                                                .Data("extraDataGrillaBitacora");
+                                        })
+                                        .PageSize(15)
+                                        .ServerOperation(false)
+                                        .Events(events => events
+                                            .Change("onChangeDataSourceLogBit")
+                                        )
+                                    )
+                                    .Custom(c =>
+                                    {
+                                        c.Schema(s => s.Data("Data").Total("Total"));
+                                    })
+                                    )
+                                @(Html.Kendo().DataSource<LogBitacoraDto>()
+                                    .Name("dataSourceSharedLogBit")
+                                    .Ajax(dataSource => dataSource
+                                        .Read(read =>
+                                        {
+                                            read.Action("LogBitacoraRequerimiento", "Json")
+                                                .Type(HttpVerbs.Post)
+                                                .Data("extraDataGrillaBitacora");
+                                        })
+                                        .ServerOperation(false)
+                                    )
+                                    )
+                                @(Html.Kendo().Grid<LogBitacoraDto>()
+                                    .Name("gridLogBitacorasIngreso")
+                                    .HtmlAttributes(new {@class = "gridDatos k-grid-alternate" })
+                                    .EnableCustomBinding(true)
+                                    .DataSource("dataSourceGridLogBit")
+                                    .Scrollable(scr => scr.Height("auto"))
+                                    .Pageable(p => p.AlwaysVisible(true).PageSizes(new int[3] {15, 50, 100}).Info(true).Enabled(true)
+                                        .Messages(m => m.ItemsPerPage("registros por página")))
+                                    .Sortable(s => s.Enabled(true))
+                                    .Filterable(s => s.Enabled(true))
+                                    .Navigatable()
+                                    .NoRecords(x => x.Template("<div class='empty-grid'>No existen Bitácoras asociados al presente ingreso.</div>"))
+                                    .Events(events => events
+                                        .FilterMenuInit("onFilterMenuInit")
+                                    )
+                                    .Columns(columns =>
+                                    {
+                                        columns.Bound(c => c.Id)
+                                            .Title("<center>Acción</center>")
+                                            .Width(100)
+                                            .Sortable(false)
+                                            .Filterable(false)
+                                            .ClientTemplate("#=buildUrlDescargaLogBit(data.OrigenId, data.Origen, data.Accion)#");
+                                        columns.Bound(c => c.FechaLog)
+                                            .Title("<center>Fecha de <br/>Edición<span class='k-icon k-i-kpi' style='color: lightgray;'></span></center>")
+                                            //.Title("<center>Fecha de <br/>Edición</center>")
+                                            .Width(100)
+                                            .Filterable(ftb => ftb.Multi(false).DataSource("dataSourceSharedLogBit"))
+                                            .Format(GeneralData.FORMATO_FECHA_LARGO_GRID);
+                                        columns.Bound(c => c.FechaFormulario)
+                                            .Title("<center>Fecha<span class='k-icon k-i-kpi' style='color: lightgray;'></span></center>")
+                                            .Width(100)
+                                            .Filterable(ftb => ftb.Multi(false).DataSource("dataSourceSharedLogBit"))
+                                            .Format(GeneralData.FORMATO_FECHA_CORTO_GRID);
+                                        columns.Bound(c => c.EstadoTitulo)
+                                            .Width(80)
+                                            .Filterable(ftb => ftb.Multi(true).DataSource("dataSourceSharedLogBit"))
+                                            .Title("<center>Estado<span class='k-icon k-i-kpi' style='color: lightgray;'></span></center>");
+                                        columns.Bound(c => c.EtapaTitulo)
+                                            .Width(100)
+                                            .Filterable(ftb => ftb.Multi(true).DataSource("dataSourceSharedLogBit"))
+                                            .Title("<center>Etapa<span class='k-icon k-i-kpi' style='color: lightgray;'></span></center>");
+                                        columns.Bound(c => c.Actividad)
+                                            .Width(150)
+                                            .Filterable(ftb => ftb.Multi(true).Search(true).DataSource("dataSourceSharedLogBit"))
+                                            .Title("<center>Actividad<span class='k-icon k-i-kpi' style='color: lightgray;'></span></center>");
+                                        columns.Bound(c => c.UsuarioNombre)
+                                            .Width(110)
+                                            .Filterable(ftb => ftb.Multi(true).Search(true).DataSource("dataSourceSharedLogBit"))
+                                            .Title("<center>Ingreso <br/>editado por<span class='k-icon k-i-kpi' style='color: lightgray;'></span></center>");
+                                        columns.Bound(c => c.TextoDefecto)
+                                            .Width(150)
+                                            .Filterable(ftb => ftb.Multi(true).Search(true).DataSource("dataSourceSharedLogBit"))
+                                            .Title("<center>Texto por defecto<br/> en bitácora<span class='k-icon k-i-kpi' style='color: lightgray;'></span></center>")
+                                            .ClientTemplate("<div> #=data.TextoDefecto#" + "</div>");;
+                                        columns.Bound(c => c.UnidadTecnicaTitulo)
+                                            .Width(100)
+                                            .Filterable(ftb => ftb.Multi(true).Search(true).DataSource("dataSourceSharedLogBit"))
+                                            .Title("<center>Unidad <br/>Técnica</center>");
+                                        ;
+
+                                    })
+                                    )
+
+                            </div>
+                        </div>
+
+                    </div>
+                </li>
+
+            </ul>
+
+
+        </div>
+    </div>
+
+</div>
+
+<script>
+
+    $(function () {
+        $("#panelDatosFicha").kendoPanelBar({
+            expandMode: "Multiple",
+            select: onSelect
+        });
+
+
+
+    });
+
+    //# sourceURL=Ficha2
+</script>

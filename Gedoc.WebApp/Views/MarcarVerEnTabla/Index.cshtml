@@ -1,0 +1,665 @@
+﻿@model Gedoc.WebApp.Models.MarcarVerEnTablaModel
+@using Gedoc.Helpers
+
+@{
+    ViewBag.Title = "Marcar \"Ver en tabla\"";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    .k-grid {
+        font-size: 0.8em;
+    }
+
+        .k-grid tbody td {
+            padding: 5px;
+        }
+
+    .w-100-2 {
+        width: 100% !important;
+        display: block;
+    }
+</style>
+
+<h4 class="header-level1">@ViewBag.Title</h4>
+<h5 class="header-level2">Criterios de búsqueda</h5>
+
+<div class="div-main">
+
+    @Html.HiddenFor(model => model.Id)
+
+    <div class="row">
+
+        <div class="col-6">
+            <div class="form-row">
+                <div class="col-md-3">
+                    <label class="label-dato-form">
+                        Filtro por Unidad Técnica <span class="marca-obligatorio">*</span>
+                    </label>
+                </div>
+                <div class="col-md-8">
+                    @(Html.Kendo().ComboBox()
+                          .Name("UnidadTecnicaId")
+                          .Filter("contains")
+                          .Placeholder("Seleccione una UT para habilitar los otros filtros")
+                          .DataTextField("Text")
+                          .DataValueField("Value")
+                          .Events(e => e.Change("unidadTecnicaOnSelect"))
+                          .Messages(Gedoc.WebApp.Helpers.KendoHelper.SetComboBoxMessages)
+                          .BindTo(ViewBag.UnidadTecnicaList)
+                          .Suggest(true)
+                          .HtmlAttributes(new { required = "required", validationmessage = "Seleccione una Unidad Técnica", style = "width:100%;" })
+                          )
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="col-md-3">
+                    <label class="label-dato-form">
+                        @Html.LabelFor(model => model.FechaDesde) <span class="marca-obligatorio">*</span>
+                    </label>
+                </div>
+                <div class="col-md-8">
+                    @(Html.Kendo().DatePicker()
+                        .Name("FechaDesde")
+                        .Value(DateTime.Now.AddMonths(-1))
+                        .Max(DateTime.Today)
+                        .Format("dd/MM/yyyy")
+                        .Events(e=> e.Change("onChangeFechaDesde").Close("onChangeFechaDesde"))
+                        .HtmlAttributes(new { required = "required", validationmessage = "Seleccione una fecha" })
+                        )
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="col-md-3">
+                    <label class="label-dato-form">
+                        @Html.LabelFor(model => model.FechaHasta) <span class="marca-obligatorio">*</span>
+                    </label>
+                </div>
+                <div class="col-md-8">
+                    @(Html.Kendo().DatePicker()
+                        .Name("FechaHasta")
+                        .Value(DateTime.Now)
+                        .Max(DateTime.Today)
+                        .Format("dd/MM/yyyy")
+                        .Events(e => e.Close("onChangeFechaHasta").Change("onChangeFechaHasta"))
+                        .HtmlAttributes(new { required = "required", validationmessage = "Seleccione una fecha"})
+                        )
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="col-md-3">
+                    <label class="label-dato-form">
+                        @Html.LabelFor(model => model.DocumentoDeIngreso)
+                    </label>
+                </div>
+
+                <div class="col-md-8">
+                    <select id="DocumentoDeIngreso" name="DocumentoDeIngreso" multiple></select>
+                    @*@(Html.Kendo().MultiSelect()
+                        .Name("DocumentoDeIngreso")
+                        .Filter("contains")
+                        .Placeholder("Seleccione un documento")
+                        .DataTextField("Text")
+                        .DataValueField("Value")
+                        .HtmlAttributes(new { style = "width:100%;" })
+                        .Enable(false)
+                        .Filter(FilterType.Contains)
+                        .DataSource(source =>
+                        {
+                            source.Read(read =>
+                            {
+                                read.Action("GetDocIngreso", "MarcarVerEnTabla").Type(HttpVerbs.Post)
+                                    .Data("filtroDocIngreso");
+                            })
+                            .ServerFiltering(true);
+                        })
+                        .AutoBind(false))*@
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="col-md-3">
+                    <label class="label-dato-form">
+                        @Html.LabelFor(model => model.EstadoId) <span class="marca-obligatorio">*</span>
+                    </label>
+                </div>
+                <div class="col-md-8">
+                    @(Html.Kendo().MultiSelect()
+                               .Name("EstadoId")
+                              .Filter("contains")
+                              .Placeholder("")
+                              .Messages(Gedoc.WebApp.Helpers.KendoHelper.SetMultiSelectMessages)
+                              .DataTextField("Text")
+                              .DataValueField("Value")
+                              .BindTo(ViewBag.EstadoList)
+                              .HtmlAttributes(new { required = "required", validationmessage = "Seleccione un Estado", style = "width:100%;" })
+                          )
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="col-md-3">
+                    <label class="label-dato-form">
+                        @Html.LabelFor(model => model.Etapa)
+                    </label>
+                </div>
+                <div class="col-md-8">
+                    @(Html.Kendo().MultiSelect()
+                          .Name("Etapa")
+                          .Filter("contains")
+                          .Placeholder("")
+                          .Messages(Gedoc.WebApp.Helpers.KendoHelper.SetMultiSelectMessages)
+                          .DataTextField("Text")
+                          .DataValueField("Value")
+                          .BindTo(ViewBag.EtapaList)
+                          .HtmlAttributes(new { style = "width:100%;" })
+                          )
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="col-md-3">
+                    <label class="label-dato-form">
+                        @Html.LabelFor(model => model.Materia)
+                    </label>
+                </div>
+                <div class="col-md-8">
+                    @(Html.Kendo().TextBox()
+                          .Name("Materia")
+                          .HtmlAttributes(new { style = "width:100%;" })
+                        )
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="col-md-3">
+                    <label class="label-dato-form">
+                        @Html.LabelFor(model => model.Etiqueta)
+                    </label>
+                </div>
+                <div class="col-md-8">
+                    @(Html.Kendo().MultiSelect()
+                          .Name("Etiqueta")
+                          .Filter("contains")
+                          .Placeholder("")
+                          .Messages(Gedoc.WebApp.Helpers.KendoHelper.SetMultiSelectMessages)
+                          .DataTextField("Text")
+                          .DataValueField("Value")
+                          .BindTo(ViewBag.EtiquetaList)
+                          .HtmlAttributes(new { style = "width:100%;" })
+                          )
+                </div>
+            </div>
+        </div>
+
+        <div class="col-6">
+
+            <div class="form-row">
+                <div class="col-md-3">
+                    <label class="label-dato-form">
+                        @Html.LabelFor(model => model.NombreTabla) <span class="marca-obligatorio">*</span>
+                    </label>
+                </div>
+                <div class="col-md-8">
+                    @(Html.Kendo().ComboBox()
+                          .Name("NombreTabla")
+                          .Filter("contains")
+                          .Placeholder("")
+                          .DataTextField("Text")
+                          .DataValueField("Value")
+                          .Suggest(false)
+                          .HtmlAttributes(new { required = "required", validationmessage = "Seleccione una Tabla", style = "width:70%;" })
+                          .Enable(false)
+                          .Events(ev => ev.Change("NombreTablaOnSelected").Select("NombreTablaOnSelected").Cascade("NombreTablaOnCascade"))
+                          .DataSource(source =>
+                          {
+                              source.Read(read =>
+                              {
+                                  read.Action("GetNombreTabla", "MarcarVerEnTabla")
+                                      .Data("filtroUnidadTecnica");
+                              })
+                              .ServerFiltering(false);
+                          })
+                          .AutoBind(false)
+                          .Messages(Gedoc.WebApp.Helpers.KendoHelper.SetComboBoxMessages)
+                          //.CascadeFrom("UnidadTecnicaId")
+                          )
+                    @(Html.Kendo().Button()
+                            .Name("btnNueva")
+                            .Tag("a")
+                            //.Icon("")
+                            .Content("Nueva")
+                            .Events(ev => ev.Click("btnNuevaOnClick"))
+                    )
+                </div>
+            </div>
+
+            <div>
+                <span>
+                    <u>Indicaciones</u><br>
+                    1. Antes de crear una nueva Tabla debe seleccionar una Unidad Técnica en "Filtro por Unidad Técnica".<br>
+                    2. En los filtros de tiempos se debe utilizar trazos inferiores a los 5 meses.<br>
+                    3. En caso de solicitar sólo un día se recomienda dejar marcados dos, por ejemplo Fecha desde 14/05/2018 al 15/05/2018.<br>
+                    4. Puede crear una tabla que almacene una cantidad de ingresos a utilizar según corresponda.
+                </span>
+            </div>
+        </div>
+
+    </div>
+    <div class="row">
+        <div class="col-6">
+            <p>
+                @(Html.Kendo().Button()
+                .Name("btnBuscar")
+                .HtmlAttributes(new { type = "button", @class = "k-primary" })
+                .Content("Buscar")
+                .Events(ev => ev.Click("btnBuscarOnClick")))
+                @(Html.Kendo().Button()
+                .Name("btnLimpiar")
+                .HtmlAttributes(new { type = "button" })
+                .Content("Limpiar Filtros")
+                .Events(ev => ev.Click("btnLimpiarOnClick")))
+
+            </p>
+        </div>
+
+        <div class="col-6">
+            <p>
+                <div class="text-right">
+                    @(Html.Kendo().Button()
+                    .Name("btnExportar")
+                    .HtmlAttributes(new { type = "button", @class = "k-primary pull-right" })
+                    .Content("Exportar")
+                    .Enable(false)
+                    .Events(ev => ev.Click("btnExportarOnClick")))
+                </div>
+            </p>
+        </div>
+
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <h5 class="header-level2">Selección de Requerimientos para Tablas</h5>
+
+            <div id="divGrillaRequerimientos">
+
+                @(Html.Kendo().Grid<Gedoc.WebApp.Models.RequerimientoModel>
+                        ()
+                        .Name("gridMarcarVerEnTabla")
+                        .Columns(columns =>
+                        {
+                            columns.Select().Width(120).HtmlAttributes(new {@class = "text-center"});
+                            columns.Bound(c => c.DocumentoIngreso)
+                            .Title("<center>Documento Ingreso</center>")
+                            .Width(200)
+                            .ClientTemplate("#= Main.getTemplateFicha(data.DocumentoIngreso, data.Id, data.DocumentoIngreso) #");
+                            columns.Bound(c => c.FechaIngreso).Title("<center>Fecha Ingreso</center>").Format(GeneralData.FORMATO_FECHA_LARGO_GRID).Width(100);
+                            columns.Bound(c => c.RemitenteNombre).Title("<center>Remitente</center>").Width(150);
+                            columns.Bound(c => c.Materia).Title("<center>Materia</center>");
+                            columns.Bound(c => c.FechaUltAcuerdoComision).Title("<center>Ult. Fecha Comisión</center>").Format(GeneralData.FORMATO_FECHA_LARGO_GRID).Width(150);
+                            columns.Bound(c => c.FechaUltAcuerdoSesion).Title("<center>Ult. Fecha Sesión</center>").Format(GeneralData.FORMATO_FECHA_LARGO_GRID).Width(120);
+                        })
+                        .Pageable(p => p.AlwaysVisible(true).PageSizes(new int[3] {10, 50, 100}).Enabled(true)
+                            .Messages(m => m.ItemsPerPage("registros por página")))
+                        .Sortable()
+                        .Scrollable()
+                        //.Events(ev => ev.Change("gridOnChange").DataBound("gridOnDataBound_old"))
+                        .Events(ev => ev.Change("onChange").DataBound("gridOnDataBound"))
+                        .PersistSelection()
+                        .HtmlAttributes(new { style = "height:550px;" })
+                        .AutoBind(false)
+                        .DataSource(dataSource => dataSource
+                            .Ajax()
+                            .PageSize(20)
+                            .Model(model => model.Id(p => p.Id))
+                            .Read(read => read.Action("GetDataGrilla", "MarcarVerEnTabla")
+                            .Data("extraDataGrilla"))
+                            .ServerOperation(false)
+							.Sort(a => a.Add("FechaIngreso"))
+                        )
+                        )
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+@Html.Partial("~/Views/Partial/TemplateTagMultiselect.cshtml")
+
+<script>
+
+    var isFromTabla = true;
+    var oldPageSize = 0;
+    var saveData = true;
+    var isFromTablaFistTime = true;
+    var btnLimpiarClick = false;
+
+    $(document).ready(function () {
+        var grid = $("#gridMarcarVerEnTabla").data("kendoGrid");
+        grid.thead.on("click", ".k-checkbox", onClick);
+
+
+        if ($("#DocumentoDeIngreso").length) {
+            var docIngreso = $("#DocumentoDeIngreso").kendoMultiSelect(
+                Main.getMultiSelectConfigVirtual($("#DocumentoDeIngreso")
+                    // , '@Url.Action("RequerimientoResumenPaging", "Json")'
+                    , '@Url.Action("DocIngresoPaging", "MarcarVerEnTabla")?utId=-1'
+                    , '@Url.Action("RequerimientoResumenByIds", "Json")'  )
+            ).data("kendoMultiSelect");
+            docIngreso.enable(false);
+        }
+
+        setMarcarTodosTitulos();
+    });
+
+    function onChange(e) {
+        if (saveData == true) {
+            SaveSelectedItem(this.selectedKeyNames());
+        }
+    }
+
+    function onClick(e) {
+        //e.preventDefault();
+        //e.stopPropagation();
+        //e.stopImmediatePropagation();
+
+        saveData = false;
+        var grid = $("#gridMarcarVerEnTabla").data("kendoGrid");
+
+        oldPageSize = grid.dataSource.pageSize();
+        grid.dataSource.pageSize(grid.dataSource.data().length);
+
+        if (grid.dataSource.data().length === grid.select().length) {
+            grid.clearSelection();
+        } else {
+            grid.select("tr");
+        };
+        saveData = true;
+        grid.dataSource.pageSize(oldPageSize);
+    }
+
+    function SaveSelectedItem(ids) {
+        $.ajax({
+            type: "POST",
+            url: '@Url.Action("MultiSelectAction", "MarcarVerEnTabla")',
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify({
+                unidadTecnicaId: $("#UnidadTecnicaId").data('kendoComboBox').value(),
+                FechaDesde: jdate($("#FechaDesde").val()),
+                FechaHasta: jdate($("#FechaHasta").val()),
+                DocumentoDeIngreso: $("#DocumentoDeIngreso").data("kendoMultiSelect").value(),
+                EstadoId: $("#EstadoId").data("kendoMultiSelect").value(),
+                Etapa: $("#Etapa").data("kendoMultiSelect").value(),
+                Materia: $("#Materia").val(),
+                Etiqueta: $("#Etiqueta").data("kendoMultiSelect").value(),
+                NombreTabla: $("#NombreTabla").data('kendoComboBox').value(),
+                IsFromTabla: isFromTabla,
+                Ids: ids
+            }),
+            dataType: "json",
+            success: function (data) {
+                if (data.Codigo == 1) {
+
+                } else {
+
+                }
+            },
+            error: function (data) {
+                console.error(data);
+            }
+        });
+    }
+
+    function gridOnDataBound(e) {
+        var grid = e.sender;
+        //var grid = $("#gridMarcarVerEnTabla").data("kendoGrid");
+        if (isFromTabla && isFromTablaFistTime && grid.dataSource.data().length > 0) {
+            saveData = false;
+            isFromTablaFistTime = false;
+            grid.thead.find(".k-checkbox").prop("checked", true).trigger("click");
+            saveData = true;
+        }
+    }
+
+    function filtroUnidadTecnica() {
+            return {
+                unidadTecnicaId: $("#UnidadTecnicaId").val()
+            };
+        }
+
+    function filtroDocIngreso() {
+        return {
+            unidadTecnicaId: $("#UnidadTecnicaId").val(),
+            fechaDesde: jdate($("#FechaDesde").val()),
+            fechaHasta: jdate($("#FechaHasta").val()),
+        };
+    }
+
+    function btnNuevaOnClick(obj) {
+        var utValue = $("#UnidadTecnicaId").val();
+
+        if (!utValue) {
+             Main.showAlert("Por favor, seleccione primeramente una Unidad Técnica.");
+        } else {
+            Main.showPrompt("Nueva tabla", "Especifique el nombre de la nueva tabla:", "Grabar", true).then(function (isOk) {
+                if (!isOk.result) return;
+                var data = isOk.texto;
+                var nombreTabla = data;
+                $.ajax({
+                    type: "GET",
+                    url: '@Url.Action("CreateSesionTabla", "MarcarVerEnTabla")',
+                    contentType: "application/json; charset=utf-8",
+                    data: {
+                        nombreTabla: nombreTabla,
+                        unidadTecnicaId: utValue
+                    },
+                    dataType: "json",
+                    success: function (data) {
+                        if (data > 0) {
+                            var widget = $("#NombreTabla").getKendoComboBox();
+                            var dataSource = widget.dataSource;
+
+                            dataSource.add({
+                                Value: data,
+                                Text: nombreTabla
+                            });
+                            dataSource.one("sync", function () {
+                                widget.select(dataSource.view().length - 1);
+                            });
+                            dataSource.sync();
+                            widget.value(data);
+                            Main.showAlert(kendo.format("Se ha grabado con éxito la sesión '{0}'", nombreTabla));
+                            var btnExportar = $("#btnExportar").data("kendoButton");
+                            btnExportar.enable(true);
+                        } else {
+                             Main.showAlert('No se pudo crear la tabla');
+                        }
+                    },
+                    error: function (data) {
+                         Main.showAlert('No se pudo crear la tabla');
+                    }
+                });
+            }, function () {
+                // Main.showAlert("Cancel entering value.");
+            })
+        }
+    }
+
+    function NombreTablaOnSelected(obj) {
+        isFromTabla = true;
+        saveData = false;
+        isFromTablaFistTime = true;
+        var grid = $('#gridMarcarVerEnTabla').data('kendoGrid');
+        grid.dataSource.read();
+
+        var btnExportar = $("#btnExportar").data("kendoButton");
+        btnExportar.enable(true);
+        saveData = true;
+    }
+
+    function NombreTablaOnCascade(e) {
+        if (btnLimpiarClick == true) {
+            e.sender.trigger("change");
+            btnLimpiarClick = false;
+        }
+    }
+
+    function loadComboDocIngreso() {
+        var fdesde = $("#FechaDesde").val();
+        var fhasta = $("#FechaHasta").val();
+        var utec = $("#UnidadTecnicaId").data('kendoComboBox').value();
+
+
+        var docIngreso = $("#DocumentoDeIngreso").data("kendoMultiSelect");
+        docIngreso.setDataSource(Main.getDataSourceKendoGenericoVirtual($("#DocumentoDeIngreso"), '@Url.Action("DocIngresoPaging", "MarcarVerEnTabla")?utId=' + (utec || "-1"), 80));
+
+        if (/*fdesde != "" && fhasta != "" &&*/ utec != "") {
+            docIngreso.enable(true);
+        } else {
+            docIngreso.value([]);
+            docIngreso.enable(false);
+            docIngreso.enable(false);
+        }
+    }
+
+    function btnLimpiarOnClick(obj) {
+        $("#UnidadTecnicaId").data('kendoComboBox').value("");
+        $("#FechaDesde").val("").trigger("change");
+        $("#FechaHasta").val("").trigger("change");
+        var docIngreso = $("#DocumentoDeIngreso").data("kendoMultiSelect");
+        docIngreso.value([]);
+        docIngreso.enable(false);
+        $("#EstadoId").data("kendoMultiSelect").value([]);
+        $("#Etapa").data("kendoMultiSelect").value([]);
+        $("#Materia").val("");
+        $("#Etiqueta").data("kendoMultiSelect").value([]);
+
+        var NombreTabla = $("#NombreTabla").data("kendoComboBox");
+        NombreTabla.value("");
+        NombreTabla.input.val('');
+        //NombreTabla.trigger("change");
+        //NombreTabla.trigger("select");
+
+        //var dataSource = new kendo.data.DataSource({data: []});
+        //NombreTabla.setDataSource(dataSource);
+
+        var btnExportar = $("#btnExportar").data("kendoButton");
+        btnExportar.enable(false);
+
+
+        //vaciar la grilla
+        var grid = $("#gridMarcarVerEnTabla").data("kendoGrid");
+        grid.dataSource.data([]);
+        grid.dataSource.page(0);
+
+
+        btnLimpiarClick = true;
+    }
+
+    function unidadTecnicaOnSelect(obj) {
+        loadComboDocIngreso();
+
+        var cboNombreTabla = $("#NombreTabla").data('kendoComboBox');
+        $("#gridMarcarVerEnTabla").data("kendoGrid").dataSource.data([]);
+
+        if (obj.sender && obj.sender.value() != "") {
+            cboNombreTabla.value("");
+            cboNombreTabla.enable(true);
+            cboNombreTabla.dataSource.read();
+        } else {
+            cboNombreTabla.value("");
+            cboNombreTabla.enable(false);
+        }
+    }
+
+    function btnExportarOnClick(obj) {
+        //EjecutarReporte?Id=10
+        var ut = $("#UnidadTecnicaId").data('kendoComboBox').value();
+        var sesion = $("#NombreTabla").data('kendoComboBox').value();
+        var url = '@Url.Action("EjecutarReporte", "Reporte")' + '?Id=10&ut=' + ut + '&sesion=' + sesion;
+        window.open(url, '_blank');
+    }
+
+    function btnBuscarOnClick(obj) {
+
+        if ($("#UnidadTecnicaId").kendoValidator().data("kendoValidator").validate()
+            && $("#FechaDesde").kendoValidator().data("kendoValidator").validate()
+            && $("#FechaHasta").kendoValidator().data("kendoValidator").validate()
+            && $("#NombreTabla").kendoValidator().data("kendoValidator").validate()
+            && $("#EstadoId").kendoValidator().data("kendoValidator").validate()
+        ) {
+            isFromTabla = false;
+            var grid = $('#gridMarcarVerEnTabla').data('kendoGrid');
+            grid.dataSource.read();
+        } else {
+             Main.showAlert("Por favor, seleccione los datos obligatorios.");
+        }
+    }
+
+    function extraDataGrilla() {
+        var dataExtra =
+            {
+            unidadTecnicaId: $("#UnidadTecnicaId").data('kendoComboBox').value(),
+            FechaDesde: jdate($("#FechaDesde").val()),
+            FechaHasta: jdate($("#FechaHasta").val()),
+            DocumentoDeIngreso: $("#DocumentoDeIngreso").data("kendoMultiSelect").value(),
+            EstadoId: $("#EstadoId").data("kendoMultiSelect").value(),
+            Etapa: $("#Etapa").data("kendoMultiSelect").value(),
+            Materia: $("#Materia").val(),
+            Etiqueta: $("#Etiqueta").data("kendoMultiSelect").value(),
+            NombreTabla: $("#NombreTabla").data('kendoComboBox').value(),
+            IsFromTabla: isFromTabla
+        };
+        return dataExtra;
+    }
+
+    function jdate(fecha) {
+        var arrayDate = fecha.split("/");
+        if (arrayDate.length == 3)
+            return new Date(arrayDate[2], arrayDate[1] - 1, arrayDate[0])
+        else
+            return null;
+    }
+
+    function onChangeFechaDesde() {
+        var endPicker = $("#FechaHasta").data("kendoDatePicker"),
+            startDate = this.value();
+
+        if (startDate) {
+            startDate = new Date(startDate);
+            startDate.setDate(startDate.getDate());
+            endPicker.min(startDate);
+        }
+        //loadComboDocIngreso();
+    }
+
+    function onChangeFechaHasta() {
+        var startPicker = $("#FechaDesde").data("kendoDatePicker"),
+            endDate = this.value();
+
+        if (endDate) {
+            endDate = new Date(endDate);
+            endDate.setDate(endDate.getDate());
+            startPicker.max(endDate);
+        }
+        //loadComboDocIngreso();
+    }
+
+    function setMarcarTodosTitulos() {
+        var header0 = $("#divGrillaRequerimientos").find("th.k-header[data-index='0']");
+        if (header0.length) {
+            header0.addClass("text-center");
+            header0.prepend("Marcar Todos<br/>");
+        }
+    }
+
+
+
+</script>
+
+

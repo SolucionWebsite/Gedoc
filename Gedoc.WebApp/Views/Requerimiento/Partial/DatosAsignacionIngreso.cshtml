@@ -1,0 +1,257 @@
+﻿@using Gedoc.Helpers.Enum
+@using Gedoc.WebApp.Helpers
+@using Newtonsoft.Json
+@model Gedoc.WebApp.Models.RequerimientoModel
+
+@{
+    Layout = null;
+    Dictionary<CampoIngreso, AspectoCampo> accesoCampos = ViewBag.AccesoCampos;
+    var inhabilitaLiberar = !Model.EnAsignacionTemp || Model.LiberarAsignacionTemp;
+}
+
+    <script>
+
+    function inicializaPanelAsignacion() {
+        var ds;
+
+        if ($("#UtAsignadaId:not([type=hidden])").length) {
+            ds = Main.getDataSourceKendoGenerico($("#UtAsignadaId"),
+                '@Url.Action("MantenedorGenerico", "Json")?idM=@((int) Mantenedor.UnidadTecnica)');
+            $("#UtAsignadaId").data("kendoComboBox").setDataSource(ds);
+        }
+
+        if ($("#UtConocimientoId").length) {
+            ds = Main.getDataSourceKendoGenerico($("#UtConocimientoId"),
+                '@Url.Action("MantenedorGenerico", "Json")?idM=@((int) Mantenedor.UnidadTecnica)');
+            $("#UtConocimientoId").data("kendoComboBox").setDataSource(ds);
+        }
+
+        if ($("#UtTemporalId:not([type=hidden])").length) {
+            ds = Main.getDataSourceKendoGenerico($("#UtTemporalId"),
+                '@Url.Action("MantenedorGenerico", "Json")?idM=@((int) Mantenedor.UnidadTecnica)');
+            $("#UtTemporalId").data("kendoComboBox").setDataSource(ds);
+            $("#UtTemporalId").data("kendoComboBox").bind("change", cambiaUtTemporal);
+        }
+
+        if ($("#UnidadTecnicaCopia").length) {
+            $("#UnidadTecnicaCopia").kendoMultiSelect(
+                Main.getMultiSelectConfig($("#UnidadTecnicaCopia"),
+                    '@Url.Action("MantenedorGenerico", "Json")?idM=@((int) Mantenedor.UnidadTecnica)'
+                ,"", ""
+                , @Html.Raw(JsonConvert.SerializeObject(Model.UnidadTecnicaCopia)) )
+            );
+        }
+
+
+
+    }
+
+    function cambiaUtTemporal(e) {
+        var asignTempLiberada = @Json.Encode(Model.LiberarAsignacionTemp);
+        habilitaAsignTemp((e.sender.value() && !asignTempLiberada) ? true : false);
+    }
+
+    //# sourceURL=PanelAsignacionIngreso
+    </script>
+
+
+<h4 class="head-datos-form">Asignación</h4>
+<div class="container-fluid">
+    @*@Html.HiddenFor(a => a.ComentarioAsignacion)*@
+
+    @if (accesoCampos[CampoIngreso.Asig_EnviarAsign] != AspectoCampo.Oculto)
+    {
+        <div class="form-row">
+            <div class="col-md-3" style="white-space: nowrap">
+                <label class="label-dato-form">
+                    Enviar a Asignación
+                </label>
+            </div>
+            <div class="col-md-9">
+                <div>
+                    @(Html.Kendo().RadioButtonFor(m => m.EnviarAsignacion).Label("Sí").Value(true))
+                    @(Html.Kendo().RadioButtonFor(m => m.EnviarAsignacion).HtmlAttributes(new { @class = "ml-3" }).Label("No").Value(false))
+
+                </div>
+                <div>
+                    <span class="help-block">En la siguiente etapa se asignarán la unidad técnica y el comentario de asignación. </span>
+                </div>
+            </div>
+        </div>
+    }
+
+    @if (accesoCampos[CampoIngreso.Asig_UtAsign] != AspectoCampo.Oculto)
+    {
+        <div class="form-row">
+            <div class="col-md-3">
+                <label class="label-dato-form">
+                    Unidad Técnica Asignada
+                    @if (accesoCampos[CampoIngreso.Asig_UtAsign] != AspectoCampo.SoloLectura)
+                    {
+                        <span class="marca-obligatorio" title="Este campo es obligatorio."> *</span>
+                    }
+                </label>
+            </div>
+            <div class="col-md-9">
+                @if (accesoCampos[CampoIngreso.Asig_UtAsign] == AspectoCampo.SoloLectura)
+                {
+                    <label id="lbUtAsignada">@Model.UtAsignadaTitulo </label>
+                }
+                else
+                {
+                    @(Html.Kendo().ComboBox()
+                        .Name("UtAsignadaId")
+                        .DataTextField("Titulo")
+                        .DataValueField("Id")
+                        .Filter("contains")
+                        .HtmlAttributes(new { required = "required", @class = "w-100" })
+                        .Messages(Gedoc.WebApp.Helpers.KendoHelper.SetComboBoxMessages)
+                        )
+                    <span class="k-invalid-msg" data-for="UtAsignadaId"></span><br />
+                }
+            </div>
+        </div>
+    }
+
+    @if (accesoCampos[CampoIngreso.Asig_UtCopia] != AspectoCampo.Oculto)
+    {
+        <div class="form-row">
+            <div class="col-md-3">
+                <label class="label-dato-form">
+                    Unidad Técnica en copia
+                </label>
+            </div>
+            <div class="col-md-9">
+                @if (accesoCampos[CampoIngreso.Asig_UtCopia] == AspectoCampo.SoloLectura)
+                {
+                    <label id="lbUtCopia">@Model.UtCopiaTitulos</label>
+                }
+                else
+                {
+                    <select id="UnidadTecnicaCopia" name="UnidadTecnicaCopia" multiple></select>
+                }
+            </div>
+        </div>
+    }
+
+    @if (accesoCampos[CampoIngreso.Asig_UtConoc] != AspectoCampo.Oculto)
+    {
+        <div class="form-row">
+            <div class="col-md-3">
+                <label class="label-dato-form">
+                    Unidad Técnica en conocimiento
+                </label>
+            </div>
+            <div class="col-md-9">
+                @if (accesoCampos[CampoIngreso.Asig_UtConoc] == AspectoCampo.SoloLectura)
+                {
+                    <label id="lbUtConocimiento">@Model.UtConocimientoTitulo </label>
+                }
+                else
+                {
+                    @(Html.Kendo().ComboBox()
+                        .Name("UtConocimientoId")
+                        .DataTextField("Titulo")
+                        .DataValueField("Id")
+                        .Filter("contains")
+                        .HtmlAttributes(new Dictionary<string, object> {{"class", "w-100"}})
+                        .Messages(Gedoc.WebApp.Helpers.KendoHelper.SetComboBoxMessages)
+                        )
+                }
+            </div>
+        </div>
+    }
+
+    @if (accesoCampos[CampoIngreso.Asig_UtTemp] != AspectoCampo.Oculto)
+    {
+        <div class="form-row asign-temporal">
+            <div class="col-md-3">
+                <label class="label-dato-form">
+                    Unidad Técnica para Asignación Temporal
+                </label>
+            </div>
+            <div class="col-md-9">
+                @if (accesoCampos[CampoIngreso.Asig_UtTemp] == AspectoCampo.SoloLectura)
+                {
+                    <label id="lbUtTemp">@Model.UtTemporalTitulo </label>
+                }
+                else
+                {
+                    @(Html.Kendo().ComboBox()
+                        .Name("UtTemporalId")
+                        .DataTextField("Titulo")
+                        .DataValueField("Id")
+                        .Filter("contains")
+                        .HtmlAttributes(new Dictionary<string, object> {{"class", "w-100"}})
+                        .Messages(Gedoc.WebApp.Helpers.KendoHelper.SetComboBoxMessages)
+                        )
+                }
+            </div>
+        </div>
+    }
+
+    @if (accesoCampos[CampoIngreso.Asig_ReqResp] != AspectoCampo.Oculto)
+    {
+        <div class="form-row">
+            <div class="col-md-3" style="white-space: nowrap">
+                <label class="label-dato-form">
+                    Requiere respuesta
+                </label>
+            </div>
+            <div class="col-md-9">
+                @if (accesoCampos[CampoIngreso.Asig_ReqResp] == AspectoCampo.SoloLectura)
+                {
+                    <label id="lbReqResp">@(Model.RequiereRespuesta.GetValueOrDefault(true) ? "Sí" : "No") </label>
+                }
+                else
+                {
+                    @(Html.Kendo().RadioButtonFor(m => m.RequiereRespuesta).Label("Sí").Value(true))
+                    @(Html.Kendo().RadioButtonFor(m => m.RequiereRespuesta).HtmlAttributes(new { @class = "ml-3" }).Label("No").Value(false))
+
+                }
+            </div>
+        </div>
+    }
+
+    @if (accesoCampos[CampoIngreso.Asig_ComentarioAsign] != AspectoCampo.Oculto)
+    {
+        <div class="form-row">
+            <div class="col-md-3">
+                <label class="label-dato-form">
+                    Comentario de Asignación
+                </label>
+            </div>
+            <div class="col-md-9">
+                @if (accesoCampos[CampoIngreso.Asig_ComentarioAsign] == AspectoCampo.SoloLectura)
+                {
+                    <div id="lbComentarioAsign" class="pre-wrap">@Html.Raw(Model.ComentarioAsignacion) </div>
+                }
+                else
+                {
+                    @*<div class="k-block text-area-out">
+                        <div class="text-area-in texto-largo" id="pnComentarioAsignacion" contenteditable="true" maxlength="255"
+                             data-spanleyenda="leyenda-pnComentarioAsignacion">@Html.Raw(Model.ComentarioAsignacion)</div>
+                    </div>*@
+
+                    <textarea name="ComentarioAsignacion" rows="4" cols="20" id="tbComentarioAsignacion" class="form-control texto-largo" 
+						  data-spanleyenda="leyenda-pnComentarioAsignacion"
+                          data-maxlength="255" style="width: 100% !important;">@Html.Raw(Model.ComentarioAsignacion)</textarea>
+                    <span class="help-block-right" id="leyenda-pnComentarioAsignacion"> </span>
+                }
+            </div>
+        </div>
+    }
+
+    @if (accesoCampos[CampoIngreso.Asig_LiberarAsign] != AspectoCampo.Oculto && Model.UtTemporalId.GetValueOrDefault(0) > 0)
+    {
+        <div class="form-row asign-temporal">
+            <div class="offset-md-3 col-md-9" id="divchbLiberarAsig">
+                @Html.CheckBoxFor(m => m.LiberarAsignacionTemp,
+                    inhabilitaLiberar ? (object)new { onclick = "return false;", @class = "k-checkbox" } : new { @class = "k-checkbox" })
+
+                <label class="k-checkbox-label" for="LiberarAsignacionTemp">Liberar Asignación Temporal</label>
+            </div>
+        </div>
+    }
+
+</div>

@@ -1,0 +1,180 @@
+﻿@using Gedoc.Helpers.Dto
+
+
+@{
+    ViewBag.Title = "Mantenedor de Listas";
+}
+<script src="~/Scripts/accionesbandeja.js"></script>
+<script src="~/Scripts/form.js"></script>
+
+
+<h4 class="header-level1">@ViewBag.Title</h4>
+
+<div class="div-main">
+    @(Html.Kendo().DataSource<ListaDto>()
+        .Name("dataSourceGridLista")
+        .Ajax(dataSource => dataSource
+            .Read(read =>
+            {
+                read.Action("GetListaAll", "Lista")
+                    .Type(HttpVerbs.Post);
+            })
+            .ServerOperation(false)
+            .PageSize(10)
+        )
+        )
+    @(Html.Kendo().Grid<ListaDto>()
+        .Name("gridLista")
+        .DataSource("dataSourceGridLista")
+        //.DataSource(dataSource => dataSource
+        //    .Ajax()
+        //    .Events(e => e.Error("onError"))
+        //    .Model(model => model.Id(p => p.Id))
+        //    .Read(read => read.Action("GetListaAll", "Lista"))
+        //    .Create(create => create.Action("Lista_Create", "Lista"))
+        //    .Update(update => update.Action("Lista_Update", "Lista"))
+        //    .Destroy(destroy => destroy.Action("Lista_Destroy", "Lista"))
+        //)
+        .HtmlAttributes(new {@class = "k-grid-alternate" })
+        .ToolBar(toolbar =>
+        {
+            toolbar.Search();
+            toolbar.Custom()
+                .HtmlAttributes(new { onclick = "agregarLista(); return false;" })
+                .Name("NuevaLista")
+                .Text("Agregar")
+                .IconClass("k-icon k-i-plus-outline")
+                .Url("#")
+                ;
+        })
+        .Scrollable(scr => scr.Height("auto"))
+        .Pageable(p => p.AlwaysVisible(true).PageSizes(new int[3] { 10, 50, 100 }).Enabled(true).Info(true)
+            .Messages(m => m.ItemsPerPage("registros por página")))
+        .Sortable()
+        .Navigatable()
+        .Columns(columns =>
+        {
+            columns.Bound(c => c.Nombre)
+                .Title("Nombre <span class='k-icon k-i-kpi' style='color: lightgray;'></span>");
+            columns.Bound(c => c.Descripcion)
+                .Title("Descripción <span class='k-icon k-i-kpi' style='color: lightgray;'></span>");
+            //columns.Template(@<text></text>).ClientTemplate("<button type='button' class='k-button k-button-icontext k-grid-edit' onclick='editar(#=Id#,true)'><span class='k-icon k-i-edit'></span>Editar</button>");
+            //columns.Command(command =>
+            //{
+            //    command.Edit();
+            //    command.Destroy();
+            //}).Width(180);
+            columns.Bound(c => c.EstadoRegistroNombre)
+                .Title("Estado <span class='k-icon k-i-kpi' style='color: lightgray;'></span>");
+            columns.Bound(c => c.IdLista)
+                .Width(120)
+                .Title("<center>Acción</center>")
+                .Sortable(false)
+                .ClientTemplate("#= buildAccionesLista(data.IdLista, data.Nombre) #");
+        })
+        )
+
+</div>
+
+<script>
+    $(function () {
+        $(".k-grid-search input").prop("placeholder", "Buscar...");
+        $(".k-grid-search input").prop("title", "Buscar...");
+    });
+
+    function onError(args) {
+        var errors = args.errors;
+        if (errors) {
+            var grid = $("#gridLista").data("kendoGrid");
+            var message = "";
+            $.each(errors,
+                function(key, value) {
+                    if (key == "destroy") {
+                        grid.cancelChanges(); // se cancela la operación solo para el eliminar lista
+                    }
+
+                    if ('errors' in value) {
+                        $.each(value.errors,
+                            function() {
+                                message += this + "\n";
+                            });
+                    }
+                });
+            Main.showError(message ||
+                "Ha ocurrido un error al realizar la operación, por favor, contacte al administrador del sistema.");
+        }
+    }
+
+    function agregarLista() {
+        var url = '@Url.Action("FormLista", "Lista")' + '?id=0';
+        Main.muestraVentanaModal("Agregar Lista", url, '', 'MAX', false, "winFormIngreso", undefined)
+            .then(function (result) {
+                refrescaGridLista();
+            });
+    }
+
+    function editarLista(id, titulo) {
+        var url = '@Url.Action("FormLista", "Lista")' + '?id=' + id;
+        Main.muestraVentanaModal("Editar Lista - " + titulo, url, '', 'MAX', false, "winFormIngreso", undefined)
+            .then(function (result) {
+                if (result == true || result.resultado == true) {
+                    refrescaGridLista();
+                }
+        });
+    }
+
+    function eliminarLista(listaId, titulo) {
+        var btnEliminar = "#btnDelUt" + listaId;
+        Main.showConfirm("Se va a eliminar la lista: " + titulo + ", ¿desea continuar?", "Eliminar registro", true)
+            .then(function (esOk) {
+                if (esOk) {
+                    Main.wait("", btnEliminar);
+                    var url = "@Url.Action("EliminaLista", "Lista")?listaId=" + listaId;
+                    $.ajax({
+                        type: "POST",
+                        url: url
+                        //dataType: "json",
+                    }).done(function(response) {
+                        Main.unwait(btnEliminar);
+                        if (response.Codigo) {
+                            refrescaGridLista();
+                            if (response.Codigo > 0) {
+                                Main.showInfo(response.Mensaje, "Registro eliminado");
+                            } else {
+                                Main.showError(response.Mensaje, "Error");
+                            }
+                        } else {
+                            Main.showError("Error inesperado al realizar la operación, por favor, vuelva a intentarlo",
+                                "Error");
+                        }
+                    }).fail(function(error) {
+                        Main.unwait(btnEliminar);
+                        Main.showError("Ha ocurrido un error al realizar la operación, por favor, vuelva a intentarlo.",
+                            "Error");
+                    });
+                }
+            });
+    }
+
+    function buildAccionesLista(id, titulo) {
+        var enlace = "";
+        var btn = "<button class='k-button mr-1' onclick='editarLista(\"" + id + "\", \"" + titulo + 
+            "\")' title='Editar' type='button' data-role='button' role='button'><span class='k-icon k-i-edit'></span></button>";
+        enlace += btn;
+        btn = "<button class='k-button' id='btnDelUt" + id +
+            "' onclick='eliminarLista(\"" + id + "\", \"" + titulo +
+            "\")' title='Eliminar' type='button' data-role='button' role='button'><span class='k-icon k-i-trash'></span></button>";
+        enlace += btn;
+
+        enlace = '<div style="display: inline-flex;">' + enlace + '</div>';
+        return enlace;
+    }
+
+    function refrescaGridLista() {
+        var gridK = $("#gridLista").data("kendoGrid");
+        if (gridK) {
+            gridK.dataSource.read();
+        }
+    }
+
+</script>

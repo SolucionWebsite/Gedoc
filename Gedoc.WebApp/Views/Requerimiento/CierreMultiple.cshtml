@@ -1,0 +1,342 @@
+﻿@using Gedoc.Helpers
+@using Gedoc.Helpers.Enum
+@using Gedoc.WebApp.Models
+@model Gedoc.WebApp.Models.AdjuntoModel
+
+@{
+    Culture = "es-ES";
+    ViewBag.Title = "Cierre Múltiple de Requerimientos";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<script src="~/Scripts/form.js"></script>
+<script src="~/Scripts/accionesbandeja.js"></script>
+
+
+@Html.Partial("~/Views/Partial/TemplateTagMultiselect.cshtml", Model)
+
+<h4 class="header-level1">@ViewBag.Title</h4>
+
+<div class="div-main">
+
+    <form id="formIngreso" action="@Url.Action("CierreMultiple")" class="form-datos">
+        @Html.AntiForgeryToken()
+
+        <div class="form-row">
+            <div class="col-md-2">
+                <label class="label-dato-form">
+                    Unidad Técnica<span class="marca-obligatorio" title="Este campo es obligatorio."> *</span>
+                </label>
+            </div>
+            <div class="col-md-5">
+                @(Html.Kendo().DropDownList()
+                    .Name("UnidadTecnica")
+                    .OptionLabel("[SELECCIONE UNIDAD]")
+                    .DataValueField("Id")
+                    .DataTextField("Titulo")
+                    .BindTo((System.Collections.IEnumerable)ViewBag.UnidadesTecnicas)
+                    .HtmlAttributes(new { @style = "width:96%;" })
+                )
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="col-md-2">
+                <label class="label-dato-form">
+                    Fecha desde<span class="marca-obligatorio" title="Este campo es obligatorio."> *</span>
+                </label>
+            </div>
+            <div class="col-md-3">
+                @(Html.Kendo().DatePicker()
+                    .Name("FechaCargaDesde")
+                    .Max(DateTime.Today)
+                    .Format("dd/MM/yyyy")
+                 )
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="col-md-2">
+                <label class="label-dato-form">
+                    Fecha hasta<span class="marca-obligatorio" title="Este campo es obligatorio."> *</span>
+                </label>
+            </div>
+            <div class="col-md-5">
+                @(Html.Kendo().DatePicker()
+                    .Name("FechaCargaHasta")
+                    .Max(DateTime.Today)
+                    .Format("dd/MM/yyyy")
+                )
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="col-md-2">
+                <label class="label-dato-form">
+                    Profesional<span class="marca-obligatorio" title="Este campo es obligatorio."> *</span>
+                </label>
+            </div>
+            <div class="col-md-5">
+                @(Html.Kendo().DropDownList()
+                    .Name("Profesional")
+                    .OptionLabel(ViewBag.ProfesionalId == null ? "[TODOS]" : null)
+                    .DataValueField("Id")
+                    .DataTextField("Titulo")
+                    .HtmlAttributes(new { @style = "width:96%;" })
+                    .DataSource(source =>
+                    {
+                        source.Read(read =>
+                        {
+                            read.Action("CierreMultiple_Get_Profesionales", "Requerimiento").Data("filterProfesionales");
+                        })
+                        .ServerFiltering(true);
+                    })
+                    .Enable(false)
+                    .AutoBind(false)
+                    .CascadeFrom("UnidadTecnica")
+                )
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="col-md-2">
+            </div>
+            <div class="col-md-5">
+                @(Html.Kendo().Button()
+                    .Name("btnConsultar")
+                    .HtmlAttributes(new { type = "button", @class = "k-primary" })
+                    .Events(events => events.Click("consultar"))
+                    .Content("Buscar")
+                 )
+            </div>
+        </div>
+
+        <div id="divGrillaAdjuntos">
+            <div class="form-row">
+                <div class="col-md-2"></div>
+                <div class="col-md-3">
+                    @(Html.Kendo().Button()
+                    .Name("btnCerrar")
+                    .HtmlAttributes(new { type = "button", @class = "k-danger k-button" })
+                    .Events(events => events.Click("cerrar"))
+                    .Content("Cerrar requerimientos seleccionados")
+                    )
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="col-md-12">
+                    @(Html.Kendo().Grid<Gedoc.Helpers.Dto.RequerimientoDto>()
+                          .Name("grid")
+                          .Columns(columns =>
+                          {
+                              columns.Bound(c => c.Id)
+                                  .Title("<center><input type='checkbox' /></center>")
+                                  .HeaderTemplate("<center><input type='checkbox' id='header-chb' class='k-checkbox header-checkbox'><label class='k-checkbox-label' for='header-chb'></label></center>")
+                                  .Width(40)
+                                  .ClientTemplate("<center><input type='checkbox' id='req#=Id#' class='k-checkbox row-checkbox' /><label class='k-checkbox-label' for='req#=Id#'></label></center>")
+                                  .Sortable(false)
+                                  .Filterable(false);
+                              columns.Bound(c => c.DocumentoIngreso).Width(100).HtmlAttributes(new { style = "text-align:center;" }).Title("<center>Documento Ingreso</center>").Filterable(ftb => ftb.Multi(true).Search(true));
+                              columns.Bound(c => c.FechaIngreso).Width(100).HtmlAttributes(new { style="text-align:center;"}).Title("<center>Fecha Ingreso</center>").Format("{0:dd/MM/yyyy}").Filterable(ftb => ftb.Multi(true).Search(true));
+                              columns.Bound(c => c.RemitenteNombre).Width(200).Title("<center>Remitente</center>").Filterable(ftb => ftb.Multi(true).Search(true));
+                              columns.Bound(c => c.RemitenteInstitucion).Width(330).Title("<center>Institución Remitente</center>").Filterable(ftb => ftb.Multi(true).Search(true));
+                              columns.Bound(c => c.Materia).Width(500).HtmlAttributes(new { style = "text-align:center;" }).Title("<center>Materia</center>").Format("{0:dd/MM/yyyy}").Filterable(ftb => ftb.Multi(true).Search(true));
+                              columns.Bound(c => c.EstadoTitulo).Width(120).HtmlAttributes(new { style = "text-align:center;" }).Title("<center>Estado Requerimiento</center>").Format("{0:dd/MM/yyyy}").Filterable(ftb => ftb.Multi(true).Search(true));
+                          })
+                          .HtmlAttributes(new { style = "height: 600px;" })
+                          .ToolBar(t => t.Search())
+                          //.Editable(editable=>editable.Mode(GridEditMode.PopUp))
+                          .Pageable(pager => pager.AlwaysVisible(true).PageSizes(new List<object> { 5, 10, 20, 100, 250 }))
+                          .Filterable()
+                          .Sortable(sortable =>
+                          {
+                              sortable.SortMode(GridSortMode.SingleColumn);
+
+                          })
+                          .Scrollable()
+                          .DataSource(dataSource => dataSource
+                              .Ajax()
+                              .ServerOperation(false)
+                              //.Model(model =>
+                              //{
+                              //    model.Id(u => u.Id);
+                              //    model.Field(u => u.Id).Editable(false);
+                              //})
+                              .Read(read => read.Action("CierreMultipleGrid_Read", "Requerimiento").Data("currentFilters"))
+                              //.Update(update => update.Action("Grid_Update", "Adjunto").Data("currentFilters"))
+                              .Model(m => m.Id(id => id.Id))
+                          )
+                    )
+                </div>
+            </div>
+        </div>
+    </form>
+
+</div>
+<script>
+    function consultar() {
+        primeraConsulta = false;
+
+        var unidadTecnica = $("#UnidadTecnica").val().trim();
+
+        var dateStrD = $("#FechaCargaDesde").val().trim();
+        var dateStrH = $("#FechaCargaHasta").val().trim();
+
+        if (unidadTecnica == "") {
+             Main.showAlert("Debe seleccionar Unidad Técnica.");
+            return;
+        }
+        if (dateStrD == "" || dateStrH == "") {
+             Main.showAlert("Debe especificar 'Fecha desde' y 'Fecha hasta'.");
+            return;
+        }
+
+        var dateD = dateStrD.split(/\s|\/|:/);
+        var dateH = dateStrH.split(/\s|\/|:/);
+        var dD = new Date(dateD[2], dateD[1], dateD[0]);
+        var dH = new Date(dateH[2], dateH[1], dateH[0]);
+
+        if (dD > dH) {
+             Main.showAlert("'Fecha desde' debe ser anterior o igual a 'Fecha hasta'.");
+        }
+        else {
+            $('#grid').data('kendoGrid').dataSource.read();
+        }
+    }
+
+    function currentFilters() {
+        return {
+            fDesde: $("#FechaCargaDesde").val(),
+            fHasta: $("#FechaCargaHasta").val(),
+            unidadTecnica: $("#UnidadTecnica").val(),
+            profesional: $("#Profesional").val()
+        }
+    }
+
+    function filterProfesionales() {
+        return {
+            unidadTecnica: $("#UnidadTecnica").val(),
+            profesional: "@(ViewBag.ProfesionalId ?? "")"
+        };
+    }
+    var primeraConsulta = true;
+
+    $(document).ready(function () {
+
+        $('#grid').data('kendoGrid').table.on("click", ".row-checkbox", selectRow);
+
+        $('#header-chb').change(function (ev) {
+            var checked = ev.target.checked;
+            $('.row-checkbox').each(function (idx, item) {
+                if (checked) {
+                    if (!($(item).closest('tr').is('.k-state-selected'))) {
+                        $(item).click();
+                    }
+                } else {
+                    if ($(item).closest('tr').is('.k-state-selected')) {
+                        $(item).click();
+                    }
+                }
+            });
+        });
+
+        var grid = $('#grid').data('kendoGrid');
+        grid.bind("dataBound", onDataBound);
+        grid.dataSource.fetch();
+
+        $("#FechaCargaDesde").attr("readonly", true);
+        $("#FechaCargaHasta").attr("readonly", true);
+
+        $("#divGrillaAdjuntos").hide();
+
+        $(".k-textbox.k-grid-search input").attr("placeholder", "Buscar...");
+    });
+
+    var checkedIds = new Array();
+
+    function setProfesional() {
+        if (filterProfesionales().profesional != "") {
+            var dropdownlist = $("#Profesional").data("kendoDropDownList");
+        }
+    }
+
+    function selectRow() {
+        var checked = this.checked,
+            row = $(this).closest("tr"),
+            grid = $("#grid").data("kendoGrid"),
+            dataItem = grid.dataItem(row);
+
+        checkedIds[dataItem.Id] = checked;
+
+        if (checked) {
+            //-select the row
+            row.addClass("k-state-selected");
+
+            var checkHeader = true;
+
+            $.each(grid.items(), function (index, item) {
+                if (!($(item).hasClass("k-state-selected"))) {
+                    checkHeader = false;
+                }
+            });
+
+            $("#header-chb")[0].checked = checkHeader;
+        } else {
+            //-remove selection
+            row.removeClass("k-state-selected");
+            $("#header-chb")[0].checked = false;
+        }
+    }
+
+    function cerrar() {
+
+        var grd = $('#grid').data('kendoGrid');
+        //var ids = new Array(grd.select().length);
+        var reqIds = "";
+        grd.select().each(function () {
+            var dataItem = grd.dataItem($(this));
+            if (dataItem) {
+                // ids.push(dataItem.Id);
+                reqIds += (reqIds == "" ? "?" : "&") + "reqIds=" + dataItem.Id;
+            }
+        });
+        if (reqIds == "") {
+            Main.showAlert("Por favor, seleccione al menos un requerimiento a cerrar.");
+            return false;
+        }
+
+        Acciones.ejecutaAccionNuevaVentana("Cierre de requerimientos",
+            '@Url.Action("FormCierreMultiple", "Requerimiento")' + reqIds, // '?reqIds=' + JSON.stringify(ids),
+            null,
+            "100vp",
+            "",
+            refrescaGridReq);
+    }
+
+    function refrescaGridReq() {
+        var gridK = $("#grid").data("kendoGrid");
+        if (gridK) {
+            gridK.dataSource.read();
+        }
+    }
+
+    function onDataBound(e) {
+        var view = this.dataSource.view();
+        if (view.length <= 0) {
+            if (!primeraConsulta)
+                 Main.showAlert("No se encontraron requerimientos en el periodo indicado.");
+        }
+        else
+            $("#divGrillaAdjuntos").show();
+
+        /*for (var i = 0; i < view.length; i++) {
+            if (checkedIds[view[i].id]) {
+                this.tbody.find("tr[data-uid='" + view[i].uid + "']")
+                    .addClass("k-state-selected")
+                    .find(".k-checkbox")
+                    .attr("checked", "checked");
+            }
+        }*/
+    }
+
+</script>

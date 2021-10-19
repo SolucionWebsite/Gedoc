@@ -1,0 +1,124 @@
+﻿@using Gedoc.Helpers
+@using Gedoc.Helpers.Dto
+@using Gedoc.Helpers.Enum
+@using Gedoc.WebApp.Helpers
+@using Kendo.Mvc.Extensions
+@using Kendo.Mvc.UI.Fluent
+@using Newtonsoft.Json
+@model Gedoc.WebApp.Models.OficioModel
+
+@{
+    ViewBag.Title = "Oficio";
+    ResultadoOperacion accesoForm = ViewBag.AccesoForm ?? new ResultadoOperacion(1, "OK", null);
+
+    Layout = null;
+    //bool esNuevo = Model.Id == 0;
+}
+
+<script src="~/Scripts/form.js"></script>
+@*Habilita la compresión del pdf, útil si es un pdf muy extenso*@
+<script src="@Url.Content("~/Scripts/kendo/2020.1.114/pako_deflate.min.js")"></script>
+
+<script>
+    // Import DejaVu Sans font for embedding
+    kendo.pdf.defineFont({
+        "DejaVu Sans": "@Url.Content("~/Content/kendo/2020.1.114/fonts/DejaVu/DejaVuSans.ttf")",
+        "DejaVu Sans|Bold": "@Url.Content("~/Content/kendo/2020.1.114/fonts/DejaVu/DejaVuSans-Bold.ttf")",
+        "DejaVu Sans|Bold|Italic": "@Url.Content("~/Content/kendo/2020.1.114/fonts/DejaVu/DejaVuSans-Oblique.ttf")",
+        "DejaVu Sans|Italic": "@Url.Content("~/Content/kendo/2020.1.114/fonts/DejaVu/DejaVuSans-Oblique.ttf")",
+        "WebComponentsIcons": "@Url.Content("~/Content/kendo/2020.1.114/fonts/glyphs/WebComponentsIcons.ttf")"
+    });
+
+</script>
+
+<style>
+
+    .k-link.k-state-selected.k-header {
+        padding: 5px;
+    }
+
+    .k-window .k-window-content.k-content {
+        overflow: hidden;
+    }
+</style>
+
+
+<script>
+
+    //# sourceURL=FormOficioPdf2
+</script>
+
+
+<div class="w-100" style="height: 150px !important;" id="divMainPdf">
+
+</div>
+
+<div class="div-pdf-form" style="margin-top: 500px !important;">
+
+    @*<form id="formOficio" action="@Url.Action("SaveOficio", "Oficio")" class="form-datos">
+        @Html.AntiForgeryToken()*@
+
+
+        @*Plantilla para el PDF q se genera al visualizar el oficio, tiene el encabezado y pie de página*@
+        <script type="x/kendo-template" id="page-oficio-template">
+            <div class="page-template">
+                @Html.Raw(Model.Encabezado.Replace("#", "\\#"))
+                @Html.Raw(Model.Pie.Replace("#", "\\#"))
+            </div>
+        </script>
+
+        <div class="form-row" id="rowEditor">
+            <div class="col-md-12">
+                <div id="editorWrapper">
+                    @(Html.Kendo().Editor()
+                        .Name("Contenido")
+                        .HtmlAttributes(new {style = "height:600px", aria_label = "editor"})
+                        .StyleSheets(css => css
+                            .Add(Url.Content("~/Content/editorStyles.css"))
+                        )
+                        .Immutables(true)
+                        .Pdf(pdf => KendoHelper.SetPdfSettingsOficio(pdf, Url.Action("Pdf_Export_Save"))
+                            .FileName("Oficio.pdf"))
+                        )
+                    )
+                </div>
+            </div>
+
+        </div>
+
+    @*</form>*@
+
+</div>
+
+<script>
+
+    @if (accesoForm.Codigo < 0)
+    {
+        <text>
+            Main.showAlert("@Html.Raw(accesoForm.Mensaje)")
+                .then(function(result) {
+                    Main.cierraModal(null, false, "winFormIngreso");
+                });
+        </text>
+    }
+
+    $(function () {
+        Main.wait("Generando PDF, por favor espere...", "#divMainPdf");
+        setTimeout(exportaPdf(), 500);
+    });
+
+    function exportaPdf() {
+        var editorK = $("#Contenido").data("kendoEditor");
+        if (editorK) {
+            editorK.saveAsPDF()
+                .then(function() {
+                    setTimeout(function() {
+                        Main.unwait( "#divMainPdf");
+                        Main.cierraModal(null, false, "winOficioPdf");
+                    }, 500);
+                });
+        }
+    }
+
+    //# sourceURL=FormOficioPdf
+</script>

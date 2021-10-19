@@ -1,0 +1,84 @@
+﻿@using Gedoc.Helpers.Enum
+@using Gedoc.WebApp.Helpers
+@model Gedoc.WebApp.Models.RequerimientoModel
+
+@{
+    Layout = null;
+    Dictionary<CampoIngreso, AspectoCampo> accesoCampos = ViewBag.AccesoCampos;
+}
+
+
+
+<h4 class="head-datos-form">Solicitud de Reasignación</h4>
+<div class="container-fluid">
+    @*@Html.HiddenFor(a => a.ComentarioDevolucion)*@
+
+    <div class="form-row">
+        <div class="col-md-3" style="white-space:nowrap">
+            <label class="label-dato-form">
+                Devolver a Asignación
+            </label>
+        </div>
+        <div class="col-md-2">
+            @(Html.Kendo().RadioButtonFor(m => m.DevolverAsignacion)
+                .Label("Sí")
+                .Value(true))
+            @(Html.Kendo().RadioButtonFor(m => m.DevolverAsignacion)
+                .HtmlAttributes(new { @class = "ml-3" })
+                .Label("No")
+                .Value(false))
+
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="col-md-3">
+            <label class="label-dato-form">
+                Comentario de devolución
+            </label>
+        </div>
+        <div class="col-md-9">
+            @*<div class="k-block text-area-out">
+                <div class="text-area-in texto-largo" id="pnComentarioDevolucion" contenteditable="true" maxlength="255"
+                     data-spanleyenda="leyenda-pnComentarioDevolucion">@Html.Raw(Model.ComentarioDevolucion)</div>
+            </div>*@
+
+            <textarea name="ComentarioDevolucion" rows="4" cols="20" id="tbComentarioDevolucion" class="form-control texto-largo" 
+						  data-spanleyenda="leyenda-pnComentarioDevolucion"
+                          data-maxlength="255" style="width: 100% !important;">@Html.Raw(Model.ComentarioDevolucion)</textarea>
+            <span class="help-block-right" id="leyenda-pnComentarioDevolucion"> </span>
+        </div>
+    </div>
+</div>
+
+
+<script>
+
+    function inicializaPanelSolicitudReasignacion() {
+        $('input[type=radio][name=DevolverAsignacion]').change(function () {
+            var esDevol = this.value == "True";
+            var comboProf = $("#ProfesionalId").data("kendoComboBox");
+            if (comboProf) {
+                comboProf.enable(!esDevol);
+            }
+            if (esDevol) {
+                $("#ProfesionalId_validationMessage").hide();
+                // Se desahbilita la opción de Forzar Prioridad
+                $("#ForzarPrioridad_False").prop("checked", true);
+                $("#ForzarPrioridad_False").prop("disabled", true);
+                $("#ForzarPrioridad_True").prop("disabled", true);
+                var fechaForzarK = $("#ForzarPrioridadFecha");
+                if (fechaForzarK) {
+                    fechaForzarK.data("kendoDatePicker").enable(false);
+                    fechaForzarK.data("kendoDatePicker").value("");
+                }
+                $("#tbForzarPrioridadMotivo").prop("disabled", true);
+                $("#tbForzarPrioridadMotivo").val("");
+            } else {
+                $("#ForzarPrioridad_False").prop("disabled", false);
+                $("#ForzarPrioridad_True").prop("disabled", false);}
+        });
+    }
+
+    //# sourceURL=PanelDevolverAsignacion
+</script>

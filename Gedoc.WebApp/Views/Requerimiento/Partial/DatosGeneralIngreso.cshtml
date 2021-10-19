@@ -1,0 +1,248 @@
+﻿@using Gedoc.Helpers.Enum
+@using Gedoc.WebApp.Helpers
+@model Gedoc.WebApp.Models.RequerimientoModel
+
+@{
+    Layout = null;
+    Dictionary<CampoIngreso, AspectoCampo> accesoCampos = ViewBag.AccesoCampos;
+}
+
+
+<script>
+
+    function comboReqValueMapper(options) {
+        $.ajax({
+            url: "@Url.Action("RequerimientoResumenByIds", "Json")",
+            type: "POST",
+            data: $.param({ ids: options.value, cerrado: false }, true),
+            success: function (data) {
+                if (data.Resultado && data.Resultado.Codigo < 0) {
+                    Main.showError(data.Resultado.Mensaje);
+                } else {
+                    var data = data.Data && data.Data.length > 0 ? data.Data[0] : null;
+                    options.success(data);
+                }
+            }
+        });
+    }
+
+//# sourceURL=PanelGeneralIngreso2
+</script>
+
+<h4 class="head-datos-form">General</h4>
+<div class="container-fluid">
+
+    <div class="form-row">
+        <div class="col-md-3">
+            <label class="label-dato-form">
+                Forma de llegada
+            </label>
+        </div>
+        <div class="col-md-9">
+            @if (accesoCampos[CampoIngreso.Gral_FormaLlegada] == AspectoCampo.SoloLectura)
+            {
+                <label id="lbFormaLlegada">@Model.FormaLlegadaTitulo </label>
+            }
+            else
+            {
+                @(Html.Kendo().ComboBox()
+                    .Name("FormaLlegadaCod")
+                    .DataTextField("Titulo")
+                    .DataValueField("Id")
+                    .Filter("contains")
+                    .HtmlAttributes(new Dictionary<string, object> { { "class", "w-100" } })
+                    .Messages(Gedoc.WebApp.Helpers.KendoHelper.SetComboBoxMessages)
+                    )
+            }
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="col-md-3">
+            <label class="label-dato-form">
+                Observaciones de la forma de llegada
+            </label>
+        </div>
+        <div class="col-md-9">
+            @if (accesoCampos[CampoIngreso.Gral_ObsFormaLlegada] == AspectoCampo.SoloLectura)
+            {
+                <div id="lbObsFormaLleg" class="pre-wrap">@Html.Raw(Model.ObservacionesFormaLlegada) </div>
+            }
+            else
+            {
+                @*<div class="k-block text-area-out">
+                    <div class="text-area-in texto-largo" id="pnObservacionFormLleg" contenteditable="true" maxlength="255"
+                         data-spanleyenda="leyenda-pnObservacionFormLleg">@Html.Raw(Model.ObservacionesFormaLlegada)</div>
+                    </div>
+                    <span class="help-block-right" id="leyenda-pnObservacionFormLleg"> </span>*@
+
+                <textarea name="ObservacionesFormaLlegada" rows="4" cols="20" id="tbObservacionesFormaLlegada" class="form-control texto-largo" 
+						  data-spanleyenda="leyenda-pnObservacionFormLleg"
+                          data-maxlength="255" style="width: 100% !important;">@Html.Raw(Model.ObservacionesFormaLlegada)</textarea>
+            }
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="col-md-3" style="white-space:nowrap">
+            <label class="label-dato-form">
+                Carácter
+            </label>
+        </div>
+        <div class="col-md-2">
+            @if (accesoCampos[CampoIngreso.Gral_Caracter] == AspectoCampo.SoloLectura)
+            {
+                <label id="lbCaracter">@Model.CaracterTitulo </label>
+            }
+            else
+            {
+                @(Html.Kendo().RadioButtonFor(m => m.CaracterId).Label("Público").Value((int)Caracter.Publico))
+                <br />
+                @(Html.Kendo().RadioButtonFor(m => m.CaracterId).Label("Reservado").Value((int)Caracter.Reservado))
+                <br />
+                @(Html.Kendo().RadioButtonFor(m => m.CaracterId).Label("Secreto").Value((int)Caracter.Secreto))
+
+            }
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="col-md-3">
+            <label class="label-dato-form">
+                Observaciones del carácter
+            </label>
+        </div>
+        <div class="col-md-9">
+            @if (accesoCampos[CampoIngreso.Gral_ObsCaracter] == AspectoCampo.SoloLectura)
+            {
+                <div id="lbObsCaracter" class="pre-wrap">@Html.Raw(Model.ObservacionesCaracter) </div>
+            }
+            else
+            {
+                @*<div class="k-block text-area-out">
+                    <div class="text-area-in texto-largo" id="pnObservacionCaracter" contenteditable="true" maxlength="255"
+                         data-spanleyenda="leyenda-pnObservacionCaracter">@Html.Raw(Model.ObservacionesCaracter)</div>
+                    </div>
+                    <span class="help-block-right" id="leyenda-pnObservacionCaracter"> </span>*@
+
+                <textarea name="ObservacionesCaracter" rows="4" cols="20" id="tbObservacionesCaracter" class="form-control texto-largo" 
+                          data-spanleyenda="leyenda-pnObservacionCaracter"
+                          data-maxlength="255" style="width: 100% !important;">@Html.Raw(Model.ObservacionesCaracter)</textarea>
+            }
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="col-md-3" style="white-space:nowrap">
+            <label class="label-dato-form">
+                Redireccionado
+                @if (accesoCampos[CampoIngreso.Gral_Redireccionado] != AspectoCampo.SoloLectura)
+                {
+                    <span class="marca-obligatorio" title="Este campo es obligatorio."> *</span>
+                }
+            </label>
+        </div>
+        <div class="col-md-9">
+            @if (accesoCampos[CampoIngreso.Gral_Redireccionado] == AspectoCampo.SoloLectura)
+            {
+                <label id="lbRedireccionado">@(Model.Redireccionado.GetValueOrDefault(false) ? "Sí" : "No") </label>
+            }
+            else
+            {
+                <div>
+                    @(Html.Kendo().RadioButtonFor(m => m.Redireccionado).Label("Sí").Value(true))
+                    @(Html.Kendo().RadioButtonFor(m => m.Redireccionado).HtmlAttributes(new { @class = "ml-3" }).Label("No").Value(false))
+
+                </div>
+                <div>
+                    <span class="help-block">Documento derivado al CMN desde una tercera institución. </span>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="col-md-3">
+            <label class="label-dato-form">
+                Número de ticket
+            </label>
+        </div>
+        <div class="col-md-9">
+            @if (accesoCampos[CampoIngreso.Gral_NumTicket] == AspectoCampo.SoloLectura)
+            {
+                <label id="lbNumTicket">@Model.NumeroTicket </label>
+            }
+            else
+            {
+                @Html.TextBoxFor(a => a.NumeroTicket, new { @class = "k-textbox w-100" })
+                <span class="help-block" id="leyenda-numticket">Para ingresos SIAC. Ejemplo de ticket: AJ005W 0000100</span>
+            }
+        </div>
+    </div>
+
+    @if (accesoCampos[CampoIngreso.Gral_ReqAnterior] != AspectoCampo.Oculto)
+    {
+        <div class="form-row">
+            <div class="col-md-3">
+                <label class="label-dato-form">
+                    Requerimiento anterior
+                </label>
+            </div>
+            <div class="col-md-9">
+                @(Html.Kendo().ComboBox()
+                    .Name("RequerimientoAnteriorId")
+                    .DataTextField("Titulo")
+                    .DataValueField("Id")
+                    .Filter("contains")
+                    .HtmlAttributes(new Dictionary<string, object> { { "class", "w-100" } })
+                    .Height(520)
+                    .Virtual(v => v.ItemHeight(26).ValueMapper("comboReqValueMapper").MapValueTo("dataItem"))
+                    .Messages(Gedoc.WebApp.Helpers.KendoHelper.SetComboBoxMessages)
+                    )
+                <span class="help-block" id="leyenda-reqanterior">Seleccione un Requerimiento existente asociado.</span>
+            </div>
+        </div>
+    }
+
+
+    @if (accesoCampos[CampoIngreso.Gral_ReqNoRegistrado] != AspectoCampo.Oculto)
+    {
+        <div class="form-row">
+            <div class="col-md-3">
+                <label class="label-dato-form">
+                    Requerimiento no registrado
+                </label>
+            </div>
+            <div class="col-md-9">
+                @Html.TextBoxFor(a => a.RequerimientoNoRegistrado, new { @class = "k-textbox w-100" })
+
+                <span class="help-block" id="leyenda-reqnoreg">Ingresos previos al año 2016, ejemplo: 06798-2014</span>
+            </div>
+        </div>
+    }
+
+</div>
+
+
+<script>
+
+    function inicializaPanelGeneral() {
+
+        var ds;
+
+        if ($("#FormaLlegadaCod").length) {
+            ds = Main.getDataSourceKendoGenerico($("#FormaLlegadaCod"),
+                '@Url.Action("MantenedorGenerico", "Json")?idM=@((int) Mantenedor.FormaLlegada)');
+            $("#FormaLlegadaCod").data("kendoComboBox").setDataSource(ds);
+        }
+
+        if ($("#RequerimientoAnteriorId").length) {
+            ds = Main.getDataSourceKendoGenericoVirtual(
+                $("#RequerimientoAnteriorId")
+                , '@Url.Action("RequerimientoResumenPaging", "Json")' );
+            $("#RequerimientoAnteriorId").data("kendoComboBox").setDataSource(ds);
+        }
+    }
+
+    //# sourceURL=PanelGeneralIngreso
+</script>

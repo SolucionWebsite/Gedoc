@@ -1,0 +1,240 @@
+﻿@using Gedoc.Helpers
+@using Gedoc.Helpers.Enum
+@model Gedoc.WebApp.Models.UnidadTecnicaModel
+
+@{
+    Layout = null;
+    ResultadoOperacion accesoForm = ViewBag.AccesoForm ?? new ResultadoOperacion(1, "OK", null);
+}
+
+
+<script src="~/Scripts/form.js"></script>
+
+
+@*<h4 class="head-datos-form">Calendario Bitácoras</h4>*@
+<div class="div-main-form">
+
+    <form id="formUnidTecn" action="@Url.Action("SaveUnidadTecnica")" class="form-datos">
+        @Html.AntiForgeryToken()
+        @Html.HiddenFor(a => a.Id)
+        @Html.HiddenFor(a => a.Activo)
+
+
+        <div class="form-row" >
+            <div class="col-md-3">
+                <label class="label-dato-form">
+                    Unidad Técnica<span class="marca-obligatorio" title="Este campo es obligatorio."> *</span>
+                </label>
+            </div>
+            <div class="col-md-9">
+                @Html.TextBoxFor(a => a.Titulo,
+                    new { @class = "k-textbox w-100", required = "required" })
+                <span class="k-invalid-msg" data-for="Titulo"></span>
+            </div>
+        </div>
+
+        <div class="form-row" >
+            <div class="col-md-3">
+                <label class="label-dato-form">
+                    Responsable<span class="marca-obligatorio" title="Este campo es obligatorio."> *</span>
+                </label>
+            </div>
+            <div class="col-md-9">
+                @(Html.Kendo().ComboBox()
+                    .Name("ResponsableId")
+                    .DataTextField("Titulo")
+                    .DataValueField("Id")
+                    .Filter("contains")
+                    .HtmlAttributes(new { required = "required", @class = "w-100" })
+                    .Messages(Gedoc.WebApp.Helpers.KendoHelper.SetComboBoxMessages)
+                    )
+                <span class="k-invalid-msg" data-for="ResponsableId"></span>
+            </div>
+        </div>
+
+        <div class="form-row" >
+            <div class="col-md-3">
+                <label class="label-dato-form">
+                    Subrogante<span class="marca-obligatorio" title="Este campo es obligatorio."> *</span>
+                </label>
+            </div>
+            <div class="col-md-9">
+                @(Html.Kendo().ComboBox()
+                    .Name("SubroganteId")
+                    .DataTextField("Titulo")
+                    .DataValueField("Id")
+                    .Filter("contains")
+                    .HtmlAttributes(new { required = "required", @class = "w-100" })
+                    .Messages(Gedoc.WebApp.Helpers.KendoHelper.SetComboBoxMessages)
+                    )
+                <span class="k-invalid-msg" data-for="SubroganteId"></span>
+            </div>
+        </div>
+
+        <div class="form-row" >
+            <div class="col-md-3">
+                <label class="label-dato-form">
+                    Correo Responsable UT
+                </label>
+            </div>
+            <div class="col-md-9">
+                @Html.TextBoxFor(a => a.EmailResponsable,
+                    new { @class = "k-textbox w-100 email" })
+                <span class="k-invalid-msg" data-for="EmailResponsable"></span>
+            </div>
+        </div>
+
+        <div class="form-row" >
+            <div class="col-md-3">
+                <label class="label-dato-form">
+                    Correo Secretaria UT
+                </label>
+            </div>
+            <div class="col-md-9">
+                @Html.TextBoxFor(a => a.EmailSecretaria,
+                    new { @class = "k-textbox w-100 email" })
+                <span class="k-invalid-msg" data-for="EmailSecretaria"></span>
+            </div>
+        </div>
+
+        <div class="form-row" style="white-space: nowrap;">
+            <div class="col-md-3">
+                <label class="label-dato-form">
+                    Otros Destinatarios
+                </label>
+            </div>
+            <div class="col-md-9">
+                <textarea name="OtrosDestinatariosEmail" rows="4" cols="20" id="tbOtrosDestinatariosEmail" class="form-control texto-largo multiple-email"
+                          data-spanleyenda="leyenda-pnProyectoActividad"
+                          data-maxlength="255" style="width: 100% !important;">@Html.Raw(Model.OtrosDestinatariosEmail)</textarea>
+                <span class="k-invalid-msg" data-for="tbOtrosDestinatariosEmails"></span>
+            </div>
+        </div>
+
+
+        <div class="footer-modal">
+            <div class="form-row">
+                <div class="offset-md-3 col-md-2 text-center">
+                    <button type="button" id="btnGrabaCalendario" class="k-primary-blue k-button" onclick="grabaUnidTecn(event);">Guardar</button>
+                </div>
+                <div class="offset-md-2 col-md-2 text-center">
+                    <button type="button" id="btnCancelaCalendario" class="k-danger k-button" onclick="cancelaUnidTecn(event);">Cancelar</button>
+                </div>
+            </div>
+        </div>
+
+    </form>
+
+</div>
+
+<script>
+
+    @if (accesoForm.Codigo < 0)
+    {
+        <text>
+    Main.showAlert("@Html.Raw(accesoForm.Mensaje)")
+        .then(function (result) {
+            Main.cierraModal(null, false, "winFormIngreso");
+        });
+        </text>
+    }
+
+    $(function() {
+
+        var ds = Main.getDataSourceKendoGenerico($("#ResponsableId"),
+            '@Url.Action("MantenedorGenerico", "Json")?idM=' + @((int) Mantenedor.UsuarioActivo));
+        $("#ResponsableId").data("kendoComboBox").setDataSource(ds);
+
+        ds = Main.getDataSourceKendoGenerico($("#SubroganteId"),
+            '@Url.Action("MantenedorGenerico", "Json")?idM=' + @((int) Mantenedor.UsuarioActivo));
+        $("#SubroganteId").data("kendoComboBox").setDataSource(ds);
+
+        Form.inicializaForm();
+
+        configValidacionForm();
+    });
+
+    function configValidacionForm() {
+        var container = $("#formUnidTecn");
+        kendo.init(container);
+        container.kendoValidator({
+            rules: {
+                multipleemails: function (input) {
+                    if (input.hasClass("multiple-email") && input.val()) {
+                        var emailsArray = input.val().split(";");
+                        for (var i = 0; i < emailsArray.length; i++) {
+                            var esValido = emailsArray[i].trim() && Form.esEmailMultiValido(emailsArray[i].trim());
+                            if (!esValido) {
+                                return false;
+                            }
+                        }
+                    }
+                    return true;
+                },
+                email: function (input) {
+                    if (input.hasClass("email") && input.val()) {
+                        var esValido = Form.esEmailMultiValido(input.val().trim());
+                        return esValido;
+                    }
+                    return true;
+                }
+            },
+            messages: {
+                required: "Este campo es obligatorio",
+                multipleemails: "Formato de email múltiple no válido",
+                email: "Formato de email no válido"
+            }
+        });
+    }
+
+    function grabaUnidTecn(e) {
+
+        Main.wait("Grabando...");
+
+        var currentTarget = $(e.currentTarget);
+        var form = $("#formUnidTecn");
+
+        var validator = form.data("kendoValidator");
+        if (!validator.validate()) {
+            Main.unwait();
+            Main.showError("Por favor, revise los datos de la página. Hay datos incompletos o erróneos.");
+            return false;
+        }
+
+        var data = $(form).serialize();
+        var url = $(form).attr("action");
+        $.ajax({
+            type: "POST",
+            url: url,
+            data: data,
+            //dataType: "json"
+        }).done(function (response) {
+            Main.unwait();
+            if (response.Codigo) {
+                if (response.Codigo > 0) {
+                    Main.showInfo(response.Mensaje).then(function (result) {
+                        Main.cierraModal(currentTarget, true, "winFormIngreso");
+                    });
+                } else {
+                    Main.showError(response.Mensaje, "Error");
+                }
+            } else {
+                Main.showAlert("Error inesperado al realizar la operación, por favor, vuelva a intentarlo",
+                    "Error");
+            }
+        }).fail(function (error) {
+            Main.unwait();
+            Main.showError("Ha ocurrido un error al realizar la operación, por favor, vuelva a intentarlo.",
+                "Error");
+        });
+    };
+
+    function cancelaUnidTecn(e) {
+        Main.cierraModal($(e.currentTarget), { resultado: false }, "winFormIngreso");
+    };
+
+
+    //# sourceURL=FormCalendario
+
+
+</script>

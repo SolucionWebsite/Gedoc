@@ -1,0 +1,1471 @@
+﻿@using Gedoc.Helpers
+@using Gedoc.Helpers.Enum
+
+@{
+    Layout = null;
+}
+
+<script src="~/Scripts/form.js"></script>
+
+<script>
+
+    function comboReqAntValueMapper(options) {
+        $.ajax({
+            url: "@Url.Action("RequerimientoResumenByIds", "Json")",
+            type: "POST",
+            data: $.param({ ids: options.value, cerrado: true }, true),
+            success: function (data) {
+                if (data.Resultado && data.Resultado.Codigo < 0) {
+                    Main.showError(data.Resultado.Mensaje);
+                } else {
+                    var data = data.Data && data.Data.length > 0 ? data.Data[0] : null;
+                    options.success(data);
+                }
+            }
+        });
+    }
+
+    function comboValueMapper(options, _url) {
+        $.ajax({
+            url: _url,
+            type: "POST",
+            data: $.param({ ids: options.value, cerrado: false }, true),
+            success: function (data) {
+                if (data.Resultado && data.Resultado.Codigo < 0) {
+                    Main.showError(data.Resultado.Mensaje);
+                } else {
+                    var data = data.Data && data.Data.length > 0 ? data.Data[0] : null;
+                    options.success(data);
+                }
+            }
+        });
+    }
+
+    function comboReqValueMapper(options) {
+        comboValueMapper(options,"@Url.Action("RequerimientoResumenByIds", "Json")")
+    }
+
+    function comboRemValueMapper(options) {
+        comboValueMapper(options,"@Url.Action("RemitenteResumenByIds", "Json")")
+    }
+
+    @*function comboNOValueMapper(options) {
+        comboValueMapper(options,"@Url.Action("NumeroDespacho", "Json")")
+    }*@
+
+    function filterProfesionales() {
+        return {
+            unidadTecnica: $("#UnidadTecnicaAsignadaBusqAv").val(),
+            profesional: $("#ProfesionalUTAsignadoBusqAv").data("kendoComboBox").text()
+        };
+    }
+
+    function TipoBusquedaChange() {
+        var tch = $("#TipoBusquedaBusqAv").val();
+        switch (tch) {
+            case "T": {
+                $("#trFechaIngreso").show();
+                $("#trDocumentoIngreso").show();
+                $("#trFechaDocumentoIngreso").show();
+                $("#trRequerimientoAnterior").show();
+                $("#trRemitente").show();
+                $("#trInstitucionRemitente").show();
+                $("#trCargoProfesionRemitente").show();
+                $("#trNumeroOficioCMN").show();
+                $("#trFechaEmisionOficioCMN").show();
+                $("#trMateria").show();
+                $("#trRegion").show();
+                $("#trComuna").show();
+                $("#trEtiqueta").show();
+                $("#trDenominacionOficial").show();
+                $("#trCategoriaMonumentoNacional").show();
+                $("#trRolSIIPropiedad").show();
+                $("#trUnidadTecnicaAsignada").show();
+                $("#trProfesionalUTAsignado").show();
+                $("#trEstado").show();
+
+                $("#trTipoBitacora").hide();
+                $("#trFechaBitacora").hide();
+                $("#trCreadorBitacora").hide();
+                $("#trObservacionAcuerdoComentarios").hide();
+                $("#trFormaLlegada").hide();
+                $("#trEstadoDespacho").hide();
+
+                $("#trRemitente").find("label").text("Remitente / Destinatario");
+                $("#trInstitucionRemitente").find("label").text("Institución Remitente / Destinatario");
+                $("#trCargoProfesionRemitente").find("label").text("Cargo o Profesión Remitente / Destinatario");
+                $("#trMateria").find("label").text("Materia");
+                //$("#trEstado").find("label").text("Estado");
+                break;
+            }
+            case "I": {
+                $("#trFechaIngreso").show();
+                $("#trDocumentoIngreso").show();
+                $("#trFechaDocumentoIngreso").show();
+                $("#trRequerimientoAnterior").show();
+                $("#trRemitente").show();
+                $("#trInstitucionRemitente").show();
+                $("#trCargoProfesionRemitente").show();
+                $("#trMateria").show();
+                $("#trRegion").show();
+                $("#trComuna").show();
+                $("#trEtiqueta").show();
+                $("#trDenominacionOficial").show();
+                $("#trCategoriaMonumentoNacional").show();
+                $("#trRolSIIPropiedad").show();
+                $("#trUnidadTecnicaAsignada").show();
+                $("#trProfesionalUTAsignado").show();
+                $("#trEstado").show();
+
+                $("#trNumeroOficioCMN").hide();
+                $("#trFechaEmisionOficioCMN").hide();
+                $("#trFormaLlegada").hide();
+                $("#trTipoBitacora").hide();
+                $("#trFechaBitacora").hide();
+                $("#trCreadorBitacora").hide();
+                $("#trObservacionAcuerdoComentarios").hide();
+                $("#trEstadoDespacho").hide();
+
+                $("#trRemitente").find("label").text("Remitente");
+                $("#trInstitucionRemitente").find("label").text("Institución Remintente");
+                $("#trCargoProfesionRemitente").find("label").text("Cargo o Profesión Remitente");
+                $("#trMateria").find("label").text("Materia Ingreso");
+                //$("#trEstado").find("label").text("Estado");
+
+                break;
+            }
+            case "D": {
+                $("#trDocumentoIngreso").show();
+                $("#trRemitente").show();
+                $("#trInstitucionRemitente").show();
+                $("#trNumeroOficioCMN").show();
+                $("#trFechaEmisionOficioCMN").show();
+                $("#trMateria").show();
+                $("#trRegion").show();
+                $("#trComuna").show();
+                $("#trEtiqueta").show();
+                $("#trDenominacionOficial").show();
+                $("#trCategoriaMonumentoNacional").show();
+                $("#trRolSIIPropiedad").show();
+                $("#trUnidadTecnicaAsignada").show();
+                $("#trProfesionalUTAsignado").show();
+                $("#trFormaLlegada").show();
+                $("#trEstadoDespacho").show();
+
+                $("#trFechaIngreso").hide();
+                $("#trFechaDocumentoIngreso").hide();
+                $("#trRequerimientoAnterior").hide();
+                $("#trCargoProfesionRemitente").hide();
+                $("#trTipoBitacora").hide();
+                $("#trFechaBitacora").hide();
+                $("#trCreadorBitacora").hide();
+                $("#trEstado").hide();
+                $("#trObservacionAcuerdoComentarios").hide();
+
+                $("#trRemitente").find("label").text("Destinatario");
+                $("#trInstitucionRemitente").find("label").text("Institución Destinatario");
+                $("#trCargoProfesionRemitente").find("label").text("Cargo o Profesión Destinatario");
+                $("#trMateria").find("label").text("Materia Oficio CMN");
+                //$("#trEstado").find("label").text("Estado Despacho");
+
+
+                break;
+            }
+            case "DI": {
+                $("#trRemitente").show();
+                $("#trInstitucionRemitente").show();
+                $("#trNumeroOficioCMN").show();
+                $("#trFechaEmisionOficioCMN").show();
+                $("#trMateria").show();
+                $("#trRegion").show();
+                $("#trComuna").show();
+                $("#trEtiqueta").show();
+                $("#trDenominacionOficial").show();
+                $("#trCategoriaMonumentoNacional").show();
+                $("#trRolSIIPropiedad").show();
+                $("#trUnidadTecnicaAsignada").show();
+                $("#trProfesionalUTAsignado").show();
+                $("#trFormaLlegada").show();
+                $("#trEstadoDespacho").show();
+
+                $("#trDocumentoIngreso").hide();
+                $("#trFechaIngreso").hide();
+                $("#trFechaDocumentoIngreso").hide();
+                $("#trRequerimientoAnterior").hide();
+                $("#trCargoProfesionRemitente").hide();
+                $("#trTipoBitacora").hide();
+                $("#trFechaBitacora").hide();
+                $("#trCreadorBitacora").hide();
+                $("#trObservacionAcuerdoComentarios").hide();
+                $("#trEstado").hide();
+
+                $("#trRemitente").find("label").text("Destinatario");
+                $("#trInstitucionRemitente").find("label").text("Institución Destinatario");
+                $("#trCargoProfesionRemitente").find("label").text("Cargo o Profesión Destinatario");
+                $("#trMateria").find("label").text("Materia Oficio CMN");
+                //$("#trEstado").find("label").text("Estado Despacho");
+
+                break;
+            }
+            case "B": {
+                $("#trTipoBitacora").show();
+                $("#trDocumentoIngreso").show();
+                $("#trRequerimientoAnterior").show();
+                $("#trFechaBitacora").show();
+                $("#trUnidadTecnicaAsignada").show();
+                $("#trProfesionalUTAsignado").show();
+                $("#trCreadorBitacora").show();
+                $("#trObservacionAcuerdoComentarios").show();
+
+                $("#trFechaIngreso").hide();
+                $("#trFechaDocumentoIngreso").hide();
+                $("#trRemitente").hide();
+                $("#trInstitucionRemitente").hide();
+                $("#trCargoProfesionRemitente").hide();
+                $("#trNumeroOficioCMN").hide();
+                $("#trFechaEmisionOficioCMN").hide();
+                $("#trMateria").hide();
+                $("#trRegion").hide();
+                $("#trComuna").hide();
+                $("#trEtiqueta").hide();
+                $("#trDenominacionOficial").hide();
+                $("#trCategoriaMonumentoNacional").hide();
+                $("#trRolSIIPropiedad").hide();
+                $("#trFormaLlegada").hide();
+                $("#trEstado").hide();
+                $("#trEstadoDespacho").hide();
+
+                break;
+            }
+        }
+    }
+
+    //# sourceURL=BusqudaAvanzadaFiltros
+
+</script>
+<!-- CUERPO DE FORMULARIO DE BUSQUEDA AVANZADA -->
+<div class="container-fluid" id="divBusquedaAvanzada">
+    <form id="formBusquedaAvanzada" class="form-datos text-sm-left">
+        <div class="form-row" id="trTipoBusqueda">
+            <div class="col-md-4 text-right">
+                <label class="label-dato-form">
+                    Tipo
+                </label>
+            </div>
+            <div class="col-md-8">
+                @(Html.Kendo().DropDownList()
+                    .Name("TipoBusquedaBusqAv")
+                    .DataTextField("Text")
+                    .DataValueField("Value")
+                    .BindTo(new List<SelectListItem>() {
+                        new SelectListItem() {
+                        Text = "[TODOS]", Value = "T", Selected = true
+                        },
+                        new SelectListItem() {
+                        Text = "Ingresos", Value = "I"
+                        },
+                        new SelectListItem() {
+                        Text = "Despachos", Value = "D"
+                        },
+                        new SelectListItem() {
+                        Text = "Despachos Iniciativas CMN", Value = "DI"
+                        },
+                        new SelectListItem() {
+                        Text = "Bitácoras", Value = "B"
+                        }
+                    })
+                    .Filter("none")
+                    .HtmlAttributes(new Dictionary<string, object> { { "class", "w-100" } })
+                    .Height(520)
+                    .Events(e=>e.Change("TipoBusquedaChange"))
+                    )
+            </div>
+        </div>
+        <div class="form-row" id="trTipoBitacora">
+            <div class="col-md-4 text-right">
+                <label class="label-dato-form">
+                    Tipo Bitácora
+                </label>
+            </div>
+            <div class="col-md-8">
+                <select id="TipoBitacoraBusqAv" name="TipoBitacoraBusqAv" class="w-100"></select>
+            </div>
+        </div>
+        <div class="form-row" id="trFechaIngreso">
+            <div class="col-md-4 text-right">
+                <label class="label-dato-form">
+                    Fecha Ingreso
+                </label>
+            </div>
+            <div class="col-md-8">
+                @(Html.Kendo().DatePicker()
+                    .Name("FechaIngresoBusqAv")
+                    //.HtmlAttributes(new { required = "required" })
+                    .Max(DateTime.Today)
+                    .Culture("es-ES")
+                    .Format(GeneralData.FORMATO_FECHA_CORTO)
+                    .ParseFormats(new List<string>() { GeneralData.FORMATO_FECHA_CORTO })
+                    //.DateInput()
+                    //.Enable(accesoCampos[CampoIngreso.Doc_FechaIng] != AspectoCampo.Deshabilitado)
+                    )
+                <span class="k-invalid-msg" data-for="FechaIngresoBusqAv"></span>
+            </div>
+        </div>
+        <div class="form-row" id="trDocumentoIngreso">
+            <div class="col-md-4 text-right">
+                <label class="label-dato-form">
+                    N° Documento de Ingreso
+                </label>
+            </div>
+            <div class="col-md-8">
+                @(Html.Kendo().ComboBox()
+                    .Name("DocumentoIngresoIdBusqAv")
+                    .DataTextField("Titulo")
+                    .DataValueField("Id")
+                    .Filter("contains")
+                    .HtmlAttributes(new Dictionary<string, object> { { "class", "w-100" } })
+                    .Height(520)
+                    .Messages(Gedoc.WebApp.Helpers.KendoHelper.SetComboBoxMessages)
+                    .Virtual(v => v.ItemHeight(26).ValueMapper("comboReqValueMapper").MapValueTo("dataItem"))
+                    )
+            </div>
+        </div>
+        <div class="form-row" id="trFechaDocumentoIngreso">
+            <div class="col-md-4 text-right">
+                <label class="label-dato-form">
+                    Fecha Documento de Ingreso
+                </label>
+            </div>
+            <div class="col-md-8">
+                @(Html.Kendo().DatePicker()
+                    .Name("FechaDocumentoIngresoBusqAv")
+                    //.HtmlAttributes(new { required = "required" })
+                    .Max(DateTime.Today)
+                    .Culture("es-ES")
+                    .Format(GeneralData.FORMATO_FECHA_CORTO)
+                    .ParseFormats(new List<string>() { GeneralData.FORMATO_FECHA_CORTO })
+                    //.DateInput()
+                    //.Enable(accesoCampos[CampoIngreso.Doc_FechaIng] != AspectoCampo.Deshabilitado)
+                    )
+                <span class="k-invalid-msg" data-for="FechaDocumentoIngresoBusqAv"></span>
+            </div>
+        </div>
+        <div class="form-row" id="trRequerimientoAnterior">
+            <div class="col-md-4 text-right">
+                <label class="label-dato-form">
+                    Requerimiento Anterior
+                </label>
+            </div>
+            <div class="col-md-8">
+                @(Html.Kendo().ComboBox()
+                    .Name("RequerimientoAnteriorIdBusqAv")
+                    .DataTextField("Titulo")
+                    .DataValueField("Id")
+                    .Filter("contains")
+                    .HtmlAttributes(new Dictionary<string, object> { { "class", "w-100" } })
+                    .Height(520)
+                    .Messages(Gedoc.WebApp.Helpers.KendoHelper.SetComboBoxMessages)
+                    .Virtual(v => v.ItemHeight(26).ValueMapper("comboReqAntValueMapper").MapValueTo("dataItem"))
+                    )
+            </div>
+        </div>
+        <div class="form-row" id="trRemitente">
+            <div class="col-md-4 text-right">
+                <label class="label-dato-form">
+                    Remitente
+                </label>
+            </div>
+            <div class="col-md-8">
+                @(Html.Kendo().ComboBox()
+                    .Name("RemitenteIdBusqAv")
+                    .HtmlAttributes(new { @class = "w-100" })
+                    .DataTextField("Titulo")
+                    .DataValueField("Id")
+                    .Filter("contains")
+                    .Height(520)
+                    .Messages(Gedoc.WebApp.Helpers.KendoHelper.SetComboBoxMessages)
+                    .Virtual(v => v.ItemHeight(26).ValueMapper("comboRemValueMapper").MapValueTo("dataItem"))
+                    )
+            </div>
+        </div>
+        <div class="form-row" id="trInstitucionRemitente">
+            <div class="col-md-4 text-right">
+                <label class="label-dato-form">
+                    Institución Remitente
+                </label>
+            </div>
+            <div class="col-md-8">
+                @(Html.Kendo().TextBox()
+                    .Name("InstitucionRemitenteBusqAv")
+                    .HtmlAttributes(new { @class = "w-100" })
+                    )
+            </div>
+        </div>
+        <div class="form-row" id="trCargoProfesionRemitente">
+            <div class="col-md-4 text-right">
+                <label class="label-dato-form">
+                    Cargo o Profesión Remitente
+                </label>
+            </div>
+            <div class="col-md-8">
+                @(Html.Kendo().TextBox()
+                    .Name("CargoProfesionRemitenteBusqAv")
+                    .HtmlAttributes(new { @class = "w-100" })
+                    )
+            </div>
+        </div>
+        <div class="form-row" id="trNumeroOficioCMN">
+            <div class="col-md-4 text-right">
+                <label class="label-dato-form">
+                    Número Oficio CMN
+                </label>
+            </div>
+            <div class="col-md-8">
+                @(Html.Kendo().ComboBox()
+                    .Name("NumeroOficioCMNBusqAv")
+                    .HtmlAttributes(new { @class = "w-100" })
+                    .DataTextField("Titulo")
+                    .DataValueField("Id")
+                    .Filter("contains")
+                    .Height(520)
+                    .Messages(Gedoc.WebApp.Helpers.KendoHelper.SetComboBoxMessages)
+                    .Virtual(v => v.ItemHeight(26)
+                        // .ValueMapper("comboNOValueMapper")
+                        .MapValueTo("dataItem"))
+                    )
+            </div>
+        </div>
+        <div class="form-row" id="trFechaEmisionOficioCMN">
+            <div class="col-md-4 text-right">
+                <label class="label-dato-form">
+                    Fecha Emisión Oficio CMN
+                </label>
+            </div>
+            <div class="col-md-8">
+                @(Html.Kendo().DatePicker()
+                    .Name("FechaEmisionOficioCMNBusqAv")
+                    //.HtmlAttributes(new { required = "required" })
+                    .Max(DateTime.Today)
+                    .Culture("es-ES")
+                    .Format(GeneralData.FORMATO_FECHA_CORTO)
+                    .ParseFormats(new List<string>() { GeneralData.FORMATO_FECHA_CORTO })
+                    //.DateInput()
+                    //.Enable(accesoCampos[CampoIngreso.Doc_FechaIng] != AspectoCampo.Deshabilitado)
+                    )
+                <span class="k-invalid-msg" data-for="FechaEmisionOficioCMNBusqAv"></span>
+            </div>
+        </div>
+        <div class="form-row" id="trMateria">
+            <div class="col-md-4 text-right">
+                <label class="label-dato-form">
+                    Materia
+                </label>
+            </div>
+            <div class="col-md-8">
+                @(Html.Kendo().TextBox()
+                    .Name("MateriaBusqAv")
+                    .HtmlAttributes(new { @class = "w-100" })
+                    )
+            </div>
+        </div>
+        <div class="form-row" id="trRegion">
+            <div class="col-md-4 text-right">
+                <label class="label-dato-form">
+                    Región
+                </label>
+            </div>
+            <div class="col-md-8">
+                <select id="RegionBusqAv" name="RegionBusqAv" class="w-100"></select>
+            </div>
+        </div>
+        <div class="form-row" id="trComuna">
+            <div class="col-md-4 text-right">
+                <label class="label-dato-form">
+                    Comuna
+                </label>
+            </div>
+            <div class="col-md-8">
+                <select id="ComunaBusqAv" name="ComunaBusqAv" class="w-100"></select>
+            </div>
+        </div>
+        <div class="form-row" id="trEtiqueta">
+            <div class="col-md-4 text-right">
+                <label class="label-dato-form">
+                    Etiqueta
+                </label>
+            </div>
+            <div class="col-md-8">
+                <select id="EtiquetaBusqAv" name="EtiquetaBusqAv" class="w-100"></select>
+            </div>
+        </div>
+        <div class="form-row" id="trDenominacionOficial">
+            <div class="col-md-4 text-right">
+                <label class="label-dato-form">
+                    Denominación Oficial
+                </label>
+            </div>
+            <div class="col-md-8">
+                @(Html.Kendo().TextBox()
+                    .Name("DenominacionOficialBusqAv")
+                    .HtmlAttributes(new { @class = "w-100" })
+                    )
+            </div>
+        </div>
+        <div class="form-row" id="trCategoriaMonumentoNacional">
+            <div class="col-md-4 text-right">
+                <label class="label-dato-form">
+                    Categoría de Monumento Nacional
+                </label>
+            </div>
+            <div class="col-md-8">
+                <select id="CategoriaMonumentoNacionalBusqAv" name="CategoriaMonumentoNacionalBusqAv" class="w-100"></select>
+            </div>
+        </div>
+        <div class="form-row" id="trRolSIIPropiedad">
+            <div class="col-md-4 text-right">
+                <label class="label-dato-form">
+                    Rol SII Propiedad
+                </label>
+            </div>
+            <div class="col-md-8">
+                @(Html.Kendo().TextBox()
+                    .Name("RolSIIPropiedadBusqAv")
+                    .HtmlAttributes(new { @class = "w-100" })
+                    )
+            </div>
+        </div>
+        <div class="form-row" id="trFechaBitacora">
+            <div class="col-md-4 text-right">
+                <label class="label-dato-form">
+                    Fecha Bitácora
+                </label>
+            </div>
+            <div class="col-md-8">
+                @(Html.Kendo().DatePicker()
+                    .Name("FechaBitacoraBusqAv")
+                    //.HtmlAttributes(new { required = "required" })
+                    .Max(DateTime.Today)
+                    .Culture("es-ES")
+                    .Format(GeneralData.FORMATO_FECHA_CORTO)
+                    .ParseFormats(new List<string>() { GeneralData.FORMATO_FECHA_CORTO })
+                    //.DateInput()
+                    //.Enable(accesoCampos[CampoIngreso.Doc_FechaIng] != AspectoCampo.Deshabilitado)
+                    )
+                <span class="k-invalid-msg" data-for="FechaBitacoraBusqAv"></span>
+            </div>
+        </div>
+        <div class="form-row" id="trUnidadTecnicaAsignada">
+            <div class="col-md-4 text-right">
+                <label class="label-dato-form">
+                    Unidad Técnica Asignada
+                </label>
+            </div>
+            <div class="col-md-8">
+                <select id="UnidadTecnicaAsignadaBusqAv" name="UnidadTecnicaAsignadaBusqAv" class="w-100"></select>
+            </div>
+        </div>
+        <div class="form-row" id="trProfesionalUTAsignado">
+            <div class="col-md-4 text-right">
+                <label class="label-dato-form">
+                    Profesional UT Asignado
+                </label>
+            </div>
+            <div class="col-md-8">
+                <select id="ProfesionalUTAsignadoBusqAv" name="ProfesionalUTAsignadoBusqAv" class="w-100"></select>
+            </div>
+        </div>
+        <div class="form-row" id="trCreadorBitacora">
+            <div class="col-md-4 text-right">
+                <label class="label-dato-form">
+                    Creador Bitácora
+                </label>
+            </div>
+            <div class="col-md-8">
+                <select id="CreadorBitacoraBusqAv" name="CreadorBitacoraBusqAv" class="w-100"></select>
+            </div>
+        </div>
+        <div class="form-row" id="trFormaLlegada">
+            <div class="col-md-4 text-right">
+                <label class="label-dato-form">
+                    Medio de Despacho
+                </label>
+            </div>
+            <div class="col-md-8">
+                <select id="FormaLlegadaBusqAv" name="FormaLlegadaBusqAv" class="w-100"></select>
+            </div>
+        </div>
+        <div class="form-row" id="trEstado">
+            <div class="col-md-4 text-right">
+                <label class="label-dato-form">
+                    Estado
+                </label>
+            </div>
+            <div class="col-md-8">
+                <select id="EstadoBusqAv" name="EstadoBusqAv" class="w-100"></select>
+            </div>
+        </div>
+        <div class="form-row" id="trEstadoDespacho">
+            <div class="col-md-4 text-right">
+                <label class="label-dato-form">
+                    Estado Despacho
+                </label>
+            </div>
+            <div class="col-md-8">
+                <select id="EstadoDespachoBusqAv" name="EstadoDespachoBusqAv" class="w-100"></select>
+            </div>
+        </div>
+        <div class="form-row" id="trObservacionAcuerdoComentarios">
+            <div class="col-md-4 text-right">
+                <label class="label-dato-form">
+                    Observación / Acuerdo / Comentarios
+                </label>
+            </div>
+            <div class="col-md-8">
+                @(Html.Kendo().TextBox()
+                    .Name("ObservacionAcuerdoComentariosBusqAv")
+                    .HtmlAttributes(new { @class = "w-100" })
+                    )
+            </div>
+        </div>
+
+        <div class="footer-modal">
+            <div class="form-row">
+                <div class="offset-md-3 col-md-2 text-center">
+                    <button type="button" id="btnBusca" class="k-primary-blue k-button" onclick="buscarDatos(event);">Aceptar</button>
+                </div>
+                <div class="col-md-2 text-center">
+                    <button type="button" id="btnCancelaBusqueda" class="k-danger k-button" onclick="cancelarBusqueda(event);">Cancelar</button>
+                </div>
+                <div class="offset-md-1 col-md-4 text-center">
+                    <button type="button" id="btnLimpiaBusqueda" class="k-primary-green k-button" onclick="limpiarBusqueda(event);">Limpiar campos</button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+
+    kendo.culture("es-ES"); // Tiene el formato de fecha dd/MM/yyyy q es el q se usa en la aplicación, la cultura es-CL tiene formato dd-MM-yyyy
+
+
+    function onChangeComboFix(e) {
+        if (this.value() && this.selectedIndex == -1) {
+            //Variante 3. Ref. https://www.telerik.com/forums/limit-combobox-text-entered-to-items-in-the-drop-down-list-except-if-a-certain-option-is-selected-in-the-parent-combobox-#dd-hFtBVLUmOuUl_tLNJbg
+            var that = this;
+            if (that.selectedIndex == -1) {
+                that.dataSource
+                    .one("change", function () {
+                        that.select(1);
+                    })
+                    .filter({
+                        value: "",
+                        field: that.options.dataTextField,
+                        operator: "contains"
+                    });
+            }
+        }
+    }
+
+    var validator;
+    $(function () {
+
+        //$(".k-widget.k-window").css("top", "10px");
+
+        kendo.ui.progress($("#divBusquedaAvanzada"), true);
+
+        TipoBusquedaChange();
+
+        inicializaBA();
+
+        validator = $("#formBusquedaAvanzada").kendoValidator({
+            rules: {
+                fechaCorrecta: function (input) {
+                    if (input.is("[data-role=datepicker]") && input.val() != "") {
+                        return input.data("kendoDatePicker").value();
+                    } else {
+                        return true;
+                    }
+                }
+            },
+            messages:
+            {
+                required: "Este campo es obligatorio",
+                fechaCorrecta: "Fecha incorrecta"
+            }
+        }).data("kendoValidator");
+
+        Form.inicializaForm();
+
+        kendo.ui.progress($("#divBusquedaAvanzada"), false);
+    });
+
+    function buscarDatos(e) {
+
+        if (!validarFiltros()) {
+             Main.showAlert("Debe seleccionar al menos un filtro.");
+            return;
+        }
+
+        if (validator.validate()) {
+
+            var _data = $("#formBusquedaAvanzada :input")
+                .filter(function(index, element) {
+                    return $(element).val() != '';
+                })
+                .serialize(); // $('#formBusquedaAvanzada').serialize();
+
+            $.ajax({
+                url: '@Url.Action("GetPreview")',
+                type: "POST",
+                async: false,
+                data: _data,
+                success: function (data) {
+                    if (data && data.I + data.D + data.DI + data.B > 0) {
+                        var msg1 = "La búsqueda retornará ";
+                        var msg2 = "";
+                        var msg3 = "<br/><span>¿Desea continuar?</span>";
+                        if (data.I > 0) {
+                            if (msg2 != "") msg2 += ", ";
+                            msg2 += data.I + " registros de Ingresos";
+                        }
+                        if (data.D > 0) {
+                            if (msg2 != "") msg2 += ", ";
+                            msg2 += data.D + " registros de Despachos";
+                        }
+                        if (data.DI > 0) {
+                            if (msg2 != "") msg2 += ", ";
+                            msg2 += data.DI + " registros de Despachos Iniciativas";
+                        }
+                        if (data.B > 0) {
+                            if (msg2 != "") msg2 += ", ";
+                            msg2 += data.B + " registros de Bitácoras";
+                        }
+
+                        if ($("#TipoBusquedaBusqAv").val() == "T") {
+                            // Si el tipo de búsqueda es Todos entonces siempre se muestran todos los tabs (Requerimientos,
+                            // Despachos, Despachos Iniciativas y Bitácoras) aunque no tengan datos
+                            data.I = data.I || -1;
+                            data.D = data.D || -1;
+                            data.DI = data.DI || -1;
+                            data.B = data.B || -1;
+                        }
+
+                        Main.showConfirm(msg1 + msg2 + msg3, "Búsqueda", true).then(function (isOk) {
+                            if (!isOk) return false;
+
+                            //var dataObj = {};
+                            //$('#formBusquedaAvanzada').serializeArray().map(function (x) { dataObj[x.name] = x.value; });
+                            //var dataQuery = $.param(dataObj);
+
+                            window.parent.parent.scrollTo(0, 0);
+                            var winResult = Main.muestraVentanaModal("Resultado Búsqueda Avanzada",
+                                '@Url.Action("Resultado", "BusquedaAvanzada")?' + _data + "&" + $.param(data),
+                                "95%",
+                                "MIN450",
+                                false,
+                                "winBAResult",
+                                true);
+                            Main.cierraModal($(e.currentTarget), { resultado: true });
+                        }, function () {
+                            //Main.cierraModal($(e.currentTarget), { resultado: true });
+                        });
+                    }
+                    else
+                         Main.showAlert("La búsqueda no retornó resultados.");
+                },
+                error: function (data) {
+                     Main.showAlert('Ocurrió un error...');
+                }
+            });
+
+
+            //$("#busqDocumentoIngreso").val($("#documentoBusqBand").data("kendoDropDownList").value());
+            //$("#busqUnidadTecnica").val($("#utBusqBand").data("kendoComboBox").value());
+            //$("#busqEstado").val($("#estadoBusqBand").data("kendoComboBox").value());
+            //$("#busqFechaDesde").val($("#fechaDesdeBusqBand").val());
+            //$("#busqFechaHasta").val($("#fechaHastaBusqBand").val());
+
+            //Main.cierraModal($(e.currentTarget), {resultado: true});
+        }
+    }
+
+    function cancelarBusqueda(e) {
+        Main.cierraModal($(e.currentTarget), {resultado: false});
+    }
+
+    function validarFiltros() {
+        var ok = true;
+
+        switch ($("#TipoBusquedaBusqAv").val()) {
+            case "T": {
+                ok = (
+                        $("#FechaIngresoBusqAv").val().trim() != "" ||
+                        $("#DocumentoIngresoIdBusqAv").data("kendoComboBox").value().trim() != "" ||
+                        $("#FechaDocumentoIngresoBusqAv").val().trim() != "" ||
+                        $("#RequerimientoAnteriorIdBusqAv").data("kendoComboBox").value().trim() != "" ||
+                        $("#RemitenteIdBusqAv").data("kendoComboBox").value().trim() != "" ||
+                        $("#InstitucionRemitenteBusqAv").val().trim() != "" ||
+                        $("#CargoProfesionRemitenteBusqAv").val().trim() != "" ||
+                        $("#NumeroOficioCMNBusqAv").data("kendoComboBox").value().trim() != "" ||
+                        $("#FechaEmisionOficioCMNBusqAv").val().trim() != "" ||
+                        $("#MateriaBusqAv").val().trim() != "" ||
+                        $("#RegionBusqAv").data("kendoComboBox").value().trim() != "" ||
+                        $("#ComunaBusqAv").data("kendoComboBox").value().trim() != "" ||
+                        $("#EtiquetaBusqAv").data("kendoComboBox").value().trim() != "" ||
+                        $("#DenominacionOficialBusqAv").val().trim() != "" ||
+                        $("#CategoriaMonumentoNacionalBusqAv").data("kendoComboBox").value().trim() != "" ||
+                        $("#RolSIIPropiedadBusqAv").val().trim() != "" ||
+                        $("#UnidadTecnicaAsignadaBusqAv").data("kendoComboBox").value().trim() != "" ||
+                        $("#ProfesionalUTAsignadoBusqAv").data("kendoComboBox").value().trim() != "" ||
+                        $("#EstadoBusqAv").data("kendoComboBox").value().trim() != ""
+                    )
+                break;
+            }
+            case "I": {
+                ok = (
+                    $("#FechaIngresoBusqAv").val().trim() != "" ||
+                    $("#DocumentoIngresoIdBusqAv").data("kendoComboBox").value().trim() != "" ||
+                    $("#FechaDocumentoIngresoBusqAv").val().trim() != "" ||
+                    $("#RequerimientoAnteriorIdBusqAv").data("kendoComboBox").value().trim() != "" ||
+                    $("#RemitenteIdBusqAv").data("kendoComboBox").value().trim() != "" ||
+                    $("#InstitucionRemitenteBusqAv").val().trim() != "" ||
+                    $("#CargoProfesionRemitenteBusqAv").val().trim() != "" ||
+                    $("#MateriaBusqAv").val().trim() != "" ||
+                    $("#RegionBusqAv").data("kendoComboBox").value().trim() != "" ||
+                    $("#ComunaBusqAv").data("kendoComboBox").value().trim() != "" ||
+                    $("#EtiquetaBusqAv").data("kendoComboBox").value().trim() != "" ||
+                    $("#DenominacionOficialBusqAv").val().trim() != "" ||
+                    $("#CategoriaMonumentoNacionalBusqAv").data("kendoComboBox").value().trim() != "" ||
+                    $("#RolSIIPropiedadBusqAv").val().trim() != "" ||
+                    $("#UnidadTecnicaAsignadaBusqAv").data("kendoComboBox").value().trim() != "" ||
+                    $("#ProfesionalUTAsignadoBusqAv").data("kendoComboBox").value().trim() != "" ||
+                    $("#EstadoBusqAv").data("kendoComboBox").value().trim() != ""
+                )
+                break;
+            }
+            case "D": {
+                ok = (
+                    $("#DocumentoIngresoIdBusqAv").data("kendoComboBox").value().trim() != "" ||
+                    $("#RemitenteIdBusqAv").data("kendoComboBox").value().trim() != "" ||
+                    $("#InstitucionRemitenteBusqAv").val().trim() != "" ||
+                    $("#NumeroOficioCMNBusqAv").data("kendoComboBox").value().trim() != "" ||
+                    $("#FechaEmisionOficioCMNBusqAv").val().trim() != "" ||
+                    $("#MateriaBusqAv").val().trim() != "" ||
+                    $("#RegionBusqAv").data("kendoComboBox").value().trim() != "" ||
+                    $("#ComunaBusqAv").data("kendoComboBox").value().trim() != "" ||
+                    $("#EtiquetaBusqAv").data("kendoComboBox").value().trim() != "" ||
+                    $("#DenominacionOficialBusqAv").val().trim() != "" ||
+                    $("#CategoriaMonumentoNacionalBusqAv").data("kendoComboBox").value().trim() != "" ||
+                    $("#RolSIIPropiedadBusqAv").val().trim() != "" ||
+                    $("#UnidadTecnicaAsignadaBusqAv").data("kendoComboBox").value().trim() != "" ||
+                    $("#ProfesionalUTAsignadoBusqAv").data("kendoComboBox").value().trim() != "" ||
+                    $("#FormaLlegadaBusqAv").data("kendoComboBox").value().trim() != "" ||
+                    $("#EstadoDespachoBusqAv").data("kendoComboBox").value().trim() != ""
+                )
+                break;
+            }
+            case "DI": {
+                ok = (
+                    $("#RemitenteIdBusqAv").data("kendoComboBox").value().trim() != "" ||
+                    $("#InstitucionRemitenteBusqAv").val().trim() != "" ||
+                    $("#NumeroOficioCMNBusqAv").data("kendoComboBox").value().trim() != "" ||
+                    $("#FechaEmisionOficioCMNBusqAv").val().trim() != "" ||
+                    $("#MateriaBusqAv").val().trim() != "" ||
+                    $("#RegionBusqAv").data("kendoComboBox").value().trim() != "" ||
+                    $("#ComunaBusqAv").data("kendoComboBox").value().trim() != "" ||
+                    $("#EtiquetaBusqAv").data("kendoComboBox").value().trim() != "" ||
+                    $("#DenominacionOficialBusqAv").val().trim() != "" ||
+                    $("#CategoriaMonumentoNacionalBusqAv").data("kendoComboBox").value().trim() != "" ||
+                    $("#RolSIIPropiedadBusqAv").val().trim() != "" ||
+                    $("#UnidadTecnicaAsignadaBusqAv").data("kendoComboBox").value().trim() != "" ||
+                    $("#ProfesionalUTAsignadoBusqAv").data("kendoComboBox").value().trim() != "" ||
+                    $("#FormaLlegadaBusqAv").data("kendoComboBox").value().trim() != "" ||
+                    $("#EstadoDespachoBusqAv").data("kendoComboBox").value().trim() != ""
+                )
+                break;
+            }
+            case "B": {
+                ok = (
+                    $("#TipoBitacoraBusqAv").data("kendoComboBox").value().trim() != "" ||
+                    $("#DocumentoIngresoIdBusqAv").data("kendoComboBox").value().trim() != "" ||
+                    $("#RequerimientoAnteriorIdBusqAv").data("kendoComboBox").value().trim() != "" ||
+                    $("#FechaBitacoraBusqAv").val().trim() != "" ||
+                    $("#UnidadTecnicaAsignadaBusqAv").data("kendoComboBox").value().trim() != "" ||
+                    $("#ProfesionalUTAsignadoBusqAv").data("kendoComboBox").value().trim() != "" ||
+                    $("#CreadorBitacoraBusqAv").data("kendoComboBox").value().trim() != "" ||
+                    $("#ObservacionAcuerdoComentariosBusqAv").val().trim() != ""
+                )
+                break;
+            }
+        }
+
+        return ok;
+    }
+
+    function limpiarBusqueda(e) {
+        $("#TipoBusquedaBusqAv").val("T");
+        if ($("#TipoBitacoraBusqAv").length)
+            $("#TipoBitacoraBusqAv").data("kendoComboBox").value("");
+        $("#FechaIngresoBusqAv").val("");
+        $("#DocumentoIngresoIdBusqAv").data("kendoComboBox").value("");
+        $("#FechaDocumentoIngresoBusqAv").val(null);
+        $("#RequerimientoAnteriorIdBusqAv").data("kendoComboBox").value("");
+        $("#RemitenteIdBusqAv").data("kendoComboBox").value("");
+        $("#InstitucionRemitenteBusqAv").val(null);
+        $("#CargoProfesionRemitenteBusqAv").val(null);
+        $("#NumeroOficioCMNBusqAv").data("kendoComboBox").value("");
+        $("#FechaEmisionOficioCMNBusqAv").val(null);
+        $("#MateriaBusqAv").val(null);
+        $("#RegionBusqAv").data("kendoComboBox").value("");
+        $("#ComunaBusqAv").data("kendoComboBox").value("");
+        $("#EtiquetaBusqAv").data("kendoComboBox").value("");
+        $("#DenominacionOficialBusqAv").val(null);
+        $("#CategoriaMonumentoNacionalBusqAv").data("kendoComboBox").value("");
+        $("#RolSIIPropiedadBusqAv").val(null);
+        $("#FechaBitacoraBusqAv").val(null);
+        $("#UnidadTecnicaAsignadaBusqAv").data("kendoComboBox").value("");
+        $("#ProfesionalUTAsignadoBusqAv").data("kendoComboBox").value("");
+        $("#ProfesionalUTAsignadoBusqAv").data("kendoComboBox").enable(false);
+        if ($("#CreadorBitacoraBusqAv").length)
+            $("#CreadorBitacoraBusqAv").data("kendoComboBox").value("");
+        if ($("#FormaLlegadaBusqAv").length)
+            $("#FormaLlegadaBusqAv").data("kendoComboBox").value("");
+        $("#EstadoBusqAv").data("kendoComboBox").value("");
+        $("#EstadoDespachoBusqAv").data("kendoComboBox").value("");
+        $("#ObservacionAcuerdoComentariosBusqAv").val(null);
+
+        validator.hideMessages();
+    }
+
+    function getConfigTipoBitacora() {
+        var url = '@Url.Action("MantenedorGenerico", "Json")';
+        var ctrol = $("#TipoBitacoraBusqAv");
+        var ds = new kendo.data.DataSource({
+            transport: {
+                read: {
+                    type: "POST",
+                    dataType: "json",
+                    data: function() {
+                        return {
+                            idM: "@((int) Mantenedor.TipoBitacora)"
+                        }
+                    },
+                    url: url
+                }
+            },
+            schema: {
+                data: "Data",
+            },
+            requestStart: function() {
+                Main.enEspera(ctrol, true);
+            },
+            requestEnd: function(e) {
+                Main.enEspera(ctrol, false);
+                Main.notificaResultado(e, true);
+            }
+        });
+        var cfg = {
+            dataTextField: "Titulo",
+            dataValueField: "Id",
+            dataSource: ds,
+            filter: "contains",
+            messages: Main.getMensajeCombobox()
+        };
+        return cfg;
+    }
+    function getConfigRegion() {
+        var url = '@Url.Action("MantenedorGenerico", "Json")';
+        var ctrol = $("#RegionBusqAv");
+        var ds = new kendo.data.DataSource({
+            transport: {
+                read: {
+                    type: "POST",
+                    dataType: "json",
+                    data: function() {
+                        return {
+                            idM: "@((int) Mantenedor.Region)",
+                        }
+                    },
+                    url: url
+                }
+            },
+            schema: {
+                data: "Data",
+            },
+            requestStart: function() {
+                Main.enEspera(ctrol, true);
+            },
+            requestEnd: function(e) {
+                Main.enEspera(ctrol, false);
+                Main.notificaResultado(e, true);
+            }
+        });
+        var cfg = {
+            dataTextField: "Titulo",
+            dataValueField: "Id",
+            dataSource: ds,
+            filter: "contains",
+            select: cambiaRegion,
+            deselect: cambiaRegion,
+            messages: Main.getMensajeCombobox()
+        };
+        return cfg;
+    }
+    function cambiaRegion() {
+        setTimeout(function () {
+            $("#ComunaBusqAv").data("kendoComboBox").dataSource.read();
+        },
+            50);
+
+    }
+    function getConfigComuna() {
+        var url = '@Url.Action("MantenedorGenerico", "Json")';
+        var ctrol = $("#ComunaBusqAv");
+        var ds = new kendo.data.DataSource({
+            transport: {
+                read: {
+                    type: "POST",
+                    dataType: "json",
+                    data: function() {
+                        return {
+                            idM: "@((int) Mantenedor.Comuna)",
+                            extra: $("#RegionBusqAv").data("kendoComboBox")
+                                ? $("#RegionBusqAv").data("kendoComboBox").value()
+                                : "",
+                            extra2: "FullTitle"
+                        }
+                    },
+                    url: url
+                }
+            },
+            schema: {
+                data: "Data",
+            },
+            requestStart: function() {
+                Main.enEspera(ctrol, true);
+            },
+            requestEnd: function(e) {
+                Main.enEspera(ctrol, false);
+                Main.notificaResultado(e, true);
+            }
+        });
+        var cfg = {
+            dataTextField: "Titulo",
+            dataValueField: "Id",
+            dataSource: ds,
+            filter: "contains",
+            messages: Main.getMensajeCombobox()
+        };
+        return cfg;
+    }
+    function getConfigEtiqueta() {
+        var url = '@Url.Action("MantenedorGenerico", "Json")';
+        var ctrol = $("#EtiquetaBusqAv");
+        var ds = new kendo.data.DataSource({
+            transport: {
+                read: {
+                    type: "POST",
+                    dataType: "json",
+                    data: function() {
+                        return {
+                            idM: "@((int) Mantenedor.Etiqueta)"
+                        }
+                    },
+                    url: url
+                }
+            },
+            schema: {
+                data: "Data",
+            },
+            requestStart: function() {
+                Main.enEspera(ctrol, true);
+            },
+            requestEnd: function(e) {
+                Main.enEspera(ctrol, false);
+                Main.notificaResultado(e, true);
+            }
+        });
+        var cfg = {
+            dataTextField: "Titulo",
+            dataValueField: "Id",
+            dataSource: ds,
+            filter: "contains",
+            messages: Main.getMensajeCombobox()
+        };
+        return cfg;
+    }
+
+    function getConfigCategoriaMN() {
+        var url = '@Url.Action("MantenedorGenerico", "Json")';
+        var ctrol = $("#CategoriaMonumentoNacionalBusqAv");
+        var ds = new kendo.data.DataSource({
+            transport: {
+                read: {
+                    type: "POST",
+                    dataType: "json",
+                    data: function() {
+                        return {
+                            idM: "@((int) Mantenedor.CategoriaMn)"
+                        }
+                    },
+                    url: url
+                }
+            },
+            schema: {
+                data: "Data",
+            },
+            requestStart: function() {
+                Main.enEspera(ctrol, true);
+            },
+            requestEnd: function(e) {
+                Main.enEspera(ctrol, false);
+                Main.notificaResultado(e, true);
+            }
+        });
+        var cfg = {
+            dataTextField: "Titulo",
+            dataValueField: "Id",
+            dataSource: ds,
+            filter: "contains",
+            messages: Main.getMensajeCombobox()
+        };
+        return cfg;
+    }
+
+    function getConfigUT() {
+        var url = '@Url.Action("MantenedorGenerico", "Json")';
+        var ctrol = $("#UnidadTecnicaAsignadaBusqAv");
+        var ds = new kendo.data.DataSource({
+            transport: {
+                read: {
+                    type: "POST",
+                    dataType: "json",
+                    data: function() {
+                        return {
+                            idM: "@((int) Mantenedor.UnidadTecnica)"
+                        }
+                    },
+                    url: url
+                }
+            },
+            schema: {
+                data: "Data",
+            },
+            requestStart: function() {
+                Main.enEspera(ctrol, true);
+            },
+            requestEnd: function(e) {
+                Main.enEspera(ctrol, false);
+                Main.notificaResultado(e, true);
+            }
+        });
+        var cfg = {
+            dataTextField: "Titulo",
+            dataValueField: "Id",
+            dataSource: ds,
+            filter: "contains",
+            messages: Main.getMensajeCombobox(),
+            cascade: function() {
+                // alert("cascadeeeee");
+            }
+        };
+        return cfg;
+    }
+
+    function cambiaUtAsignada(e) {
+        $("#ProfesionalUTAsignadoBusqAv").data("kendoComboBox").value("");
+        if (!$("#UnidadTecnicaAsignadaBusqAv").data("kendoComboBox").value().length) {
+            $("#ProfesionalUTAsignadoBusqAv").data("kendoComboBox").enable(false);
+        } else {
+            $("#ProfesionalUTAsignadoBusqAv").data("kendoComboBox").enable(true);
+            setTimeout(function () {
+                $("#ProfesionalUTAsignadoBusqAv").data("kendoComboBox").dataSource.read();
+                },
+                50);
+        }
+    }
+
+    function onDataBoundProfUt(e) {
+        //if ($("#UnidadTecnicaAsignadaBusqAv").data("kendoComboBox").selectedIndex == -1) {
+        //    $("#ProfesionalUTAsignadoBusqAv").data("kendoComboBox").value("");
+        //}
+    }
+
+    function getConfigProfesional() {
+        var url = '@Url.Action("GetProfesionalesUT", "BusquedaAvanzada")';
+        var ctrol = $("#ProfesionalUTAsignadoBusqAv");
+
+        var ds = /*new kendo.data.DataSource(*/{
+            serverFiltering: true,
+            transport: {
+                read: {
+                    type: "GET",
+                    dataType: "json",
+                    data: function() {
+                        return filterProfesionales();
+                    },
+                    url: url
+                }
+            },
+            /*schema: {
+                data: "Data",
+            },
+            requestStart: function() {
+                Main.enEspera(ctrol, true);
+            },
+            requestEnd: function (e) {
+                Main.enEspera(ctrol, false);
+                Main.notificaResultado(e, true);
+            }*/
+        }/*)*/;
+
+        var cfg = {
+            //cascadeFrom: "UnidadTecnicaAsignadaBusqAv", 
+            /**
+             * No funcionó bien el cascadeFrom.Al seleccionar UT y seleccionar un profesinal entonces al cambiar de UT se mantenía seleccionado
+             * el profesinal. También cuando se seleccionaba UT, se seleccionaba Profesional, luego se limpiaba el campo UT (se limpiaba automáticamente
+             * el campo Profseional, eso ok) entonces al seleccionar nuevamente cualquier UT aparecía seleccionado el profesional q estaba seleccionado anteriormente
+            */
+            dataSource: ds,
+            dataTextField: "Titulo",
+            dataValueField: "Id",
+            filter: "contains",
+            messages: Main.getMensajeCombobox(),
+            dataBound: onDataBoundProfUt,
+            autoBind: false,
+            enable: false
+        };
+        return cfg;
+
+    }
+
+    function getConfigFormaLlegada() {
+        var url = '@Url.Action("MantenedorGenerico", "Json")';
+        var ctrol = $("#EtiquetaBusqAv");
+        var ds = new kendo.data.DataSource({
+            transport: {
+                read: {
+                    type: "POST",
+                    dataType: "json",
+                    data: function() {
+                        return {
+                            idM: "@((int) Mantenedor.FormaLlegada)"
+                        }
+                    },
+                    url: url
+                }
+            },
+            schema: {
+                data: "Data",
+            },
+            requestStart: function() {
+                Main.enEspera(ctrol, true);
+            },
+            requestEnd: function(e) {
+                Main.enEspera(ctrol, false);
+                Main.notificaResultado(e, true);
+            }
+        });
+        var cfg = {
+            dataTextField: "Titulo",
+            dataValueField: "Id",
+            dataSource: ds,
+            filter: "contains",
+            messages: Main.getMensajeCombobox()
+        };
+        return cfg;
+    }
+    function getConfigEstado() {
+        var url = '@Url.Action("MantenedorGenerico", "Json")';
+        var ctrol = $("#EstadoBusqAv");
+        var ds = new kendo.data.DataSource({
+            transport: {
+                read: {
+                    type: "POST",
+                    dataType: "json",
+                    data: function() {
+                        return {
+                            idM: "@((int) Mantenedor.EstadoRequerimiento)"
+                        }
+                    },
+                    url: url
+                }
+            },
+            schema: {
+                data: "Data",
+            },
+            requestStart: function() {
+                Main.enEspera(ctrol, true);
+            },
+            requestEnd: function(e) {
+                Main.enEspera(ctrol, false);
+                Main.notificaResultado(e, true);
+            }
+        });
+        var cfg = {
+            dataTextField: "Titulo",
+            dataValueField: "Id",
+            dataSource: ds,
+            filter: "contains",
+            messages: Main.getMensajeCombobox()
+        };
+        return cfg;
+    }
+    function getConfigEstadoDespacho() {
+        var url = '@Url.Action("MantenedorGenerico", "Json")';
+        var ctrol = $("#EstadoDespachoBusqAv");
+        var ds = new kendo.data.DataSource({
+            transport: {
+                read: {
+                    type: "POST",
+                    dataType: "json",
+                    data: function() {
+                        return {
+                            idM: "@((int) Mantenedor.EstadoDespacho)"
+                        }
+                    },
+                    url: url
+                }
+            },
+            schema: {
+                data: "Data",
+            },
+            requestStart: function() {
+                Main.enEspera(ctrol, true);
+            },
+            requestEnd: function(e) {
+                Main.enEspera(ctrol, false);
+                Main.notificaResultado(e, true);
+            }
+        });
+        var cfg = {
+            dataTextField: "Titulo",
+            dataValueField: "Id",
+            dataSource: ds,
+            filter: "contains",
+            messages: Main.getMensajeCombobox()
+        };
+        return cfg;
+    }
+    function getConfigCreadorBitacora() {
+        var url = '@Url.Action("MantenedorGenerico", "Json")';
+        var ctrol = $("#CreadorBitacoraBusqAv");
+        var ds = new kendo.data.DataSource({
+            transport: {
+                read: {
+                    type: "POST",
+                    dataType: "json",
+                    data: function() {
+                        return {
+                            idM: "@((int) Mantenedor.UsuarioActivo)"
+                        }
+                    },
+                    url: url
+                }
+            },
+            schema: {
+                data: "Data",
+            },
+            requestStart: function() {
+                Main.enEspera(ctrol, true);
+            },
+            requestEnd: function(e) {
+                Main.enEspera(ctrol, false);
+                Main.notificaResultado(e, true);
+            }
+        });
+        var cfg = {
+            dataTextField: "Titulo",
+            dataValueField: "Id",
+            dataSource: ds,
+            filter: "contains",
+            messages: Main.getMensajeCombobox()
+        };
+        return cfg;
+    }
+
+    function inicializaBA() {
+
+        var ds;
+
+        if ($("#TipoBitacoraBusqAv").length) {
+            $("#TipoBitacoraBusqAv").kendoComboBox(getConfigTipoBitacora());
+        }
+
+        if ($("#DocumentoIngresoIdBusqAv").length) {
+            ds = Main.getDataSourceKendoGenericoVirtual(
+                $("#DocumentoIngresoIdBusqAv")
+                , '@Url.Action("RequerimientoResumenPaging", "Json")'
+                , 80);
+            $("#DocumentoIngresoIdBusqAv").data("kendoComboBox").setDataSource(ds);
+        }
+
+        if ($("#RequerimientoAnteriorIdBusqAv").length) {
+            ds = Main.getDataSourceKendoGenericoVirtual(
+                $("#RequerimientoAnteriorIdBusqAv")
+                , '@Url.Action("RequerimientoAntResumenPaging", "Json")'
+                , 80);
+            $("#RequerimientoAnteriorIdBusqAv").data("kendoComboBox").setDataSource(ds);
+        }
+
+        if ($("#RemitenteIdBusqAv").length) {
+            var ds = Main.getDataSourceKendoGenericoVirtual($("#RemitenteIdBusqAv"),
+                '@Url.Action("RemitenteResumenPaging", "Json")');
+            $("#RemitenteIdBusqAv").data("kendoComboBox").setDataSource(ds);
+            //$("#RemitenteIdBusqAv").data("kendoComboBox").bind("select", onSelectRemitente);
+        }
+
+        if ($("#NumeroOficioCMNBusqAv").length) {
+            var ds = Main.getDataSourceKendoGenericoVirtual($("#NumeroOficioCMNBusqAv"),
+                '@Url.Action("NumeroDespachoResumenPaging", "Json")');
+            $("#NumeroOficioCMNBusqAv").data("kendoComboBox").setDataSource(ds);
+        }
+
+        if ($("#RegionBusqAv").length) {
+            $("#RegionBusqAv").kendoComboBox(getConfigRegion());
+        }
+
+        if ($("#ComunaBusqAv").length) {
+            $("#ComunaBusqAv").kendoComboBox(getConfigComuna());
+        }
+
+        if ($("#EtiquetaBusqAv").length) {
+            $("#EtiquetaBusqAv").kendoComboBox(getConfigEtiqueta());
+        }
+
+        if ($("#CategoriaMonumentoNacionalBusqAv").length) {
+            $("#CategoriaMonumentoNacionalBusqAv").kendoComboBox(getConfigCategoriaMN());
+        }
+
+        if ($("#UnidadTecnicaAsignadaBusqAv").length) {
+            $("#UnidadTecnicaAsignadaBusqAv").kendoComboBox(getConfigUT());
+            $("#UnidadTecnicaAsignadaBusqAv").data("kendoComboBox").bind("change", function (e) {
+                cambiaUtAsignada(e);
+            });
+        }
+
+        if ($("#ProfesionalUTAsignadoBusqAv").length) {
+            var configProf = getConfigProfesional();
+            $("#ProfesionalUTAsignadoBusqAv").kendoComboBox(configProf);
+        }
+
+        if ($("#FormaLlegadaBusqAv").length) {
+            $("#FormaLlegadaBusqAv").kendoComboBox(getConfigFormaLlegada());
+        }
+
+        if ($("#CreadorBitacoraBusqAv").length) {
+            $("#CreadorBitacoraBusqAv").kendoComboBox(getConfigCreadorBitacora());
+        }
+
+        if ($("#EstadoBusqAv").length) {
+            $("#EstadoBusqAv").kendoComboBox(getConfigEstado());
+        }
+
+        if ($("#EstadoDespachoBusqAv").length) {
+            $("#EstadoDespachoBusqAv").kendoComboBox(getConfigEstadoDespacho());
+        }
+    }
+
+    //# sourceURL=BusqudaAvanzadaFiltros2
+</script>

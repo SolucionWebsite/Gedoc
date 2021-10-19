@@ -1,0 +1,39 @@
+﻿@model Gedoc.Helpers.Dto.UsuarioDto
+
+@Html.HiddenFor(model => model.Id)
+
+<div class="row mt-3 solo-add">
+    <label class="col-5">Username</label>
+    <div class="col-7">
+        @Html.TextBoxFor(model => model.Username, new { @class = "w-100 form-control" })
+    </div>
+</div>
+
+<div class="row mt-3 solo-edit">
+    <label class="col-5">Nombre(s) y Apellidos</label>
+    <div class="col-7">
+        @Html.TextBoxFor(model => model.NombresApellidos, new { @class = "w-100 form-control", @readonly = "readonly" })
+    </div>
+</div>
+
+<div class="row mt-3">
+    <label class="col-5">Rut</label>
+    <div class="col-7">
+        @Html.TextBoxFor(model => model.Rut, new { @class = "w-100 form-control" })
+    </div>
+</div>
+
+<div class="row mt-3">
+    <label class="col-5">PIN Firma Digital</label>
+    <div class="col-7">
+        @Html.PasswordFor(model => model.FirmaDigitalPin,
+            new { @class = "w-100 form-control", id = "firmaDigitalPinPopup", autocomplete = "new-password" })
+    </div>
+</div>
+
+<div class="row mt-3">
+    <label class="col-5">Confirmar PIN</label>
+    <div class="col-7">
+        @Html.PasswordFor(model => model.FirmaDigitalPinConfirm, new { @class = "w-100 form-control", id = "firmaDigitalPinConfirmPopup" })
+    </div>
+</div>

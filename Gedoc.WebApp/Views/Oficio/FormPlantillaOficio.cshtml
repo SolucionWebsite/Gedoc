@@ -1,0 +1,788 @@
+﻿@using Gedoc.Helpers
+@using Gedoc.Helpers.Dto
+@using Gedoc.Helpers.Enum
+@using Gedoc.WebApp.Helpers
+@using Kendo.Mvc.Extensions
+@using Kendo.Mvc.UI.Fluent
+@model Gedoc.WebApp.Models.PlantillaOficioModel
+
+@{
+    ViewBag.Title = "Plantilla de Oficio";
+    ResultadoOperacion accesoForm = ViewBag.AccesoForm ?? new ResultadoOperacion(1, "OK", null);
+    Layout = null; // "~/Views/Shared/_LayoutVacio.cshtml"; // "~/Views/Shared/_Layout.cshtml";
+    var camposSeleccionables = (List<CampoSeleccionableDto>)ViewBag.CamposSeleccionables;
+    if (Model.TipoPlantillaId.GetValueOrDefault(0) == 2)
+    { // Si es Plantilla de Despacho Iniciativa
+        camposSeleccionables.RemoveAll(c => c.Origen == "REQ");
+    }
+    var tipoPlantillaTitulo = Model.TipoPlantillaId.GetValueOrDefault(1) == 1 ? "Plantilla de Despacho" : "Plantillla de Despacho Iniciativa";
+    // Margenes del editor de acuerdo a los margenes definidos del pdf en web.config
+    var margenSup = string.IsNullOrWhiteSpace(WebConfigValues.PdfOficioMargenSup) ? "5pt" : WebConfigValues.PdfOficioMargenSup;
+    var margenDer = string.IsNullOrWhiteSpace(WebConfigValues.PdfOficioMargenDer) ? "40pt" : WebConfigValues.PdfOficioMargenDer;
+    var margenInf = string.IsNullOrWhiteSpace(WebConfigValues.PdfOficioMargenInf) ? "5pt" : WebConfigValues.PdfOficioMargenInf;
+    var margenIzq = string.IsNullOrWhiteSpace(WebConfigValues.PdfOficioMargenIzq) ? "40pt" : WebConfigValues.PdfOficioMargenIzq;
+}
+
+<script src="~/Scripts/form.js"></script>
+@*Habilita la compresión del pdf, útil si es un pdf muy extenso*@
+<script src="@Url.Content("~/Scripts/kendo/2020.1.114/pako_deflate.min.js")"></script>
+
+<script>
+    // Import DejaVu Sans font for embedding
+    kendo.pdf.defineFont({
+        "DejaVu Sans": "@Url.Content("~/Content/kendo/2020.1.114/fonts/DejaVu/DejaVuSans.ttf")",
+        "DejaVu Sans|Bold": "@Url.Content("~/Content/kendo/2020.1.114/fonts/DejaVu/DejaVuSans-Bold.ttf")",
+        "DejaVu Sans|Bold|Italic": "@Url.Content("~/Content/kendo/2020.1.114/fonts/DejaVu/DejaVuSans-Oblique.ttf")",
+        "DejaVu Sans|Italic": "@Url.Content("~/Content/kendo/2020.1.114/fonts/DejaVu/DejaVuSans-Oblique.ttf")",
+        "WebComponentsIcons": "@Url.Content("~/Content/kendo/2020.1.114/fonts/glyphs/WebComponentsIcons.ttf")"
+    });
+
+</script>
+
+<style>
+    .k-treeview .k-in {
+        padding-top: 0px;
+        padding-bottom: 0px;
+    }
+
+    .grupo-campo {
+        font-weight: bold;
+        font-size: 0.8em;
+    }
+
+    .campo-selecc {
+        font-size: 0.8em;
+    }
+
+    .k-link.k-state-selected.k-header {
+        padding: 5px;
+    }
+
+    /*se reduce el tamaño de los botonoes del toolbar del editor*/
+
+    .k-editor-toolbar a[role="button"].k-tool {
+        padding: 0px !important;
+        width: 32px !important;
+        height: 32px !important;
+    }
+
+    .k-editor-toolbar span.k-combobox,
+    .k-editor-toolbar .k-colorpicker,
+    .k-editor-toolbar .k-dropdowntree,
+    .k-editor-toolbar .k-editor-dropdown,
+    .k-editor-toolbar .k-editor-dropdown .k-dropdown.k-editor-widget {
+        height: 32px !important;
+    }
+</style>
+
+@*Para el Kendo Editor en Full screen*@
+<style>
+    @@media all and (-webkit-min-device-pixel-ratio:0) and (min-resolution: .001dpcm) {
+        .selector:not(*:root), .k-fullscreen .k-editor .k-editable-area {
+            height: auto;
+        }
+
+        .selector:not(*:root), .k-fullscreen .k-editor .k-editor-toolbar-wrap {
+            height: 35px;
+        }
+    }
+
+    .k-fullscreen .k-editor {
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100% !important;
+    }
+
+    .k-fullscreen .footer-modal {
+        display: none;
+    }
+</style>
+
+<script>
+    var classHolder = $(document.documentElement);
+    var fullscreenChange = "webkitfullscreenchange mozfullscreenchange fullscreenchange MSFullscreenChange";
+    $(document).bind(fullscreenChange, $.proxy(classHolder.toggleClass, classHolder, "k-fullscreen"));
+
+    function toggleFullScreen() {
+        var docEl = document.documentElement;
+
+        var fullscreenElement =
+            document.fullscreenElement ||
+            document.mozFullScreenElement ||
+            document.webkitFullscreenElement ||
+            document.msFullscreenElement;
+
+        var requestFullScreen = docEl.requestFullscreen ||
+            docEl.msRequestFullscreen ||
+            docEl.mozRequestFullScreen ||
+            docEl.webkitRequestFullscreen;
+
+        var exitFullScreen = document.exitFullscreen ||
+            document.msExitFullscreen ||
+            document.mozCancelFullScreen ||
+            document.webkitExitFullscreen;
+
+        if (!requestFullScreen) {
+            return;
+        }
+
+        if (!fullscreenElement) {
+            // $('.footer-modal').hide();
+            requestFullScreen.call(docEl, Element.ALLOW_KEYBOARD_INPUT);
+        } else {
+            // $('.footer-modal').show();
+            exitFullScreen.call(document);
+        }
+    }
+
+    function onListaRomanosExec() {
+        var editor = $(this).data("kendoEditor");
+        // editor.exec("inserthtml", { value: "<ol class='lista-romanos-upper'> <li><span>&#xFEFF;&#xFEFF;</span></li>  </ol>" });
+        // editor.exec("inserthtml", { html: "<ol class='lista-romanos-upper'> <li><span>&#xFEFF;&#xFEFF;</span></li>  </ol>" });
+
+        editor.exec("insertorderedlist");
+        var list = kendo.ui.editor.Dom.closestEditableOfType(editor.getRange().startContainer, ["ol"]);
+        if (list) {
+            list.setAttribute("class", "lista-romanos-upper");
+        }
+    }
+
+    function onListaLetrasExec() {
+        var editor = $(this).data("kendoEditor");
+        // editor.exec("inserthtml", { value: "<ol class='lista-letras-lower'> <li><span>&#xFEFF;&#xFEFF;</span></li>  </ol>" });
+
+        editor.exec("insertorderedlist");
+        var list = kendo.ui.editor.Dom.closestEditableOfType(editor.getRange().startContainer, ["ol"]);
+        if (list) {
+            list.setAttribute("class", "lista-letras-lower");
+        }
+    }
+
+    function onListaGuionExec() {
+        var editor = $(this).data("kendoEditor");
+
+        editor.exec("insertunorderedlist");
+        var list = kendo.ui.editor.Dom.closestEditableOfType(editor.getRange().startContainer, ["ul"]);
+        if (list) {
+            list.setAttribute("class", "dashed");
+        }
+    }
+
+    //# sourceURL=FormPlantilla_FullScreen
+</script>
+
+@*Fin Editor en full screen*@
+
+<script>
+
+    function onChangeCampo(e) {
+        if (this.value()) {
+            var editorK = $("#Contenido").data("kendoEditor");
+            var htmlAInsertar = this.value();
+            // Se evita q sea editable el campo insertado si es una variable (tiene %%). Las funciones y otros campos sí son editables
+            // Se le agrega las clases MergeField y EditorMergeField a las variables. Sin estas clases entonces al setear Inmutables en false
+            // en el editor sucede q si se selecciona un texto y dentro del texto hay variables entonces al aplicar algún
+            // estilo a esa selección (cambiar fuente, asignar color, etc) se pierde el contenteditable. Con estas clases se conserva
+            // el contenteditable. No hay referencia de esto en la documentación, sólo aparece en
+            // https://www.telerik.com/forums/formatting-a-span-within-a-text-selection-range
+            // https://dojo.telerik.com/iSAwEQAR/4
+            // Si se especifica Inmutables(true) al editor entonces no es posible modificar el estilo del contenteditable='false'
+            if (htmlAInsertar.indexOf("%") >= 0) {
+                htmlAInsertar = "<span contenteditable='false' class='MergeField EditorMergeField'>" +
+                    htmlAInsertar +
+                    "</span>";
+            } else if (htmlAInsertar == "NOEDITABLE" || htmlAInsertar == "EDITABLE") {
+                var className = htmlAInsertar == "NOEDITABLE" ? "no-editable" : "si-editable";
+                editorK.exec("formatting", { value: { className: className/*, split: true*/ }/*, split: true*/ });
+                this.value("");
+                return false;
+            }
+            editorK.exec("insertHtml", { value: htmlAInsertar });
+            this.value("");
+        }
+    }
+
+    function onSelectCampo(e) {
+        var dataItem = e.sender.dataItem(e.node);
+        if (!dataItem.value) {
+            e.preventDefault();
+        }
+    }
+
+    function onSelectImportEditor(e) {
+        var file = e.files[0];
+        var errors = file.validationErrors;
+        if (errors) {
+            var localization = e.sender.options.localization;
+            for (var i = 0; i < errors.length; i++) {
+                Main.showError(localization[errors[i]]);
+            }
+        }
+    }
+
+    function onErrorImportEditor(e) {
+        Main.showError("Lo sentimos, no fue posible importar el archivo especificado.<br/>Intente con otro archivo.");
+    }
+
+    function onEditorSelect(e) {
+        if (this.getSelection().focusNode && this.getSelection().focusNode.data &&
+            this.getSelection().focusNode.data.startsWith('%') && this.getSelection().focusNode.data.endsWith('%')) {
+            // Se evita q se seleccione solo una parte de una variable. Si el usuario selecciona solo una parte de la variable entonces aquí se selecciona completa
+            var range = this.createRange();
+            range.selectNodeContents(this.getSelection().focusNode);
+            this.selectRange(range);
+        }
+    }
+
+    function onExecuteEditorCommand(e) {
+        if (e.name == "tablewizard" || e.name == "tablewizardinsert") {
+            setTimeout(function () {
+                // Se especifica texto en español de opciones del asistente de tabla q no aparecen para especificarlas en los Message del editor de kendo
+                $("label[for='k-editor-table-header-rows']").text("Filas de encabezado");
+                $("label[for='k-editor-table-header-columns']").text("Columnas de encabezado");
+                $("label[for='k-editor-wrap-text']").text("Ajustar texto");
+                $("textarea#k-editor-accessibility-summary").attr("placeholder", "El atributo Resumen no es compatible con HTML5");
+                $(".k-i-align-remove").attr("title", "Sin alineación");
+                $(".k-i-table-align-middle-left").attr("title", "Alineación izquierda");
+                $(".k-i-table-align-middle-center").attr("title", "Alineación centro");
+                $(".k-i-table-align-middle-right").attr("title", "Alineación derecha");
+                $(".k-i-table-align-top-left").attr("title", "Alineación arriba izquierda");
+                $(".k-i-table-align-top-center").attr("title", "Alineación arriba centro");
+                $(".k-i-table-align-top-right").attr("title", "Alineación arriba derecha");
+                $(".k-i-table-align-bottom-left").attr("title", "Alineación abajo izquierda");
+                $(".k-i-table-align-bottom-center").attr("title", "Alineación abajo centro");
+                $(".k-i-table-align-bottom-right").attr("title", "Alineación abajo derecha");
+                $(".k-i-table-align-middle-left").attr("title", "Alineación medio izquierda");
+                $(".k-i-table-align-middle-center").attr("title", "Alineación medio centro");
+                $(".k-i-table-align-middle-right").attr("title", "Alineación medio derecha");
+
+                // Texto para opción "Associate headers" y su lista asociada
+                $("label[for='k-editor-cells-headers']").text("Encabezados asociados");
+                $("#k-editor-cells-headers_listbox li[data-offset-index='0']").text("Ninguno");
+                $("#k-editor-cells-headers_listbox li[data-offset-index='1']").text("Asociar usando atributo 'alcance'");
+                $("#k-editor-cells-headers_listbox li[data-offset-index='2']").text("Asociar usando Ids");
+
+                // Texto para opción "Border style", en tabla y celda, y su lista asociada
+                $("label[for='k-editor-border-style']").text("Estilo de borde");
+                $("#k-editor-border-style_listbox li[data-offset-index='0']").text("Sólido");
+                $("#k-editor-border-style_listbox li[data-offset-index='1']").text("Punteado");
+                $("#k-editor-border-style_listbox li[data-offset-index='2']").text("Discontinuo");
+                $("#k-editor-border-style_listbox li[data-offset-index='3']").text("Doble");
+                $("#k-editor-border-style_listbox li[data-offset-index='4']").text("Ranurado");
+                $("#k-editor-border-style_listbox li[data-offset-index='5']").text("Relieve");
+                $("#k-editor-border-style_listbox li[data-offset-index='6']").text("Presionado");
+                $("#k-editor-border-style_listbox li[data-offset-index='7']").text("Sobresaliente");
+                $("#k-editor-border-style_listbox li[data-offset-index='8']").text("Inicial");
+                $("#k-editor-border-style_listbox li[data-offset-index='9']").text("Heredado");
+                $("#k-editor-border-style_listbox li[data-offset-index='10']").text("Ninguno");
+                $("#k-editor-border-style_listbox li[data-offset-index='11']").text("Oculto");
+                $("label[for='k-editor-cell-border-style']").text("Estilo de borde");
+                $("label[for='k-editor-border-style']").text("Estilo de borde");
+                $("#k-editor-cell-border-style_listbox li[data-offset-index='0']").text("Sólido");
+                $("#k-editor-cell-border-style_listbox li[data-offset-index='1']").text("Punteado");
+                $("#k-editor-cell-border-style_listbox li[data-offset-index='2']").text("Discontinuo");
+                $("#k-editor-cell-border-style_listbox li[data-offset-index='3']").text("Doble");
+                $("#k-editor-cell-border-style_listbox li[data-offset-index='4']").text("Ranurado");
+                $("#k-editor-cell-border-style_listbox li[data-offset-index='5']").text("Relieve");
+                $("#k-editor-cell-border-style_listbox li[data-offset-index='6']").text("Presionado");
+                $("#k-editor-cell-border-style_listbox li[data-offset-index='7']").text("Sobresaliente");
+                $("#k-editor-cell-border-style_listbox li[data-offset-index='8']").text("Inicial");
+                $("#k-editor-cell-border-style_listbox li[data-offset-index='9']").text("Heredado");
+                $("#k-editor-cell-border-style_listbox li[data-offset-index='10']").text("Ninguno");
+                $("#k-editor-cell-border-style_listbox li[data-offset-index='11']").text("Oculto");
+				
+				$("#k-editor-table-alignment").data("kendoDropDownList").bind("change", 
+					function(e) {
+						$(".k-i-align-remove").attr("title", "Sin alineación");
+						$(".k-i-table-align-middle-left").attr("title", "Alineación izquierda");
+						$(".k-i-table-align-middle-center").attr("title", "Alineación centro");
+						$(".k-i-table-align-middle-right").attr("title", "Alineación derecha");
+					}
+				);
+				
+				$("#k-editor-cell-alignment").data("kendoDropDownList").bind("change", 
+					function(e) {
+						$(".k-i-align-remove").attr("title", "Sin alineación");
+						$(".k-i-table-align-top-left").attr("title", "Alineación arriba izquierda");
+						$(".k-i-table-align-top-center").attr("title", "Alineación arriba centro");
+						$(".k-i-table-align-top-right").attr("title", "Alineación arriba derecha");
+						$(".k-i-table-align-bottom-left").attr("title", "Alineación abajo izquierda");
+						$(".k-i-table-align-bottom-center").attr("title", "Alineación abajo centro");
+						$(".k-i-table-align-bottom-right").attr("title", "Alineación abajo derecha");
+						$(".k-i-table-align-middle-left").attr("title", "Alineación medio izquierda");
+						$(".k-i-table-align-middle-center").attr("title", "Alineación medio centro");
+						$(".k-i-table-align-middle-right").attr("title", "Alineación medio derecha");
+					}
+				);
+            },
+            200);
+        }
+    }
+
+    function customDeserialization(html) {
+        return html.replace(/[\uFEFF]/g, "&nbsp;");
+    }
+
+    function onChangeTipoPlantilla(e) {
+        var camposSelecK = $("#CamposSeleccionables").data("kendoDropDownTree");
+        if (camposSelecK) {
+            camposSelecK.dataSource.read();
+        }
+    }
+
+    function extraDataCamposSelecc() {
+        var tipoPlant = 0;
+        var tipoPlantK = $("#TipoPlantillaId").data("kendoComboBox");
+        if (tipoPlantK) {
+            tipoPlant = tipoPlantK.value();
+        } else {
+            tipoPlant = "@Model.TipoPlantillaId";
+        }
+        tipoPlant = tipoPlant || 0;
+        return { tipoPlant: tipoPlant }
+    }
+
+    function exportaPdf() {
+        var url = '@Url.Action("GetPdfFromContenidoHtml", "Oficio")';
+        var nombre = $("#Nombre").val();
+        nombre = "PlantillaOficio_" + nombre + ".pdf";
+        Main.exportaKendoEditorToPdf($("#Contenido"), url, nombre);
+    }
+
+    //# sourceURL=FormPlantilla2
+</script>
+
+
+<div class="div-main-form">
+
+    <form id="formPlantilla" action="@Url.Action("SavePlantilla", "Oficio")" class="form-datos">
+        @Html.AntiForgeryToken()
+
+        @Html.HiddenFor(a => a.Id)
+
+
+        <div class="form-row">
+            <div class="col-md-2">
+                <label class="label-dato-form">
+                    Nombre<span class="marca-obligatorio" title="Este campo es obligatorio."> *</span>
+                </label>
+            </div>
+            <div class="col-md-6">
+                @Html.TextBoxFor(a => a.Nombre, new { @class = "k-textbox w-100", required = "required" })
+                <span class="k-invalid-msg" data-for="Codigo"></span>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="col-md-2">
+                <label class="label-dato-form">
+                    Descripción
+                </label>
+            </div>
+            <div class="col-md-6">
+                @*@Html.TextArea("Descripcion",
+                    new { @Value = @Html.Raw(Model.Descripcion),  @rows = "2", @cols = "20",
+                        @class = "form-control texto-largo w-100",
+                        @data_spanleyenda = "leyenda-pnDescripcion",
+                        @maxlength = "10000", @placeholder = "", @style = "width: 97%;margin: 5px;", @autoresize = "true" })*@
+
+                <textarea name="Descripcion" rows="1" cols="20" id="Descripcion" class="form-control texto-largo"
+                          data-spanleyenda="leyenda-pnDescripcion" data-autoresize="true"
+                          data-maxlength="1000" style="width: 100% !important;">@Html.Raw(Model.Descripcion)</textarea>
+
+                @*<span class="help-block-right" id="leyenda-pnDescripcion"> </span>*@
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="col-md-2">
+                <label class="label-dato-form">
+                    Tipo de Trámite
+                </label>
+            </div>
+            <div class="col-md-4">
+                @(Html.Kendo().ComboBox()
+                    .Name("TipoTramiteId")
+                    .DataTextField("Titulo")
+                    .DataValueField("Id")
+                    .Filter("contains")
+                    .HtmlAttributes(new {@class = "w-100"})
+                    .Messages(Gedoc.WebApp.Helpers.KendoHelper.SetComboBoxMessages))
+            </div>
+            @*Check Activo*@
+            <div class="offset-md-1 col-md-1">
+                @(Html.Kendo().CheckBoxFor(m => m.Activo)
+                    .Name("Activo")
+                    .Label("Activo"))
+            </div>
+
+        </div>
+
+        <div class="form-row">
+            <div class="col-md-2">
+                <label class="label-dato-form">
+                    Tipo de Plantilla<span class="marca-obligatorio" title="Este campo es obligatorio."> *</span>
+                </label>
+            </div>
+            <div class="col-md-4">
+                @if (Model.Id == 0)
+                {
+                    @(Html.Kendo().ComboBox()
+                        .Name("TipoPlantillaId")
+                        .DataTextField("Titulo")
+                        .DataValueField("Id")
+                        .Filter("contains")
+                        .HtmlAttributes(new {@class = "w-100", required = "required"})
+                        .Messages(Gedoc.WebApp.Helpers.KendoHelper.SetComboBoxMessages)
+                        .Events(ev => ev.Change("onChangeTipoPlantilla")) )
+                    <span class="k-invalid-msg" data-for="TipoPlantillaId"></span>
+                }
+                else
+                {
+                    <label id="lbTipoPlantillatitulo">@tipoPlantillaTitulo</label>
+                }
+            </div>
+        </div>
+
+        <div class="form-row">
+            @*<div class="col-md-2">
+                    <label class="label-dato-form">
+                        Contenido<span class="marca-obligatorio" title="Este campo es obligatorio."> *</span>
+                    </label>
+                </div>*@
+            <div class="col-md-12">
+
+                <script id="campos-template" type="text/kendo-ui-template">
+                    @*<span class="k-sprite #: item.spriteCssClass #"></span>*@
+                    <span class="#: item.padreId ? 'campo-selecc' : 'grupo-campo' #"> #: item.text # </span>
+                </script>
+
+                @*Plantilla para el PDF q se genera al visualizar el oficio, tiene el encabezado y pie de página*@
+                <script type="x/kendo-template" id="page-oficio-template">
+                    <div class="page-template">
+
+                    </div>
+                </script>
+
+                @*Se cambia la función de la tecla Enter: inserta un linebreak en vez de un separador de parrafo (Shift+Enter agregar separador de parrafo) -> el default del editor es al revés,*@
+                @*<script>
+                        var editorNS = kendo.ui.editor,
+                            registerTool = editorNS.EditorUtils.registerTool,
+                            Tool = editorNS.Tool;
+                        registerTool("insertLineBreak", new Tool({ key: 13, command: editorNS.NewLineCommand }));
+                        registerTool("insertParagraph", new Tool({ key: 13, shift: true, command: editorNS.ParagraphCommand }));
+                    </script>*@
+
+
+                <div id="editorWrapper">
+                    @(Html.Kendo().Editor()
+                        .Name("Contenido")
+                        .HtmlAttributes(new {style = "height:550px", aria_label = "editor", required = "required"})
+                        .PasteCleanup(p => p
+                            .All(false)
+                            .KeepNewLines(false)
+                            .Span(false)
+                            .Css(false)
+                            .MsTags(true)
+                            .MsAllFormatting(false)
+                            .MsConvertLists(true))
+                        .StyleSheets(css => css
+                            .Add(Url.Content("~/Content/editorStyles-plantilla.css"))
+                            .Add(Url.Content("~/Content/pdfCommonStyles.css"))
+                        )
+                        .Immutables(false)
+                        .Resizable(r => r.Min(400).Content(true))
+                        //.Messages(msg =>
+                        //    msg.FontNameInherit("Tipo de Letra Heredado"))
+                        .Pdf(pdf => KendoHelper.SetPdfSettingsOficio(pdf, Url.Action("Pdf_Export_Save"))
+                            .FileName("PlantillaOficio.pdf"))
+                        .Tools(tools => tools
+                            .Clear()
+                            .Bold().Italic().Underline()
+                            .JustifyLeft().JustifyCenter().JustifyRight().JustifyFull()
+                            .InsertUnorderedList().InsertOrderedList()
+
+                            //.CustomButton(x => x
+                            //    .Name("groupBox")
+                            //    .ToolTip("Lista con letras")
+                            //    .Exec("onListaLetrasExec")
+                            //)
+                            //.CustomButton(x => x
+                            //    .Name("gridLayout")
+                            //    .ToolTip("Lista con números romanos")
+                            //    .Exec("onListaRomanosExec")
+                            //)
+                            .CustomButton(x => x
+                                .Name("gridLayout")
+                                .ToolTip("Lista con raya")
+                                .Exec("onListaGuionExec")
+                            )
+
+                            .Outdent().Indent()
+                            //.CreateLink().Unlink()
+                            .InsertImage()
+                            .FontName()
+                            .FontSize(items => items
+                                .Add("8pt", "8pt")
+                                .Add("9pt", "9pt")
+                                .Add("10pt", "small")
+                                .Add("11pt", "11pt")
+                                .Add("12pt", "12pt")
+                                .Add("14pt", "14pt")
+                                .Add("18px", "18px")
+                                .Add("24pt", "24pt")
+                                .Add("36pt", "36pt"))
+                            .FontColor(f => f.Palette( Kendo.Mvc.UI.ColorPickerPalette.None )) // en la versión jQuery del Editor seteando el palette a null permite seleccionar cualquier color (https://dojo.telerik.com/iciGAmER/4). Aquí no funciona, ni con null ni com ColorPickerPalette.None, ni con new string[0]
+                            .BackColor()
+                            .TableEditing()
+
+                            //.FormatPainter()
+                            //.CleanFormatting
+                            //.Formatting(items => items
+                            //	.Add("Lista (I, II,...)", ".lista-romanos-upper")
+                            //	.Add("Lista (i, ii, ...)", ".lista-romanos-upper")
+                            //	.Add("Lista (A, B, ...)", ".lista-romanos-upper")
+                            //	.Add("Lista (a, b, ...)", ".lista-romanos-upper")
+                            //)
+                            //.ViewHtml()
+
+                            .CustomTemplate(ct => ct.Template(
+                                Html.Kendo().DropDownTree()
+                                    .Name("CamposSeleccionables")
+                                    .AutoWidth(true).AutoClose(true)
+                                    .Checkboxes(false)
+                                    .Filter("contains").Placeholder("Campo a insertar")
+                                    .Events(events => events
+                                        .Select("onSelectCampo")
+                                        .Change("onChangeCampo"))
+                                    .TemplateId("campos-template")
+                                    .Messages(m => m.NoData("No se encontraron datos."))
+                                    .DataSource(dataSource => dataSource
+                                        .Read(read => read
+                                            .Action("GetCamposSeleccionablesTipoPlantilla", "Oficio")
+                                            .Data("extraDataCamposSelecc")
+                                        )
+                                    )
+                                    //.BindTo(camposSeleccionables, (NavigationBindingFactory<DropDownTreeItem>
+                                    //    mappings) =>
+                                    //{
+                                    //    mappings.For<CampoSeleccionableDto>
+                                    //        (binding => binding.ItemDataBound((item, campo) =>
+                                    //        {
+                                    //            item.Id = campo.Id.ToString();
+                                    //            item.Text = campo.Titulo;
+                                    //            item.Value = Html.Raw(campo.Variable).ToHtmlString();
+                                    //            item.HasChildren = campo.HasChildren;
+                                    //            item.SpriteCssClasses = "";
+                                    //            item.Url = "";
+                                    //            item.Checked = false;
+                                    //            item.Expanded = true;
+                                    //            //item.PrependCssClass((campo.Hijos?.Count ?? 0) > 0 ? "grupo-campo" : "campo-selecc");
+                                    //            //item.AppendCssClass("");
+                                    //        }).Children(campo => campo.Hijos));
+                                    //})
+                                    .ToClientTemplate().ToHtmlString()
+                                ))
+                            // Exportar a PDF custom:
+                            .CustomButton(cb => cb.Name("filePdf")
+                                .ToolTip("Exportar PDF")
+                                .Exec("exportaPdf"))
+                        // Full screen:
+                        //.CustomButton(cb => cb.Name("maximize")
+                        //    .ToolTip("Pantalla completa")
+                        //    .Exec("toggleFullScreen"))
+                        // Combo de opciones de exportar :
+                        ///.ExportAs()
+                        // Exportar a PDF propio del editor:
+                        //.Pdf()
+                        )
+                        //.ExportAs(exportAs => exportAs
+                        //    .FileName("PlantillaOficio")
+                        //    .Proxy("ExportEditor", "Oficio")
+                        //)
+                        // Combo de opciones de importar :
+                        //.Import(import => import
+                        //    .Proxy("ImportEditor", "Oficio")
+                        //    .AllowedExtensions(new[] { "docx", "rtf", "html", "txt" })
+                        //    .MaxFileSize(104857600)
+                        //    .Select("onSelectImportEditor")
+                        //    .Error("onErrorImportEditor")
+                        //)
+                        .Events(ev => ev.Select("onEditorSelect")
+                            .Execute("onExecuteEditorCommand"))
+                        //.Serialization(s => s
+                        //    //.Entities(false)
+                        //    .Custom("customDeserialization"))
+                        .Messages(m => m.InsertUnorderedList("Viñetas")
+                            .InsertOrderedList("Numeración")
+                            .Italic("Cursiva")
+                            .CleanFormatting("Limpiar formatos")
+                            .TableWizard("Asistente")
+                            .TableTab("Tabla")
+                            .CellTab("Celda")
+                            .AccessibilityTab("Accesibilidad")
+                            .Width("Ancho")
+                            .Height("Alto")
+                            .Columns("Columnas")
+                            .Rows("Filas")
+                            .CellSpacing("Espaciado de celda")
+                            .CellPadding("Relleno de celda")
+                            .Alignment("Alineación")
+                            .Background("Fondo")
+                            .CssClass("Clase CSS")
+                            .Border("Borde")
+                            .CollapseBorders("Colapsar bordes")
+                            .SelectAllCells("Seleccionar todas las celdas")
+                            .CellMargin("Margen de celda")
+                            .Caption("Título")
+                            .Summary("Resumen")
+                        )
+                        )
+                    <span class="k-invalid-msg" data-for="Contenido"></span>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="footer-modal">
+            <div class="form-row">
+                <div class="offset-md-3 col-md-2 text-center">
+                    <button type="button" id="btngrabaPlantilla" class="k-primary-blue k-button" onclick="grabaPlantilla(event);">Guardar</button>
+                </div>
+                <div class="offset-md-2 col-md-2 text-center">
+                    <button type="button" id="btncancelaPlantilla" class="k-danger k-button" onclick="cancelaPlantilla(event);">Cancelar</button>
+                </div>
+            </div>
+        </div>
+
+    </form>
+
+</div>
+
+<script>
+
+    @if (accesoForm.Codigo < 0)
+    {
+        <text>
+    Main.showAlert("@Html.Raw(accesoForm.Mensaje)")
+        .then(function(result) {
+            Main.cierraModal(null, false, "winFormIngreso");
+        });
+        </text>
+    }
+
+    $(function() {
+        var ds;
+        if ($("#TipoTramiteId").length) {
+            ds = Main.getDataSourceKendoGenerico($("#TipoTramiteId"),
+                '@Url.Action("MantenedorGenerico", "Json")?idM=@((int) Mantenedor.TipoTramite)');
+            $("#TipoTramiteId").data("kendoComboBox").setDataSource(ds);
+        }
+
+        if ($("#TipoPlantillaId").length) {
+            ds = Main.getDataSourceKendoGenerico($("#TipoPlantillaId"),
+                '@Url.Action("MantenedorGenerico", "Json")?idM=@((int) Mantenedor.TipoPlantillaOficio)');
+            $("#TipoPlantillaId").data("kendoComboBox").setDataSource(ds);
+        }
+
+        configValidacionForm();
+
+        Form.inicializaForm();
+
+        // Hint para botón de Importar en botones del editor
+        $('li.k-tool-group a[role="button"][title="Import"]').attr("title", "Importar desde archivo");
+        // Hint para botón de Exportar PDF en botones del editor
+        $('li.k-tool-group a[role="button"][title="Export PDF"]').attr("title", "Exportar a PDF");
+
+
+        jQuery.each($('#Descripcion'), function () {
+            var offset = this.offsetHeight - this.clientHeight;
+
+            var resizeTextarea = function (el) {
+                jQuery(el).css('height', 'auto').css('height', el.scrollHeight + offset);
+            };
+            $(this).on('keyup input', function () { resizeTextarea(this); }).removeAttr('autoresize');
+        });
+        $('#Descripcion').height($('#Descripcion')[0].scrollHeight);
+
+
+        Main.fixPaletaColorPickerKendoEditor($("#Contenido"));
+
+        $("#editorWrapper span.k-icon.k-clear-value.k-i-close").prop('title', 'limpiar');
+
+        // Margenes del editor de acuerdo a los margenes especificados en web.config
+        var editor = $("#Contenido").data("kendoEditor");
+        $($("#Contenido").data("kendoEditor").body).css('padding-top', '@margenSup');
+        $($("#Contenido").data("kendoEditor").body).css('padding-right', '@margenDer');
+        $($("#Contenido").data("kendoEditor").body).css('padding-bottom', '@margenInf');
+        $($("#Contenido").data("kendoEditor").body).css('padding-left', '@margenIzq');
+
+        // Corrigiendo botón "Asistente" en editor de kendo, y corrigiendo texto de algunos botones del editor q no se pueden configurar con Messages
+        $(".k-editor-toolbar > a[title='Asistente']").attr('style', 'width: 100% !important');
+        $("a.k-tool[title='Merge cells horizontally']").prop("title", "Combinar celdas hacia la derecha");
+        $("a.k-tool[title='Merge cells vertically']").prop("title", "Combinar celdas hacia abajo");
+        $("a.k-tool[title='Split cells horizontally']").prop("title", "Separar celdas horizontal");
+        $("a.k-tool[title='Split cells vertically']").prop("title", "Separar celdas vertical");
+    });
+
+    function configValidacionForm() {
+        var container = $("#formPlantilla");
+        kendo.init(container);
+        container.kendoValidator({
+            messages: {
+                required: "Este campo es obligatorio"
+            }
+        });
+    }
+
+    function grabaPlantilla(e) {
+
+        Main.wait("Grabando...");
+
+        var currentTarget = $(e.currentTarget);
+        var form = $("#formPlantilla");
+
+        var validator = form.data("kendoValidator");
+        if (!validator.validate()) {
+            Main.unwait();
+            Main.showError("Por favor, revise los datos de la página. Hay datos incompletos o erróneos.");
+            return false;
+        }
+
+        //Form.setValueHiddeFieldTextArea("ObservacionesAdjuntos", "pnObservacionAdj");
+
+        var data = $(form).serialize();
+        var url = $(form).attr("action");
+        $.ajax({
+            type: "POST",
+            url: url,
+            data: data
+        }).done(function(response) {
+            Main.unwait();
+            if (response.Codigo) {
+                if (response.Codigo > 0) {
+                    Main.showInfo(response.Mensaje).then(function(result) {
+                        Main.cierraModal(currentTarget, true, "winFormIngreso");
+                    });
+                } else {
+                    Main.showError(response.Mensaje, "Error");
+                }
+            } else {
+                Main.showAlert("Error inesperado al realizar la operación, por favor, vuelva a intentarlo",
+                    "Error");
+            }
+        }).fail(function(error) {
+            Main.unwait();
+            Main.showError("Ha ocurrido un error al realizar la operación, por favor, vuelva a intentarlo.",
+                "Error");
+        });
+    };
+
+    function cancelaPlantilla(e) {
+        Main.cierraModal($(e.currentTarget), { resultado: false }, "winFormIngreso");
+    };
+
+    //# sourceURL=FormPlantilla
+</script>

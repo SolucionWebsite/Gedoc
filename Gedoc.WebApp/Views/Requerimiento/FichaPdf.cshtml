@@ -1,0 +1,1286 @@
+﻿@using System.Globalization
+@using Gedoc.Helpers
+@using Gedoc.Helpers.Dto
+@model Gedoc.Helpers.Dto.RequerimientoDto
+
+@{
+    ViewBag.Title = "Ficha";
+    Layout = null;
+    ResultadoOperacion resultado = ViewBag.Resultado ?? new ResultadoOperacion(1, "", null);
+}
+
+@functions {
+
+    public static HtmlString LimpiaValorHtml(string valor)
+    {
+        valor =  (valor ?? "").Replace("font-", "font-NO-"); // Evitar q el campo con código html aparezca con su propia letra
+        return new HtmlString(valor);
+    }
+
+    public static string DevuelveSiNo(bool? valor)
+    {
+        return valor.HasValue 
+            ? (valor.GetValueOrDefault(false) ? "Sí" : "No") 
+            : "";
+    }
+}
+
+@*Habilita la compresión del pdf, útil si es un pdf muy extenso*@
+<script src="@Url.Content("~/Scripts/kendo/2020.1.114/pako_deflate.min.js")"></script>
+
+
+<style>
+    .panel-title {
+        background-color: lightgray;
+        margin-top: 5px;
+    }
+
+    .form-pdf-label {
+        /*width: 200px;*/
+        width: 30%;
+        margin-right: 15px;
+        font-weight: bold;
+    }
+
+    .form-pdf-data {
+        /*width: 200px;*/
+        width: 30%;
+    }
+
+    .form-pdf-label-min {
+        /*width: 100px;*/
+        width: 25%;
+        text-align: right;
+        font-weight: bold;
+    }
+
+    .form-pdf-data-min {
+        /*width: 150px;*/
+        width: 15%;
+        text-align: right;
+    }
+
+    .form-pdf-data-full {
+        /*width: 200px;*/
+    }
+
+    tr-NO {
+        border-top: 2px solid transparent;
+    }
+
+    td {
+        /*font-size: 14px;*/
+        vertical-align: top;
+    }
+
+    .gridDatos tr:nth-child(even) {
+        background: #EFF3FB
+    }
+    .gridDatos tr:nth-child(odd) {
+        background: #FFF
+    }
+
+    .gridDatos {
+        color:#333333;
+        width:100%;
+        border-collapse:collapse;
+        font-size: 0.8em;
+    }
+
+    /*.k-window-content.k-content { overflow: hidden; }*/
+
+    /*
+        Use the DejaVu Sans font for display and embedding in the PDF file.
+        The standard PDF fonts have no support for Unicode characters.
+    */
+    #div-main-pdf {
+        font-family: "DejaVu Sans", "Arial", sans-serif !important;
+        /*padding: .4in .3in !important;*/
+        padding: 29px 22px !important;
+        margin-bottom: 0px;
+    }
+
+    .seccion-pdf {
+        font-size: 0.8em;
+        width: 100%;
+    }
+
+        .seccion-pdf label {
+            margin-bottom: 0px;
+        }
+
+    .page-template > * {
+        position: absolute;
+        /*left: 20px;
+        right: 20px;
+        font-size: 90%;*/
+    }
+
+    /* Dimensions other than px and em should be divided by 1.33 for the proper PDF output */
+    /*Según la documentación de Kendo recomiendan usar px como unidad de medida (https://docs.telerik.com/kendo-ui/framework/drawing/pdf-output/dimensions-css-units#dimensions-and-css-units)
+    sin ambargo en los ejemplos utilizan pulgada como unidad de media y aquí me funciona bien (https://demos.telerik.com/kendo-ui/pdf-export/page-layout)*/
+    .size-a4 {
+        width: 6.2in;
+        height: 8.7in;
+        font-size: 10px;
+    }
+
+    .size-letter {
+        width: 6.3in;
+        height: 8.2in;
+        font-size: 10px;
+    }
+
+    .size-executive {
+        width: 5.4in;
+        height: 7.8in;
+        font-size: 10px;
+    }
+</style>
+
+<script>
+    // Import DejaVu Sans font for embedding
+    kendo.pdf.defineFont({
+        "DejaVu Sans": "@Url.Content("~/Content/kendo/2020.1.114/fonts/DejaVu/DejaVuSans.ttf")",
+        "DejaVu Sans|Bold": "@Url.Content("~/Content/kendo/2020.1.114/fonts/DejaVu/DejaVuSans-Bold.ttf")",
+        "DejaVu Sans|Bold|Italic": "@Url.Content("~/Content/kendo/2020.1.114/fonts/DejaVu/DejaVuSans-Oblique.ttf")",
+        "DejaVu Sans|Italic": "@Url.Content("~/Content/kendo/2020.1.114/fonts/DejaVu/DejaVuSans-Oblique.ttf")",
+        "WebComponentsIcons": "@Url.Content("~/Content/kendo/2020.1.114/fonts/glyphs/WebComponentsIcons.ttf")"
+    });
+
+</script>
+
+@*Template para poner el pie de página del PDF*@
+<script type="x/kendo-template" id="page-template">
+    <div class="page-template" id="div-main-pdf-template">
+
+        <div class="footer" style="bottom: 15px;">
+            <span style="text-align: center !important; font-size: 8px; color:gray; margin-left:25px;">Página #:pageNum# de #:totalPages#</span>
+        </div>
+    </div>
+</script>
+
+
+<div style="height: 200px; text-align: center;" id="waitpdf">
+    <div id="espera-pdf" style="width: 100%; height: 80%; position: relative;"></div>
+</div>
+
+<div class="size-a4" id="div-main-pdf">
+    <div class="row">
+        <div class="col-md-12">
+            <span class="badge badge-info w-100" style="white-space: normal; font-size: 1.1em !important;">
+                Requerimiento en etapa "@Model.EtapaTitulo" y estado "@Model.EstadoTitulo";
+                última modificación: @Model.ModificadoPorFecha.ToString(GeneralData.FORMATO_FECHA_LARGO, CultureInfo.InvariantCulture)
+            </span>
+        </div>
+    </div>
+    <!-- Documento -->
+    <h6 class="panel-title">Documento </h6>
+    <table class="seccion-pdf">
+        <tr>
+            <td class="form-pdf-label">
+                <label>
+                    Documento de Ingreso
+                </label>
+            </td>
+            <td class="form-pdf-data">
+                <label ID="lbDocumento" style="color: red;">@Model.DocumentoIngreso</label>
+            </td>
+            <td class="form-pdf-label-min">
+                <label>
+                    Fecha de Ingreso
+                </label>
+            </td>
+            <td class="form-pdf-data-min">
+                <label id="lbFechaIngreso">@Model.FechaIngreso.ToString(GeneralData.FORMATO_FECHA_LARGO, CultureInfo.InvariantCulture)</label>
+            </td>
+        </tr>
+        <tr>
+            <td class="form-pdf-label">
+                <label>
+                    Tipo de trámite
+                </label>
+            </td>
+            <td colspan="3" class="form-pdf-data-full">
+                <label id="lbTipoTramite">@Model.TipoTramiteTitulo</label>
+            </td>
+        </tr>
+        <tr>
+            <td class="form-pdf-label">
+                <label>
+                    Canal de llegada del trámite
+                </label>
+            </td>
+            <td colspan="3" class="form-pdf-data-full">
+                <label id="lbCanalLlegadaTramite">@Model.CanalLlegadaTramiteTitulo</label>
+            </td>
+        </tr>
+        <tr>
+            <td class="form-pdf-label">
+                <label>
+                    Tipo de documento
+                </label>
+            </td>
+            <td colspan="3" class="form-pdf-data-full">
+                <label id="lbTipoDocumento">@Model.TipoDocumentoTitulo</label>
+            </td>
+        </tr>
+        <tr>
+            <td class="form-pdf-label">
+                <label>
+                    Tipo de ingreso
+                </label>
+            </td>
+            <td colspan="3" class="form-pdf-data-full">
+                <label id="lbTipoIngreso">@Model.TipoIngreso</label>
+            </td>
+        </tr>
+        <tr>
+            <td class="form-pdf-label">
+                <label>
+                    Observaciones al tipo de documento
+                </label>
+            </td>
+            <td colspan="3" class="form-pdf-data-full">
+                <label id="lbObservaciones" class="pre-wrap">@LimpiaValorHtml(Model.ObservacionesTipoDoc) </label>
+            </td>
+        </tr>
+        <tr>
+            <td class="form-pdf-label">
+                <label>
+                    Fecha de documento
+                </label>
+            </td>
+            <td colspan="3" class="form-pdf-data-full">
+                <label id="lbFechaDocumento">@Model.FechaDocumento.ToString(GeneralData.FORMATO_FECHA_CORTO, CultureInfo.InvariantCulture)</label>
+            </td>
+        </tr>
+        <tr>
+            <td class="form-pdf-label">
+                <label>
+                    Fecha(s) de emisión de Oficio(s)
+                </label>
+            </td>
+            <td colspan="3" class="form-pdf-data-full">
+                <label> @(Model.FechasEmisionOficio)</label>
+            </td>
+        </tr>
+
+
+        <tr>
+            <td class="form-pdf-label">
+                <label>
+                    Adjunta documentación
+                </label>
+            </td>
+            <td class="form-pdf-data">
+                <label ID="lbAdjuntaSiNo"></label>
+            </td>
+            <td class="form-pdf-label-min">
+                <label>
+                    Cantidad de adjuntos
+                </label>
+            </td>
+            <td class="form-pdf-data-min">
+                <label>@Model.CantidadAdjuntos</label>
+            </td>
+        </tr>
+        <tr>
+            <td class="form-pdf-label">
+                <label>
+                    Tipos de adjuntos
+                </label>
+            </td>
+            <td colspan="3" class="form-pdf-data-full">
+                <label id="lbTiposAdjuntos">@Model.TipoAdjuntoTitulos</label>
+            </td>
+        </tr>
+        <tr>
+            <td class="form-pdf-label">
+                <label>
+                    Soporte
+                </label>
+            </td>
+            <td colspan="3" class="form-pdf-data-full">
+                <label id="lbSoporte">@Model.SoporteTitulos</label>
+            </td>
+        </tr>
+        <tr>
+            <td class="form-pdf-label">
+                <label>
+                    Observaciones de adjuntos
+                </label>
+            </td>
+            <td colspan="3" class="form-pdf-data-full">
+                <label id="lbObservacionesAdj" class="pre-wrap">@LimpiaValorHtml(Model.ObservacionesAdjuntos) </label>
+            </td>
+        </tr>
+    </table>
+
+
+    <!-- Remitente -->
+    <h6 class="panel-title"> Remitente </h6>
+    <table class="seccion-pdf">
+        <tr>
+            <td class="form-pdf-label">
+                <label>
+                    Nombre
+                </label>
+            </td>
+            <td colspan="3" class="form-pdf-data-full">
+                <label>@Model.RemitenteNombre</label>
+            </td>
+        </tr>
+        <tr>
+            <td class="form-pdf-label">
+                <label>
+                    RUT
+                </label>
+            </td>
+            <td colspan="3" class="form-pdf-data-full">
+                <label>@Model.RemitenteRut</label>
+            </td>
+        </tr>
+        <tr>
+            <td class="form-pdf-label">
+                <label>
+                    Género
+                </label>
+            </td>
+            <td colspan="3" class="form-pdf-data-full">
+                <label>@Model.RemitenteGenero</label>
+            </td>
+        </tr>
+        <tr>
+            <td class="form-pdf-label">
+                <label>
+                    Cargo o Profesión
+                </label>
+            </td>
+            <td colspan="3" class="form-pdf-data-full">
+                <label>@Model.RemitenteCargo</label>
+            </td>
+        </tr>
+        <tr>
+            <td class="form-pdf-label">
+                <label>
+                    Institución
+                </label>
+            </td>
+            <td colspan="3" class="form-pdf-data-full">
+                <label>@Model.RemitenteInstitucion</label>
+            </td>
+        </tr>
+        <tr>
+            <td class="form-pdf-label">
+                <label>
+                    Tipo de institución
+                </label>
+            </td>
+            <td colspan="3" class="form-pdf-data-full">
+                <label>@Model.RemitenteTipoInstitucion</label>
+            </td>
+        </tr>
+        <tr>
+            <td class="form-pdf-label">
+                <label>
+                    Dirección
+                </label>
+            </td>
+            <td colspan="3" class="form-pdf-data-full">
+                <label>@Model.RemitenteDireccion</label>
+            </td>
+        </tr>
+        <tr>
+            <td class="form-pdf-label">
+                <label>
+                    Correo electrónico
+                </label>
+            </td>
+            <td colspan="3" class="form-pdf-data-full">
+                <label>@Model.RemitenteEmail</label>
+            </td>
+        </tr>
+        <tr>
+            <td class="form-pdf-label">
+                <label>
+                    Teléfono
+                </label>
+            </td>
+            <td colspan="3" class="form-pdf-data-full">
+                <label>@Model.RemitenteTelefono</label>
+            </td>
+        </tr>
+    </table>
+
+
+    <!-- Proyecto -->
+    <h6 class="panel-title"> Proyecto </h6>
+    <table class="seccion-pdf">
+        <tr>
+            <td class="form-pdf-label">
+                <label>
+                    Nombre de Proyecto o Programa
+                </label>
+            </td>
+            <td colspan="3" class="form-pdf-data-full">
+                <label>@Model.NombreProyectoPrograma</label>
+            </td>
+        </tr>
+        <tr>
+            <td class="form-pdf-label">
+                <label>
+                    Número del caso
+                </label>
+            </td>
+            <td colspan="3" class="form-pdf-data-full">
+                <label>@Model.CasoId</label>
+            </td>
+        </tr>
+        <tr>
+            <td class="form-pdf-label">
+                <label>
+                    Nombre del caso
+                </label>
+            </td>
+            <td colspan="3" class="form-pdf-data-full">
+                <label>@Model.CasoTitulo</label>
+            </td>
+        </tr>
+        <tr>
+            <td class="form-pdf-label">
+                <label>
+                    Materia
+                </label>
+            </td>
+            <td colspan="3" class="form-pdf-data-full">
+                <label>@Model.Materia</label>
+            </td>
+        </tr>
+        <tr>
+            <td class="form-pdf-label">
+                <label>
+                    Etiqueta
+                </label>
+            </td>
+            <td colspan="3" class="form-pdf-data-full">
+                <label>@Model.EtiquetaTitulos</label>
+            </td>
+        </tr>
+    </table>
+
+    <!-- Monumento Nacional -->
+    <h6 class="panel-title"> Monumento Nacional </h6>
+    <table class="seccion-pdf">
+        <tr>
+            <td class="form-pdf-label">
+                <label>
+                    Categoría de Monumento Nacional
+                </label>
+            </td>
+            <td colspan="3" class="form-pdf-data-full">
+                <label>@(Model.MonumentoNacional?.CategoriaMonumentoNacCod)</label>
+            </td>
+        </tr>
+        <tr>
+            <td class="form-pdf-label">
+                <label>
+                    Código de Monumento Nacional
+                </label>
+            </td>
+            <td colspan="3" class="form-pdf-data-full">
+                <label>@(Model.MonumentoNacional?.CodigoMonumentoNac)</label>
+            </td>
+        </tr>
+        <tr>
+            <td class="form-pdf-label">
+                <label>
+                    Denominación Oficial
+                </label>
+            </td>
+            <td colspan="3" class="form-pdf-data-full">
+                <label>@(Model.MonumentoNacional?.DenominacionOficial)</label>
+            </td>
+        </tr>
+        <tr>
+            <td class="form-pdf-label">
+                <label>
+                    Otras denominaciones
+                </label>
+            </td>
+            <td colspan="3" class="form-pdf-data-full">
+                <label>@(Model.MonumentoNacional?.OtrasDenominaciones)</label>
+            </td>
+        </tr>
+        <tr>
+            <td class="form-pdf-label">
+                <label>
+                    Nombre o uso actual
+                </label>
+            </td>
+            <td colspan="3" class="form-pdf-data-full">
+                <label>@(Model.MonumentoNacional?.NombreUsoActual)</label>
+            </td>
+        </tr>
+        <tr>
+            <td class="form-pdf-label">
+                <label>
+                    Dirección Monumento Nacional
+                </label>
+            </td>
+            <td colspan="3" class="form-pdf-data-full">
+                <label>@(Model.MonumentoNacional?.DireccionMonumentoNac)</label>
+            </td>
+        </tr>
+        <tr>
+            <td class="form-pdf-label">
+                <label>
+                    Referencia de localización o localidad
+                </label>
+            </td>
+            <td colspan="3" class="form-pdf-data-full">
+                <label>@(Model.MonumentoNacional?.ReferenciaLocalidad)</label>
+            </td>
+        </tr>
+        <tr>
+            <td class="form-pdf-label">
+                <label>
+                    Región
+                </label>
+            </td>
+            <td colspan="3" class="form-pdf-data-full">
+                <label>@(Model.MonumentoNacional?.RegionTitulo)</label>
+            </td>
+        </tr>
+        <tr>
+            <td class="form-pdf-label">
+                <label>
+                    Provincia
+                </label>
+            </td>
+            <td colspan="3" class="form-pdf-data-full">
+                <label>@(Model.MonumentoNacional?.ProvinciaTitulo)</label>
+            </td>
+        </tr>
+        <tr>
+            <td class="form-pdf-label">
+                <label>
+                    Comuna
+                </label>
+            </td>
+            <td colspan="3" class="form-pdf-data-full">
+                <label>@(Model.MonumentoNacional?.ComunaTitulo)</label>
+            </td>
+        </tr>
+        <tr>
+            <td class="form-pdf-label">
+                <label>
+                    Rol SII Propiedad
+                </label>
+            </td>
+            <td colspan="3" class="form-pdf-data-full">
+                <label>@(Model.MonumentoNacional?.RolSii)</label>
+            </td>
+        </tr>
+    </table>
+
+    <!-- General -->
+    <h6 class="panel-title"> General </h6>
+    <table class="seccion-pdf">
+        <tr>
+            <td class="form-pdf-label">
+                <label>
+                    Forma de llegada
+                </label>
+            </td>
+            <td colspan="3" class="form-pdf-data-full">
+                <label>@Model.FormaLlegadaTitulo</label>
+            </td>
+        </tr>
+        <tr>
+            <td class="form-pdf-label">
+                <label>
+                    Observaciones de la forma de llegada
+                </label>
+            </td>
+            <td colspan="3" class="form-pdf-data-full">
+                <label>@LimpiaValorHtml(Model.ObservacionesFormaLlegada)</label>
+            </td>
+        </tr>
+        <tr>
+            <td class="form-pdf-label">
+                <label>
+                    Carácter
+                </label>
+            </td>
+            <td colspan="3" class="form-pdf-data-full">
+                <label>@Model.CaracterTitulo</label>
+            </td>
+        </tr>
+        <tr>
+            <td class="form-pdf-label">
+                <label>
+                    Observaciones del carácter
+                </label>
+            </td>
+            <td colspan="3" class="form-pdf-data-full">
+                <label class="pre-wrap">@LimpiaValorHtml(Model.ObservacionesCaracter)</label>
+            </td>
+        </tr>
+        <tr>
+            <td class="form-pdf-label">
+                <label>
+                    Redireccionado
+                </label>
+            </td>
+            <td colspan="3" class="form-pdf-data-full">
+                <label>@(DevuelveSiNo(Model.Redireccionado))</label>
+            </td>
+        </tr>
+        <tr>
+            <td class="form-pdf-label">
+                <label>
+                    Número de ticket
+                </label>
+            </td>
+            <td colspan="3" class="form-pdf-data-full">
+                <label>@Model.NumeroTicket</label>
+            </td>
+        </tr>
+        <tr>
+            <td class="form-pdf-label">
+                <label>
+                    Requiere acuerdo
+                </label>
+            </td>
+            <td colspan="3" class="form-pdf-data-full">
+                <label>@(DevuelveSiNo(Model.RequiereAcuerdo))</label>
+            </td>
+        </tr>
+        <tr>
+            <td class="form-pdf-label">
+                <label>
+                    Requerimiento anterior
+                </label>
+            </td>
+            <td colspan="3" class="form-pdf-data-full">
+                <label>@Model.RequerimientoAnteriorDocIng</label>
+            </td>
+        </tr>
+        <tr>
+            <td class="form-pdf-label">
+                <label>
+                    Requerimiento no registrado
+                </label>
+            </td>
+            <td colspan="3" class="form-pdf-data-full">
+                <label>@Model.RequerimientoNoRegistrado</label>
+            </td>
+        </tr>
+    </table>
+
+    <!-- Asignación -->
+    <h6 class="panel-title"> Asignación </h6>
+    <table class="seccion-pdf">
+        <tr>
+            <td class="form-pdf-label">
+                <label>
+                    Asignación Anterior
+                </label>
+            </td>
+            <td colspan="3" class="form-pdf-data-full">
+                <label>@Model.AsignacionAnterior</label>
+            </td>
+        </tr>
+        <tr>
+            <td class="form-pdf-label">
+                <label>
+                    Unidad Técnica Asignada
+                </label>
+            </td>
+            <td class="form-pdf-data">
+                <label>@Model.UtAsignadaTitulo</label>
+            </td>
+            <td class="form-pdf-label-min">
+                <label>
+                    Fecha de asignación UT
+                </label>
+            </td>
+            <td class="form-pdf-data-min">
+                <label>@(Model.AsignacionUt.HasValue ? Model.AsignacionUt.Value.ToString(GeneralData.FORMATO_FECHA_LARGO, CultureInfo.InvariantCulture) : "")</label>
+            </td>
+        </tr>
+        <tr>
+            <td class="form-pdf-label">
+                <label>
+                    Unidad Técnica en copia
+                </label>
+            </td>
+            <td colspan="3" class="form-pdf-data-full">
+                <label>@Model.UtCopiaTitulos</label>
+            </td>
+        </tr>
+        <tr>
+            <td class="form-pdf-label">
+                <label>
+                    UT en Conocimiento
+                </label>
+            </td>
+            <td colspan="3" class="form-pdf-data-full">
+                <label>@Model.UtConocimientoTitulo</label>
+            </td>
+        </tr>
+        <tr>
+            <td class="form-pdf-label">
+                <label>
+                    UT de Asignación Temporal
+                </label>
+            </td>
+            <td colspan="3" class="form-pdf-data-full">
+                <label>@Model.UtTemporalTitulo</label>
+            </td>
+        </tr>
+        <tr>
+            <td class="form-pdf-label">
+                <label>
+                    Requiere respuesta
+                </label>
+            </td>
+            <td colspan="3" class="form-pdf-data-full">
+                <label>@(DevuelveSiNo(Model.RequiereRespuesta))</label>
+            </td>
+        </tr>
+        <tr>
+            <td class="form-pdf-label">
+                <label>
+                    Comentario de Asignación
+                </label>
+            </td>
+            <td colspan="3" class="form-pdf-data-full">
+                <label class="pre-wrap">@*@LimpiaValorHtml(LimpiaValorHtml(Model.ComentarioAsignacion))*@</label>
+            </td>
+        </tr>
+        <tr>
+            <td class="form-pdf-label">
+                <label>
+                    UT de Apoyo
+                </label>
+            </td>
+            <td colspan="3" class="form-pdf-data-full">
+                <label>@Model.UtApoyoTitulo</label>
+            </td>
+        </tr>
+    </table>
+
+    @*<div class="page-break"></div>*@
+
+    <!-- Priorización -->
+    <h6 class="panel-title"> Priorización </h6>    <table class="seccion-pdf">
+
+        <tr>
+            <td class="form-pdf-label">
+                <label>
+                    Plazo (días)
+                </label>
+            </td>
+            <td class="form-pdf-data">
+                <label>@Model.Plazo</label>
+            </td>
+            <td class="form-pdf-label-min">
+                <label>
+                    Prioridad del requerimiento
+                </label>
+            </td>
+            <td class="form-pdf-data-min">
+                <label>@Model.PrioridadTitulo</label>
+            </td>
+        </tr>
+        <tr>
+            <td class="form-pdf-label">
+                <label>
+                    Solicitante de urgencia
+                </label>
+            </td>
+            <td colspan="3" class="form-pdf-data-full">
+                <label>@Model.SolicitanteUrgenciaNombre</label>
+            </td>
+        </tr>
+
+
+    </table>
+
+    <!-- Asignacion temporal -->
+
+    @if (Model.EnAsignacionTemp)
+    {
+        <h6 class="panel-title"> Asignación Temporal </h6>
+        <table class="seccion-pdf">
+
+            <tr>
+                <td class="form-pdf-label">
+                    <label>
+                        UT de asignación temporal
+                    </label>
+                </td>
+                <td class="form-pdf-data">
+                    <label>@Model.UtTemporalTitulo</label>
+                </td>
+                <td class="form-pdf-label-min">
+                    <label>
+                        Fecha asignación UT temporal
+                    </label>
+                </td>
+                <td class="form-pdf-data-min">
+                    <label>@(Model.AsignacionUtTemp.HasValue ? Model.AsignacionUtTemp.Value.ToString(GeneralData.FORMATO_FECHA_LARGO, CultureInfo.InvariantCulture) : "")</label>
+                </td>
+            </tr>
+
+            <tr>
+                <td class="form-pdf-label">
+                    <label>
+                        Responsable UT Temporal
+                    </label>
+                </td>
+                <td class="form-pdf-data">
+                    <label>@Model.ResponsableUtTempNombresApellidos</label>
+                </td>
+
+                <td class="form-pdf-label-min">
+                    <label>
+                        Fecha recepción UT Temporal
+                    </label>
+                </td>
+
+                <td class="form-pdf-data-min">
+                    <label>@(Model.RecepcionUtTemp.HasValue ? Model.RecepcionUtTemp.Value.ToString(GeneralData.FORMATO_FECHA_LARGO, CultureInfo.InvariantCulture) : "")</label>
+                </td>
+
+            </tr>
+
+            <tr>
+                <td class="form-pdf-label">
+                    <label>
+                        Profesional UT asignación temporal
+                    </label>
+
+                </td>
+                <td class="form-pdf-data">
+                    <label>@Model.ProfesionalTempNombresApellidos</label>
+                </td>
+                <td class="form-pdf-label-min">
+                    <label>Fecha asignación profesional UT temporal</label>
+                </td>
+
+                <td class="form-pdf-data-min">
+                    <label>@(Model.AsignacionProfesionalTemp.HasValue ? Model.AsignacionProfesionalTemp.Value.ToString(GeneralData.FORMATO_FECHA_LARGO, CultureInfo.InvariantCulture) : "")</label>
+                </td>
+            </tr>
+
+            <tr>
+                <td class="form-pdf-label">
+                    <label>Fecha de liberación ingreso</label>
+                </td>
+                <td colspan="3" class="form-pdf-data-full">
+                    <label>@Model.Liberacion</label>
+                </td>
+
+            </tr>
+
+        </table>
+    }
+
+
+    <!-- Transparencia -->
+
+    @if (Model.EsTransparencia)
+    {
+        <h6 class="panel-title transparencia"> SIAC/Transparencia </h6>
+        <table class="seccion-pdf">
+
+            <tr>
+                <td class="form-pdf-label">
+                    <label>
+                        Unidad Técnica Apoyo Transparencia
+                    </label>
+                </td>
+                <td colspan="3" class="form-pdf-data-full">
+                    <label>@Model.UtTransparenciaTitulo</label>
+                </td>
+            </tr>
+            <tr>
+                <td class="form-pdf-label">
+                    <label>
+                        Profesional en UT Apoyo Transparencia
+                    </label>
+                </td>
+                <td colspan="3" class="form-pdf-data-full">
+                    <label>@Model.ProfesionalTranspNombresApellidos</label>
+                </td>
+            </tr>
+            <tr>
+                <td class="form-pdf-label">
+                    <label>
+                        Observaciones de SIAC/Transparencia
+                    </label>
+                </td>
+                <td colspan="3" class="form-pdf-data-full">
+                    <label class="pre-wrap">@LimpiaValorHtml(Model.ObservacionesTransparencia)</label>
+                </td>
+            </tr>
+        </table>
+    }
+
+    <!-- Únidad Técnica -->
+    <h6 class="panel-title"> Únidad Técnica </h6>    <table class="seccion-pdf">
+
+    <tr>
+        <td class="form-pdf-label">
+            <label>
+                Responsable de UT
+            </label>
+        </td>
+        <td class="form-pdf-data">
+            <label>@Model.ResponsableNombre</label>
+        </td>
+        <td class="form-pdf-label-min">
+            <label>
+                Fecha de recepción UT
+            </label>
+
+        </td>
+        <td class="form-pdf-data-min">
+            <label>@(Model.RecepcionUt.HasValue ? Model.RecepcionUt.Value.ToString(GeneralData.FORMATO_FECHA_LARGO, CultureInfo.InvariantCulture) : "")</label>
+
+        </td>
+    </tr>
+    <tr>
+        <td class="form-pdf-label">
+            <label>
+                Profesional en UT
+            </label>
+        </td>
+        <td class="form-pdf-data">
+            <label>@Model.ProfesionalNombre</label>
+        </td>
+        <td class="form-pdf-label-min">
+            <label>
+                Fecha de asignación profesional UT
+            </label>
+        </td>
+        <td class="form-pdf-data-min">
+            <label>@(Model.AsignacionResponsable.HasValue ? Model.AsignacionResponsable.Value.ToString(GeneralData.FORMATO_FECHA_LARGO, CultureInfo.InvariantCulture) : "")</label>
+        </td>
+    </tr>
+
+    <tr>
+        <td class="form-pdf-label">
+            <label>
+                Comentario de Encargado UT
+            </label>
+        </td>
+        <td colspan="3" class="form-pdf-data-full">
+            <label class="pre-wrap">@LimpiaValorHtml(Model.ComentarioEncargadoUt)</label>
+        </td>
+    </tr>
+
+    <tr>
+        <td class="form-pdf-label">
+            <label>
+                Requiere timbraje de plano
+            </label>
+        </td>
+        <td colspan="3" class="form-pdf-data-full">
+            <label>@(DevuelveSiNo(Model.RequiereTimbrajePlano))</label>
+        </td>
+    </tr>
+
+    <tr>
+        <td class="form-pdf-label">
+            <label>
+                Requiere acuerdo / Acta CMN
+            </label>
+        </td>
+        <td colspan="3" class="form-pdf-data-full">
+            <label>@(DevuelveSiNo(Model.RequiereAcuerdo))</label>
+        </td>
+    </tr>
+    <tr>
+        <td class="form-pdf-label">
+            <label>
+                Nueva Fecha de Resolución Estimada
+            </label>
+        </td>
+        <td colspan="3" class="form-pdf-data-full">
+            <label id="lbNuevaPrio">@(Model.ForzarPrioridadFecha.HasValue ? Model.ForzarPrioridadFecha.Value.ToString(GeneralData.FORMATO_FECHA_CORTO, CultureInfo.InvariantCulture) : "")</label>
+        </td>
+    </tr>
+    <tr>
+        <td class="form-pdf-label">
+            <label>
+                Motivo
+            </label>
+        </td>
+        <td colspan="3" class="form-pdf-data-full">
+            <label>@Model.ForzarPrioridadMotivo</label>
+        </td>
+    </tr>
+</table>
+
+    <!-- Cierre -->
+    <h6 class="panel-title"> Cierre </h6>
+    <table class="seccion-pdf">
+        <tr>
+            <td class="form-pdf-label">
+                <label>
+                    Fecha de cierre
+                </label>
+            </td>
+            <td class="form-pdf-data">
+                <label>@Model.Cierre</label>
+            </td>
+            <td class="form-pdf-label-min">
+                <label>
+                    Cerrado por
+                </label>
+            </td>
+            <td class="form-pdf-data-min">
+                <label>@Model.CerradoPor</label>
+            </td>
+        </tr>
+        <tr>
+            <td class="form-pdf-label">
+                <label>
+                    Motivo de cierre
+                </label>
+            </td>
+            <td colspan="3" class="form-pdf-data-full">
+                <label>@Model.MotivoCierreTitulo</label>
+            </td>
+        </tr>
+        <tr>
+            <td class="form-pdf-label">
+                <label>
+                    Comentario de cierre
+                </label>
+            </td>
+            <td colspan="3" class="form-pdf-data-full">
+                <label class="pre-wrap">@LimpiaValorHtml(Model.ComentarioCierre)</label>
+            </td>
+        </tr>
+    </table>
+
+    <!-- Despachos -->
+    <h6 class="panel-title"> Despachos </h6>
+    @if (Model.Despachos == null || Model.Despachos.Count == 0)
+    {
+        <span>No existen Despachos asociados al presente ingreso.</span>
+    }
+    else
+    {
+        <table cellspacing="0" cellpadding="4" border="0" class="gridDatos">
+            <tbody>
+                <tr style="color:#004A7F;background-color:Silver;font-weight:bold;height:40px;">
+                    <th align="left" scope="col">Número del Oficio</th>
+                    <th align="left" scope="col">Fecha Emisión Oficio</th>
+                    <th align="left" scope="col">Destinatario</th>
+                    <th align="left" scope="col">Institución</th>
+                    <th align="left" scope="col">Materia</th>
+                    <th align="left" scope="col">Estado</th>
+                    <th align="left" scope="col">Proveedor Despacho</th>
+                </tr>
+                @foreach (var desp in (Model.Despachos ?? new List<DespachoDto>()))
+                {
+                    <tr style="background-color:#EFF3FB;">
+                        <td>@desp.NumeroDespacho</td>
+                        <td>@(desp.FechaEmisionOficio == null ? "" : desp.FechaEmisionOficio.Value.ToString(GeneralData.FORMATO_FECHA_LARGO, CultureInfo.InvariantCulture))</td>
+                        <td>@desp.RemitenteNombre</td>
+                        <td>@desp.RemitenteInstitucion</td>
+                        <td>@desp.Materia</td>
+                        <td>@desp.EstadoDespachoTitulo</td>
+                        <td>@desp.ProveedorDespachoTitulo</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+    }
+
+
+    <!-- Archivos Adjuntos -->
+    <h6 class="panel-title"> Archivos Adjuntos </h6>
+    @if (Model.Adjuntos == null || Model.Adjuntos.Count == 0)
+    {
+        <span>No existen Adjuntos asociados al presente ingreso.</span>
+    }
+    else
+    {
+        <table cellspacing="0" cellpadding="4" border="0" class="gridDatos">
+            <tbody>
+                <tr style="color:#004A7F;background-color:Silver;font-weight:bold;height:40px;">
+                    <th align="left" scope="col">Creado por</th>
+                    <th align="left" scope="col">Nombre Archivo</th>
+                    <th align="left" scope="col">Origen de Adjunto</th>
+                    <th align="left" scope="col">Fecha de Carga</th>
+                </tr>
+                @foreach (var adj in (Model.Adjuntos ?? new List<AdjuntoDto>()))
+                {
+                    <tr style="background-color:#EFF3FB;">
+                        <td>@adj.UsuarioCreacionNombresApellidos</td>
+                        <td>@adj.NombreArchivo</td>
+                        <td>@adj.OrigenAdjunto</td>
+                        <td>@(adj.FechaCarga.ToString(GeneralData.FORMATO_FECHA_LARGO, CultureInfo.InvariantCulture))</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+    }
+
+    <!-- Bitácora -->
+    @*<h6 class="panel-title"> Bitácora </h6>
+        @if (Model.Bitacoras == null || Model.Bitacoras.Count == 0)
+        {
+            <span>No existen Bitácoras asociados al presente ingreso.</span>
+        }
+        else
+        {
+            <table cellspacing="0" cellpadding="4" border="0" class="gridDatos">
+                <tbody>
+                <tr style="color:#004A7F;background-color:Silver;font-weight:bold;height:40px;">
+                    <th align="left" scope="col">Tipo</th>
+                    <th align="left" scope="col">Creado por</th>
+                    <th align="left" scope="col">Observaciones</th>
+                    <th align="left" scope="col">Fecha de Carga</th>
+                </tr>
+                @foreach (var bit in (Model.Bitacoras ?? new List<BitacoraDto>()))
+                {
+                    <tr style="background-color:#EFF3FB;">
+                        <td>@bit.UsuarioCreacionNombresApellidos</td>
+                        <td>@bit.NombreArchivo</td>
+                        <td>@bit.ObsAcuerdoComentario</td>
+                        <td>@(bit.Fecha == null ? "" : bit.Fecha.Value.ToString(GeneralData.FORMATO_FECHA_LARGO, CultureInfo.InvariantCulture))</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        }*@
+
+
+    <!-- Bitácora nueva -->
+    <h6 class="panel-title"> Bitácora </h6>
+    @if (Model.LogBitacoras == null || Model.LogBitacoras.Count == 0)
+    {
+        <span>No existen Bitácoras asociados al presente ingreso.</span>
+    }
+    else
+    {
+        <table cellspacing="0" cellpadding="4" border="0" class="gridDatos">
+            <tbody>
+                <tr style="color:#004A7F;background-color:Silver;font-weight:bold;height:40px;">
+                    <th align="left" scope="col">Fecha de Edición</th>
+                    <th align="left" scope="col">Fecha</th>
+                    <th align="left" scope="col">Estado</th>
+                    <th align="left" scope="col">Etapa</th>
+                    <th align="left" scope="col">Actividad</th>
+                    <th align="left" scope="col">Ingreso editado por</th>
+                    <th align="left" scope="col">Texto por defecto en bitácora</th>
+                    <th align="left" scope="col">Unidad Técnica</th>
+                </tr>
+                @foreach (var bit in (Model.LogBitacoras ?? new List<LogBitacoraDto>()))
+                {
+                    <tr>
+                        <td>@(bit.FechaLog.ToString(GeneralData.FORMATO_FECHA_LARGO, CultureInfo.InvariantCulture))</td>
+                        <td>@(bit.FechaFormulario == null ? "" : bit.FechaFormulario.Value.ToString(GeneralData.FORMATO_FECHA_LARGO, CultureInfo.InvariantCulture))</td>
+                        <td>@bit.EstadoTitulo</td>
+                        <td>@bit.EtapaTitulo</td>
+                        <td>@bit.Actividad</td>
+                        <td>@bit.UsuarioNombre</td>
+                        <td>@bit.TextoDefecto</td>
+                        <td>@bit.UnidadTecnicaTitulo</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>
+
+
+
+<script>
+
+    @if (resultado.Codigo < 0)
+    {
+        <text>
+    Main.showAlert("@LimpiaValorHtml(resultado.Mensaje)")
+        .then(function(result) {
+            Main.cierraModal(null, false, "winFormFichaIng");
+        });
+        </text>
+    }
+
+    function mm(val) {
+        return val * 2.8347;
+    }
+
+    function exportarPdf() {
+
+        // Convert the DOM element to a drawing using kendo.drawing.drawDOM
+        kendo.drawing.drawDOM($("#div-main-pdf"),
+            {
+                    // Manual Page Breaking (https://docs.telerik.com/kendo-ui/framework/drawing/pdf-output/multi-page-content#manual-page-breaking)
+                    forcePageBreak: ".page-break", // Permite especificar un salto de página antes del elemento con la clase page-break
+                    // Automatic Page Breaking. Se especifica aquí el paperSize y margin, no en el pdfExport, sino no funciona el cambio de página automático y siempre exporta solo la primera hoja
+                    // (https://docs.telerik.com/kendo-ui/framework/drawing/pdf-output/multi-page-content#automatic-page-breaking)
+                    paperSize: "A4",
+                    //margin: "1cm"
+                    // Prevenir un page salto de página en un elemento (https://docs.telerik.com/kendo-ui/framework/drawing/pdf-output/multi-page-content#preventing-page-breaking-in-elements)
+                    keepTogether: ".prevent-split", // Elementos con la clase prevent-split no se cortan con un cambio de página, se mantiene todo su contenido en una misma página
+                    template: $("#page-template").html()
+            })
+            .then(function (group) {
+                //kendo.ui.progress($("#espera-pdf"), true);
+
+                //// Fija el contenido en una sola página:
+                //var PAGE_RECT = new kendo.geometry.Rect(
+                //    [0, 0], [mm(210 - 20), mm(297 - 20)]
+                //);
+                //var content = new kendo.drawing.Group();
+                //content.append(group);
+                //kendo.drawing.fit(content, PAGE_RECT);
+                //var contenido = content;
+
+                var contenido = group;
+                // Render the result as a PDF file
+                return kendo.drawing.exportPDF(contenido,
+                    {
+                        //paperSize: "A4",
+                        ////multiPage: true, // El corte de página lo hace donde esté el page-break, sin esto entonces aunque especifique el multiPage: true genera el pdf con solo la primera página
+                        //margin: { left: "1cm", top: "1cm", right: "1cm", bottom: "1cm" }
+                    });
+            })
+            .done(function(data) {
+                // Save the PDF file
+                kendo.saveAs({
+                    dataURI: data,
+                    fileName: "Ficha@(Model.DocumentoIngreso).pdf",
+                    proxyURL: "@Url.Action("FichaPdfExport")",
+                    forceProxy: false,
+                    proxyTarget: "_blank"
+                });
+                Main.unwait( "#espera-pdf");
+                Main.cierraModal(null, false, "winFichaPdf");
+            });
+    }
+
+    $(function () {
+        $("#div-main-pdf").closest(".k-window-content.k-content").css({ "overflow": "hidden" });
+        Main.wait("Generando ficha PDF, por favor espere...", "#espera-pdf");
+
+        setTimeout(function() { exportarPdf(); }, 300);
+
+    });
+
+
+
+    //# sourceURL=FichaPdf
+</script>

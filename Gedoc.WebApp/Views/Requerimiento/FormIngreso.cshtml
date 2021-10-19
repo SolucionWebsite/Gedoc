@@ -1,0 +1,548 @@
+﻿@using Gedoc.Helpers
+@using Gedoc.Helpers.Enum
+@model Gedoc.WebApp.Models.RequerimientoModel
+
+@{
+    ViewBag.Title = "FormIngreso";
+    FlujoIngreso form = ViewBag.Form;
+    Model.Flujo = form;
+    Dictionary<CampoIngreso, AspectoCampo> accesoCampos = ViewBag.AccesoCampos;
+    ResultadoOperacion accesoForm = ViewBag.AccesoForm ?? new ResultadoOperacion(1, "OK", null);
+
+    Layout = null; // "~/Views/Shared/_LayoutVacio.cshtml"; // "~/Views/Shared/_Layout.cshtml";
+    var chequeaObligatorios = ViewBag.ChequeaObligatorios ?? false;
+
+    var showDocumento = accesoCampos[CampoIngreso.PanelDocumento] != AspectoCampo.Oculto;
+    var showAdjuntos = accesoCampos[CampoIngreso.PanelAdjuntos] != AspectoCampo.Oculto;
+    var showRemitente = accesoCampos[CampoIngreso.PanelRemitente] != AspectoCampo.Oculto;
+    var showProyecto = accesoCampos[CampoIngreso.PanelProyecto] != AspectoCampo.Oculto;
+    var showMonNac = accesoCampos[CampoIngreso.PanelMonNac] != AspectoCampo.Oculto;
+    var showGeneral = accesoCampos[CampoIngreso.PanelGeneral] != AspectoCampo.Oculto;
+    var showGeneralHistorico = accesoCampos[CampoIngreso.PanelGeneralHistorico] != AspectoCampo.Oculto;
+    var showAsignacion = accesoCampos[CampoIngreso.PanelAsignacion] != AspectoCampo.Oculto;
+    var showReasignacionUt = accesoCampos[CampoIngreso.PanelReasignacionUt] != AspectoCampo.Oculto;
+    var showAsignacionProfUt = accesoCampos[CampoIngreso.PanelAsignacionProfUt] != AspectoCampo.Oculto;
+    //var showReasignacionProfUt = accesoCampos[CampoIngreso.PanelReasignacionProfUt] != AspectoCampo.Oculto;
+    var showPriorizacion = accesoCampos[CampoIngreso.PanelPriorizacion] != AspectoCampo.Oculto;
+    var showCierre = accesoCampos[CampoIngreso.PanelCierre] != AspectoCampo.Oculto;
+    var showSolicReasignacion = accesoCampos[CampoIngreso.PanelSolicReasignacion] != AspectoCampo.Oculto && !Model.EnAsignacionTemp;
+    var showForzarPrioridad = accesoCampos[CampoIngreso.PanelSolicReasignacion] != AspectoCampo.Oculto && !Model.EnAsignacionTemp;
+    var showUtReasigProf = accesoCampos[CampoIngreso.PanelUtReasigProf] != AspectoCampo.Oculto;
+    var showOtrosCampos = accesoCampos[CampoIngreso.PanelOtrosCampos] != AspectoCampo.Oculto;
+    var showTransparencia = accesoCampos[CampoIngreso.PanelTransparencia] != AspectoCampo.Oculto;
+}
+
+@*@section scripts{*@
+
+<script src="~/Scripts/form.js"></script>
+
+
+@Html.Partial("~/Views/Partial/TemplateTagMultiselect.cshtml", Model)
+
+@* } *@
+<script>
+
+    @if (accesoForm.Codigo < 0)
+    {
+        <text>
+            Main.showAlert("@Html.Raw(accesoForm.Mensaje)")
+                .then(function (result) {
+                    Main.cierraModal(null, false, "winFormIngreso");
+                });
+        </text>
+    }
+
+    function onChangeComboFix(e) {
+        if (this.value() && this.selectedIndex == -1) {
+            //Variante 3. Ref. https://www.telerik.com/forums/limit-combobox-text-entered-to-items-in-the-drop-down-list-except-if-a-certain-option-is-selected-in-the-parent-combobox-#dd-hFtBVLUmOuUl_tLNJbg
+            var that = this;
+            if (that.selectedIndex == -1) {
+                that.dataSource
+                    .one("change", function () {
+                        that.select(1);
+                    })
+                    .filter({
+                        value: "",
+                        field: that.options.dataTextField,
+                        operator: "contains"
+                    });
+            }
+        }
+    }
+    //# sourceURL=FormIngreso2
+</script>
+
+<div class="div-main-form">
+
+    <form id="formIngreso" action="@Url.Action("Save")" class="form-datos">
+        @Html.AntiForgeryToken()
+        @Html.HiddenFor(a => a.Id)
+        @Html.HiddenFor(a => a.Flujo)
+        @if (accesoCampos[CampoIngreso.Doc_DocIng] == AspectoCampo.SoloLectura)
+        {
+            Html.HiddenFor(a => a.DocumentoIngreso);
+        }
+        @Html.HiddenFor(a => a.AsignacionUt)
+        @*@Html.HiddenFor(a => a.ObservacionesTipoDoc)*@
+        @*@Html.HiddenFor(a => a.ObservacionesAdjuntos)*@
+        @*@Html.HiddenFor(a => a.ObservacionesFormaLlegada)*@
+        @*@Html.HiddenFor(a => a.ObservacionesCaracter)*@
+        @*@Html.HiddenFor(a => a.ComentarioEncargadoUt)*@
+        @*@Html.HiddenFor(a => a.ComentarioCierre)*@
+        @Html.HiddenFor(a => a.EsTransparenciaAnt)
+        @Html.HiddenFor(a => a.LiberarAsignacionTempAnt)
+        @Html.HiddenFor(a => a.FechaIngresoFull)
+        @Html.HiddenFor(a => a.TipoIngreso)
+        @Html.HiddenFor(a => a.UtAnteriorId)
+        @if (form != FlujoIngreso.EditarIngreso)
+        {
+            @Html.HiddenFor(a => a.EstadoId)
+            @Html.HiddenFor(a => a.EtapaId)
+        }
+        @*else
+        {
+            @Html.HiddenFor(a => a.BackupData)
+        }*@
+
+        @if (accesoCampos[CampoIngreso.Doc_FechaIng] == AspectoCampo.Oculto ||
+             accesoCampos[CampoIngreso.Doc_FechaIng] == AspectoCampo.SoloLectura)
+        {
+            @Html.Hidden("FechaIngreso", Model.FechaIngreso, new { @id = "hfFechaIngreso" })
+        }
+        @if (accesoCampos[CampoIngreso.Asig_UtTemp] == AspectoCampo.Oculto ||
+             accesoCampos[CampoIngreso.Asig_UtTemp] == AspectoCampo.SoloLectura ||
+             !showAsignacion)
+        {
+            @Html.HiddenFor(a => a.UtTemporalId)
+        }
+        @if ((accesoCampos[CampoIngreso.Asig_UtAsign] == AspectoCampo.Oculto ||
+             accesoCampos[CampoIngreso.Asig_UtAsign] == AspectoCampo.SoloLectura ||
+             (!showAsignacion && !showGeneralHistorico)) 
+            && !showReasignacionUt )
+        {
+            @Html.HiddenFor(a => a.UtAsignadaId)
+        }
+        @if (accesoCampos[CampoIngreso.Asig_LiberarAsign] == AspectoCampo.Oculto || Model.UtTemporalId.GetValueOrDefault(0) == 0)
+        {
+            @Html.HiddenFor(a => a.LiberarAsignacionTemp)
+        }
+
+
+        @if (showDocumento)
+        {
+            Html.RenderPartial("~/Views/Requerimiento/Partial/DatosDocumentoIngreso.cshtml", Model,
+                new ViewDataDictionary { { "AccesoCampos", ViewBag.AccesoCampos }, { "Form", form } });
+        }
+
+        @if (showAdjuntos)
+        {
+            @Html.Partial("~/Views/Requerimiento/Partial/DatosAdjuntosIngreso.cshtml", Model,
+                new ViewDataDictionary { { "AccesoCampos", ViewBag.AccesoCampos } })
+        }
+
+        @if (showRemitente)
+        {
+            @Html.Partial("~/Views/Requerimiento/Partial/DatosRemitenteIngreso.cshtml", Model,
+                new ViewDataDictionary { { "AccesoCampos", ViewBag.AccesoCampos } })
+        }
+
+        @if (showProyecto)
+        {
+            @Html.Partial("~/Views/Requerimiento/Partial/DatosProyectoIngreso.cshtml", Model,
+                new ViewDataDictionary { { "AccesoCampos", ViewBag.AccesoCampos } })
+        }
+
+        @if (showMonNac)
+        {
+            @Html.Partial("~/Views/Requerimiento/Partial/DatosMonNacIngreso.cshtml", Model,
+                new ViewDataDictionary { { "AccesoCampos", ViewBag.AccesoCampos } })
+        }
+
+        @if (showGeneral)
+        {
+            @Html.Partial("~/Views/Requerimiento/Partial/DatosGeneralIngreso.cshtml", Model,
+                new ViewDataDictionary { { "AccesoCampos", ViewBag.AccesoCampos } })
+        }
+
+        @if (showGeneralHistorico)
+        {
+            @Html.Partial("~/Views/Requerimiento/Partial/DatosGeneralHistorico.cshtml", Model,
+                new ViewDataDictionary { { "AccesoCampos", ViewBag.AccesoCampos } })
+        }
+
+        @if (showTransparencia && form == FlujoIngreso.EditarIngreso)
+        {
+            @Html.Partial("~/Views/Requerimiento/Partial/DatosTransparenciaIngreso.cshtml", Model,
+                new ViewDataDictionary { { "AccesoCampos", ViewBag.AccesoCampos } });
+        }
+
+        @if (showAsignacion)
+        {
+            @Html.Partial("~/Views/Requerimiento/Partial/DatosAsignacionIngreso.cshtml", Model,
+                new ViewDataDictionary { { "AccesoCampos", ViewBag.AccesoCampos } })
+        }
+
+        @if (showReasignacionUt)
+        {
+            @Html.Partial("~/Views/Requerimiento/Partial/DatosReasignacionIngreso.cshtml", Model,
+                new ViewDataDictionary { { "AccesoCampos", ViewBag.AccesoCampos } })
+        }
+
+        @if (showPriorizacion)
+        {
+            @Html.Partial("~/Views/Requerimiento/Partial/DatosPriorizacionIngreso.cshtml", Model,
+                new ViewDataDictionary
+                {
+                    {"MatrizPriorizacion", ViewBag.MatrizPriorizacion},
+                    {"AccesoCampos", ViewBag.AccesoCampos},
+                    { "Form", form }
+                })
+        }
+
+        @if (showAsignacionProfUt)
+        {
+            @Html.Partial("~/Views/Requerimiento/Partial/DatosAsignacionProfUt.cshtml", Model,
+                new ViewDataDictionary
+                {
+                    {"AccesoCampos", ViewBag.AccesoCampos}
+                })
+        }
+
+        @if (showUtReasigProf)
+        {
+            @Html.Partial("~/Views/Requerimiento/Partial/DatosReasignacionProfUt.cshtml", Model,
+                new ViewDataDictionary
+                {
+                    {"AccesoCampos", ViewBag.AccesoCampos}
+                })
+        }
+
+        @if (showSolicReasignacion)
+        {
+            @Html.Partial("~/Views/Requerimiento/Partial/DatosSolicitudReasignacion.cshtml", Model,
+                new ViewDataDictionary
+                {
+                    {"AccesoCampos", ViewBag.AccesoCampos}
+                })
+        }
+
+        @if (showForzarPrioridad)
+        {
+            @Html.Partial("~/Views/Requerimiento/Partial/DatosForzarPrioridad.cshtml", Model,
+                new ViewDataDictionary
+                {
+                    {"AccesoCampos", ViewBag.AccesoCampos}
+                })
+        }
+
+        @if (showCierre)
+        {
+            @Html.Partial("~/Views/Requerimiento/Partial/DatosCierreIngreso.cshtml", Model,
+                new ViewDataDictionary
+                {
+                    {"AccesoCampos", ViewBag.AccesoCampos},
+                    {"MotivosCierre", ViewBag.MotivosCierre}
+                })
+        }
+
+        @if (showOtrosCampos)
+        {
+            @Html.Partial("~/Views/Requerimiento/Partial/DatosOtrosCampos.cshtml", Model,
+                new ViewDataDictionary { { "AccesoCampos", ViewBag.AccesoCampos } })
+        }
+
+        @if (showTransparencia && form == FlujoIngreso.EditarCamposUt)
+        {
+            @Html.Partial("~/Views/Requerimiento/Partial/DatosTransparenciaIngreso.cshtml", Model,
+                new ViewDataDictionary { { "AccesoCampos", ViewBag.AccesoCampos } });
+        }
+
+        @if (accesoForm.Codigo > 0)
+        {
+            <div class="footer-modal">
+                <div class="form-row">
+                    <div class="offset-md-3 col-md-2 text-center">
+                        <button type="button" id="btnGrabaIngreso" class="k-primary-blue k-button confirm_yes" onclick="grabaForm(event);">Guardar</button>
+                    </div>
+                    <div class="offset-md-2 col-md-2 text-center">
+                        <button type="button" id="btnCancelaIngreso" class="k-danger k-button confirm_no" onclick="cancelaIngreso(event);">Cancelar</button>
+                    </div>
+                </div>
+            </div>
+        }
+
+    </form>
+
+</div>
+
+<script>
+    kendo.culture("es-ES"); // Tiene el formato de fecha dd/MM/yyyy q es el q se usa en la aplicación, la cultura es-CL tiene formato dd-MM-yyyy
+
+    function configValidacionForm() {
+
+        var container = $("#formIngreso");
+        kendo.init(container);
+        container.kendoValidator({
+            rules: {
+                radio: function(input) {
+                    if (input.filter("[type=radio]").length && input.attr("required")) {
+                        return container.find("[type=radio][name=" + input.attr("name") + "]").is(":checked");
+                    }
+                    return true;
+                },
+                fechaCorrecta: function(input) {
+                    if (input.is("[data-role=datepicker]")) {
+                        return input.data("kendoDatePicker").value();
+                    } else {
+                        return true;
+                    }
+                },
+                divRequired: function(input) {
+                    if ($(input).attr("id") == "ComentarioCierre") {
+                        var divCierre = $("#pnComentarioCierre");
+                        if (divCierre.length && !divCierre.text().length)
+                            return false;
+                        return true;
+                    } else {
+                        return true;
+                    }
+                },
+                isValidNumRequerimiento: function (input) {
+                    if (input.hasClass("docingreso-valido")) {
+                        var d = new Date();
+                        var minAnno = input.data("minAnno") || 1950;
+                        var maxAnno = input.data("maxAnno") || d.getFullYear();
+                        return Form.isValidNumOficio(input.val(), minAnno, maxAnno);
+                    }
+                    return true;
+                }
+            },
+            messages: {
+                required: "Este campo es obligatorio",
+                radio: "Este campo es obligatorio",
+                fechaCorrecta: "Fecha incorrecta",
+                number: "Valor incorrecto",
+                divRequired: "Este campo es obligatorio",
+                comboxCorrecto: "Valor incorrecto",
+                isValidNumRequerimiento: function (input) {
+                    return "Valor incorrecto";
+                }
+            }
+        });
+    }
+
+    function grabaForm(e) {
+        var currentTarget = $(e.currentTarget);
+        var form = $("#formIngreso");
+
+        var validator = form.data("kendoValidator");
+        if (!validator.validate()) {
+            Main.showError("Por favor, revise los datos de la página. Hay datos incompletos o erróneos.");
+
+            return false;
+        }
+
+        Main.wait("Grabando...");
+
+        var data = $(form).serialize();
+        var url = $(form).attr("action");
+        $.ajax({
+            type: "POST",
+            url: url,
+            data: data // { __RequestVerificationToken: token, model: JSON.stringify(data) }// JSON.stringify(data) //
+        }).done(function(response) {
+            Main.unwait();
+            if (response.Codigo) {
+                if (response.Codigo > 0) {
+                    // Si es form de Editar Requerimiento se pregunta si enviar los emails de notificación si es q se cambió algún campo de los controlados
+                    if (@Json.Encode(form == FlujoIngreso.EditarIngreso) && response.Codigo == 2) {
+                        Main.showConfirm(response.Mensaje, undefined, true)
+                            .then(function (isOk) {
+                                if (isOk) {
+                                    enviaEmailNotificacion(e, response.Extra);
+                                } else {
+                                    Main.cierraModal(currentTarget, true, "winFormIngreso");
+                                }
+                            });
+                    } else {
+                        Main.showInfo(response.Mensaje).then(function (result) {
+                            Main.cierraModal(currentTarget, true, "winFormIngreso");
+                        });
+                    }
+                } else {
+                    Main.showError(response.Mensaje, "Error");
+                }
+            } else {
+                Main.showAlert("Error inesperado al realizar la operación, por favor, vuelva a intentarlo",
+                    "Error");
+            }
+        }).fail(function(error) {
+            Main.unwait();
+            Main.showError("Ha ocurrido un error al realizar la operación, por favor, vuelva a intentarlo.",
+                "Error");
+        });
+    };
+
+    function enviaEmailNotificacion(e, backupData) {
+        var currentTarget = $(e.currentTarget);
+        var form = $("#formIngreso");
+
+        Main.wait("Enviado email, por favor, espere...");
+
+        var backupData2 = {};
+        backupData2.BackupData = backupData;
+        var data = $(form).serialize() + "&" + $.param(backupData2) ;
+
+        var url = "@Url.Action("EnviaEmailEdicionReq", "Requerimiento")";
+        $.ajax({
+            type: "POST",
+            url: url,
+            data: data
+        }).done(function(response) {
+            Main.unwait();
+            if (response.Codigo) {
+                if (response.Codigo > 0) {
+                    Main.showInfo(response.Mensaje).then(function (result) {
+                        Main.cierraModal(currentTarget, true, "winFormIngreso");
+                    });
+                } else {
+                    Main.showError(response.Mensaje, "Error").then(function (result) {
+                        Main.cierraModal(currentTarget, true, "winFormIngreso");
+                    });
+                }
+            } else {
+                Main.showAlert("Ha ocurrido un error al enviar el correo de notificación, por favor, revise el log de errores de la aplicación",
+                    "Error").then(function (result) {
+                    Main.cierraModal(currentTarget, true, "winFormIngreso");
+                });
+            }
+        }).fail(function(error) {
+            Main.unwait();
+            Main.showAlert("Ha ocurrido un error al enviar el correo de notificación, por favor, revise el log de errores de la aplicación",
+                "Error").then(function (result) {
+                cancelaIngreso(e);
+            });
+        });
+    };
+
+    function cancelaIngreso(e) {
+        Main.cierraModal($(e.currentTarget), { resultado: false }, "winFormIngreso");
+    };
+
+
+    $(function() {
+
+        kendo.ui.progress($("#formIngreso"), true);
+
+        @if (form == FlujoIngreso.ReasignacionProfUt)
+        {
+            // Si es form de Reasignar Profesional se ocultan los * de campos obligatorios excepto en Profesional UT
+            @:$(".marca-obligatorio:not(#marcaProf)").hide();
+        }
+
+        @if (!chequeaObligatorios)
+        {
+            // Si no se validan los campos obligatorios en form Editar Requerimiento
+            @:$(".marca-obligatorio").hide();
+            @:$("[required]").removeAttr("required");
+        }
+
+        configValidacionForm();
+
+        @if (showDocumento)
+        {
+            <text> inicializaPanelDocumento(); </text>
+        }
+
+        @if (showAdjuntos)
+        {
+            <text> incializaPanelAdjunto(); </text>
+        }
+
+        @if (showRemitente)
+        {
+            <text> incializaPanelRemitente(); </text>
+        }
+
+        @if (showProyecto)
+        {
+            <text> inicializaPanelProyecto(); </text>
+        }
+
+        @if (showMonNac)
+        {
+            <text> inicializaPanelMonNac(); </text>
+        }
+
+        @if (showGeneral)
+        {
+            <text> inicializaPanelGeneral(); </text>
+        }
+
+        @if (showGeneralHistorico)
+        {
+            <text> inicializaPanelGeneralHist(); </text>
+        }
+
+        @if (showAsignacion)
+        {
+            <text> inicializaPanelAsignacion(); </text>
+        }
+
+        @if (showReasignacionUt)
+        {
+            <text> inicializaPanelReasignacion(); </text>
+        }
+
+        @if (showAsignacionProfUt)
+        {
+            <text> inicializaPanelAsignacionProfUt(); </text>
+        }
+
+        @if (showSolicReasignacion)
+        {
+            <text> inicializaPanelSolicitudReasignacion(); </text>
+        }
+
+        @if (showForzarPrioridad)
+        {
+            <text> inicializaPanelForzarPrioridad(); </text>
+        }
+
+        @if (showUtReasigProf)
+        {
+            <text> inicializaPanelReasignacionProfUt(); </text>
+        }
+
+        @if (showOtrosCampos)
+        {
+            <text> inicializaPanelOtrosCampos(); </text>
+        }
+
+        @if (showTransparencia)
+        {
+            <text> // inicializaPanelTransparencia(); </text>
+        }
+
+        @if (showPriorizacion)
+        {
+            <text> inicializaPanelPriorizacion(); </text>
+        }
+
+        @if (showCierre)
+        {
+            <text> inicializaPanelCierre(); </text>
+        }
+
+
+        Form.inicializaForm();
+
+        kendo.ui.progress($("#formIngreso"), false);
+
+        var esTransp = @Json.Encode(Model.EsTransparencia) ;
+        $('.grupo-transparencia').toggle(esTransp);
+        $('.asign-temporal').toggle(!esTransp);
+    });
+
+    //# sourceURL=FormIngreso
+</script>

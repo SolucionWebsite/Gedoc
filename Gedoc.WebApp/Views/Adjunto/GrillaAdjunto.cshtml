@@ -1,0 +1,171 @@
+﻿@using Gedoc.Helpers
+@using Gedoc.Helpers.Dto
+@using Gedoc.WebApp.Models
+
+@{
+    Layout = null; // "~/Views/Shared/_LayoutVacio.cshtml";
+    ViewBag.Title = "Adjuntos";
+    var reqId = ViewBag.IdRequerimiento;
+    var bandId = ViewBag.IdBandeja;
+    var docIngreso = ViewBag.DocIngreso;   
+}
+
+<style>
+    #gridAdjuntosIngreso .k-grid {
+        font-size: 0.8em;
+    }
+
+    #gridAdjuntosIngreso .k-grid tbody td {
+        padding: 5px;
+    }
+
+    #gridAdjuntosIngreso .k-grid-header .k-header {
+        background-color: #ebe8e8;
+    }
+</style>
+
+<script src="~/Scripts/form.js"></script>
+
+
+<script>
+    function refrescaGridAdjunto() {
+        var gridK = $("#gridAdjuntosIngreso").data("kendoGrid");
+        if (gridK) {
+            gridK.dataSource.read();
+        }
+    }
+
+    function extraDataGrillaAdjunto() {
+        return {
+            reqId: '@reqId'
+        };
+    }
+
+    function buildActions(idAdjunto, urlArchivo)
+    {
+        var enlace = "";
+        if (urlArchivo) {
+           enlace = "@Url.Action("GetArchivo", "Adjunto")" + "?idAdjunto=" + idAdjunto;
+            //enlace = "<a href='" + enlace + "'  class='text-center enlace-grilla k-button'>Descargar</a>";
+            //enlace = '<a href="' + enlace + '"  class="k-button" title="Descargar"><span class="k-icon k-i-download"></span></a>';
+            enlace = '<a href="' + enlace + '" title="Descargar"><img height="20" src="Content/images/Icono-Descargar.png" /></a>';
+        }
+
+        var deleteAction =  @Html.Raw(Json.Encode(ViewBag.DeleteAccion));
+        if (deleteAction == true) {
+            var onclick = 'deleteAdjunto(' + idAdjunto + ')';
+            var acc = '<a href="#" onclick="' + onclick + '; return false;">' +               
+                '<img height="20" src="Content/images/Icono-Eliminar.png" title="Eliminar Adjunto" /></a>';
+            enlace = enlace + acc;
+        }
+
+        enlace = '<p>' + enlace + '</p>';
+        return enlace;
+    }
+
+
+    function deleteAdjunto(idAdjunto) {
+        Main.showConfirm("¿Desea eliminar el adjunto?", "Eliminar", true)
+            .then(function (isOk) {
+                if (!isOk) return false;
+                var eliminado = [];
+                eliminado.push(idAdjunto);
+                kendo.ui.progress($("#gridAdjuntosIngreso"), true);
+                $.ajax({
+                    type: "POST",
+                    url: '@Url.Action("EliminaAdjunto", "Adjunto")',
+                    contentType: "application/json; charset=utf-8",
+                    data: JSON.stringify({
+                        adjuntoIds: eliminado
+                    }),
+                    dataType: "json",
+                    success: function (data) {
+                        kendo.ui.progress($("#gridAdjuntosIngreso"), false);
+                        if (data.Codigo > 0) {
+                             Main.showAlert("Adjunto Eliminado");
+                        } else {
+                             Main.showAlert("Error al eliminar");
+                        }
+                        refrescaGridAdjunto();
+                    },
+                    error: function (data) {
+                        kendo.ui.progress($("#gridAdjuntosIngreso"), false);
+                         Main.showAlert("Error al eliminar");
+                        refrescaGridAdjunto();
+                    }
+                });
+            });
+    }
+
+    //# sourceURL=GrillaAdjunto2
+
+</script>
+
+
+<div id="divGrillaAdjuntos">
+
+    <h5>
+        <a href="#" class="badge badge-light mr-3 enlace-accion"
+           onclick="Acciones.ejecutaAccionNuevaVentana('Nuevo Documento'
+                , '@Url.Action("AccionAdjunto", "Adjunto")' + '?idAccion=ADJ&idAdjunto=0&idIngreso=@reqId&idBandeja=@bandId'
+                , null, '', 'ADJ', refrescaGridAdjunto); return false;">
+            <span class="k-icon k-i-plus-outline"></span>
+            Nuevo
+        </a>
+    </h5>
+
+    @(Html.Kendo().DataSource<AdjuntoModel>()
+        .Name("dataSourceGridAdj")
+        .Ajax(dataSource => dataSource
+            .Read(read =>
+            {
+                read.Action("AdjuntosIngreso", "Adjunto")
+                    .Type(HttpVerbs.Post)
+                    .Data("extraDataGrillaAdjunto");
+            })
+            //.Events(ev =>
+            //{
+            //    ev.RequestEnd("function(e) {  Main.enEspera($('#gridBandeja'), false); Main.notificaResultado(e); }");
+            //})
+            .PageSize(10)
+            .ServerOperation(false)
+        )
+        )
+    @(Html.Kendo().Grid<AdjuntoModel>()
+        .Name("gridAdjuntosIngreso")
+        .DataSource("dataSourceGridAdj")
+        .HtmlAttributes(new { @class = "k-grid-alternate" })
+        .Scrollable(scr => scr.Height("auto"))
+        .Pageable(p => p.AlwaysVisible(false).PageSizes(new int[3] { 10, 50, 100 }).Enabled(true).Info(true))
+        .Sortable()
+        .Navigatable()
+        .NoRecords("No existen documentos.")
+        .Columns(columns =>
+        {
+            columns.Bound(c => c.Id)
+                .Title("<center>Acción</center>")
+                .Width(100)
+                .ClientTemplate("#=buildActions(data.Id, data.UrlArchivo)#");
+            columns.Bound(c => c.UsuarioCreacionNombresApellidos).Width(100).Title("<center>Creado por</center>");
+            columns.Bound(c => c.NombreArchivo).Width(150).Title("<center>Nombre Archivo</center>");
+            columns.Bound(c => c.OrigenAdjunto).Width(130).Title("<center>Origen de adjunto</center>");
+            columns.Bound(c => c.FechaCarga).Width(130).Title("<center>Fecha de carga</center>").Format(GeneralData.FORMATO_FECHA_CORTO_GRID);
+            ;
+
+        })
+        )
+
+
+</div>
+
+@*@section scripts{
+    }*@
+<script>
+
+    $(function () {
+
+    });
+
+        //# sourceURL=GrillaAdjunto
+
+</script>

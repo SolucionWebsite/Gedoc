@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<discovery xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://schemas.xmlsoap.org/disco/">
+  <contractRef ref="http://ssodev.dibam.cl/WSSO.asmx?wsdl" docRef="http://ssodev.dibam.cl/WSSO.asmx" xmlns="http://schemas.xmlsoap.org/disco/scl/" />
+  <soap address="http://ssodev.dibam.cl/WSSO.asmx" xmlns:q1="http://www.dibam.cl" binding="q1:WSSOSoap" xmlns="http://schemas.xmlsoap.org/disco/soap/" />
+  <soap address="http://ssodev.dibam.cl/WSSO.asmx" xmlns:q2="http://www.dibam.cl" binding="q2:WSSOSoap12" xmlns="http://schemas.xmlsoap.org/disco/soap/" />
+</discovery>

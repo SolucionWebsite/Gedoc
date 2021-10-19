@@ -1,0 +1,273 @@
+﻿@model Gedoc.WebApp.Models.RemitenteModel
+
+@{
+    ViewBag.Title = "FormRemitente";
+    Layout = null; // "~/Views/Shared/_LayoutVacio.cshtml"; // 
+}
+
+<style>
+    #formRemitente {
+        font-size: 0.9em;
+    }
+</style>
+
+<script src="~/Scripts/jquery-rut/jquery.rut.min.js"></script>
+
+<script>
+
+    $(function () {
+        var container = $("#formRemitente");
+        kendo.init(container);
+        container.kendoValidator({
+            rules: {
+                radio: function(input) {
+                    if (input.filter("[type=radio]").length && input.attr("required")) {
+                        return container.find("[type=radio][name=" + input.attr("name") + "]").is(":checked");
+                    }
+                    return true;
+                },
+                rut: function (input) {
+                    if (input.hasClass("rut") && input.val()) {
+                        return $.validateRut(input.val());
+                    }
+                    return true;
+                },
+                multipleemails: function (input) {
+                    if (input.hasClass("multiple-email") && input.val())
+                    {                                   
+                        var emailsArray = input.val().split(";");
+                        for (var i=0; i < emailsArray.length; i++) {
+                            var esValido = emailsArray[i].trim() && Form.esEmailMultiValido(emailsArray[i].trim());
+                            if (!esValido) {
+                                return false;
+                            }
+                        }        
+                    }
+                    return true;
+                },
+                telefono: function (input) {
+                    if (input.hasClass("telefono") && input.val()) {
+                        return Form.esTelefonoValido(input.val());
+                    }
+                    return true;
+                },
+            },
+            messages: {
+                required: "Este campo es obligatorio",
+                radio: "Este campo es obligatorio",
+                rut: "RUT no válido",
+                multipleemails: "Formato de email no válido",
+                telefono: "Formato de telefono no válido"
+            }
+        });
+
+
+        $("#remitenteRut").rut({ useThousandsSeparator: false });
+        //    .on('rutInvalido', function (e) {
+        //        if ($("#remitenteRut").val()) {
+        //            $("#lbErrorRemitenteRut").show();
+        //        } else {
+        //            $("#lbErrorRemitenteRut").hide();
+        //        }
+        //    })
+        //    .on('rutValido', function (e) {
+        //        $("#remitenteRut").hide();
+        //    });
+    });
+    
+    function grabaRemitente(e) {
+        e.preventDefault();
+        var form = $("#formRemitente");
+
+        var validator = form.data("kendoValidator");
+        if (!validator.validate()) {
+            Main.showError("Por favor, revise los datos de la página. Hay datos incompletos o erróneos.");
+
+            return false;
+        }
+
+        // Main.wait("Grabando...");
+        kendo.ui.progress($(document.body), true);
+        
+        var data = form.serialize();
+        var url = form.attr("action");
+        $.ajax({
+            type: "POST",
+            url: url,
+            data: data
+        }).done(function (response) {
+           // Main.unwait();
+            kendo.ui.progress($(document.body), false);
+            if (response.Codigo) {
+                if (response.Codigo > 0) {
+                    //Main.showInfoPopup(response.Mensaje);
+                    Main.cierraModal($(e.currentTarget), { resultado: response.Extra }, "winFormRemit");
+                } else {
+                    Main.showError(response.Mensaje, "Error");
+                }
+            } else {
+                Main.showAlert("Error inesperado al realizar la operación, por favor, vuelva a intentarlo", "Error");
+            }
+        }).fail(function (error) {
+          //  Main.unwait();
+            kendo.ui.progress($(body), false);
+            Main.showError("Ha ocurrido un error al realizar la operación, por favor, vuelva a intentarlo.", "Error");
+        });
+    };
+
+    function cancelaRemitente(e) {
+        Main.cierraModal($(e.currentTarget), { resultado: false }, "winFormRemit");
+    };
+    //# sourceURL=FormRemitente
+</script>
+
+<div class="container-fluid">
+    <form id="formRemitente" action="@Url.Action("Save")">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="Id" value="@Model.Id" />
+        <div class="form-row">
+            <div class="col-sm-3">
+                <label class="label-dato-form">
+                    Nombre<span class="marca-obligatorio" title="Este campo es obligatorio."> *</span>
+                </label>
+            </div>
+            <div class="col-sm-9">
+                <input id="remitenteNombre" name="Nombre" type="text" class="k-textbox w-100"  required value="@Model.Nombre" />
+                <span class="help-block">Nombres y apellidos: Juan Diego Pérez Dominguez.</span>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="col-sm-3">
+                <label class="label-dato-form">
+                    RUT
+                </label>
+            </div>
+            <div class="col-sm-5">
+                <input id="remitenteRut" name="Rut" type="text" class="k-textbox w-100 rut" value="@Model.Rut" />
+                <span class="k-invalid-msg" data-for="Rut"></span><br />
+                @*<label id="lbErrorRemitenteRut" class="label-error">RUT no válido</label>*@
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="col-sm-3">
+                <label class="label-dato-form">
+                    Género<span class="marca-obligatorio" title="Este campo es obligatorio."> *</span>
+                </label>
+            </div>
+            <div class="col-sm-9">
+                <div class="row ml-1">
+                    <input type="radio" name="Genero" id="rbGeneroFemenino" class="k-radio" value="Femenino" required @(Model.Genero=="Femenino"?"checked":"") />
+                    <label class="k-radio-label mr-3" for="rbGeneroFemenino">Femenino</label>
+                </div>
+                <div class="row ml-1">
+                    <input type="radio" name="Genero" id="rbGeneroMasculino" class="k-radio" value="Masculino" required @(Model.Genero=="Masculino"?"checked":"") />
+                    <label class="k-radio-label mr-3" for="rbGeneroMasculino">Masculino</label>
+                </div>
+                <div class="row ml-1">
+                    <input type="radio" name="Genero" id="rbGeneroNeutro" class="k-radio" value="Neutro" required @(Model.Genero=="Neutro"?"checked":"") />
+                    <label class="k-radio-label mr-3" for="rbGeneroNeutro">Neutro</label>
+                </div>
+                
+                <span class="k-invalid-msg" data-for="Genero"></span><br/>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="col-sm-3">
+                <label class="label-dato-form">
+                    Cargo o Profesión
+                </label>
+            </div>
+            <div class="col-sm-9">
+                <input id="remitenteCargo" name="Cargo" type="text" class="k-textbox w-100" value="@Model.Cargo" />
+                <span class="help-block">Encargado Unidad de Planimetría. Dibujante Técnico.</span>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="col-sm-3">
+                <label class="label-dato-form">
+                    Institución
+                </label>
+            </div>
+            <div class="col-sm-9">
+                <input id="remitenteInstitucion" name="Institucion" type="text" class="k-textbox w-100" value="@Model.Institucion" />
+                <span class="help-block">Pérez Dominguez Arquitectos.</span>
+            </div>
+        </div>
+
+        <div class="form-row">
+
+            <div class="col-sm-3">
+                <label class="label-dato-form">
+                    Tipo de institución
+                </label>
+            </div>
+            <div class="col-sm-9">
+                <div class="row ml-1">
+                    <input type="radio" name="TipoInstitucion" id="rbInstPublica" class="k-radio" value="Pública" @(Model.TipoInstitucion=="Pública"?"checked":"")>
+                    <label class="k-radio-label mr-3" for="rbInstPublica">Pública</label>
+                </div>
+                <div class="row ml-1">
+                    <input type="radio" name="TipoInstitucion" id="rbInstPrivada" class="k-radio" value="Privada" @(Model.TipoInstitucion=="Privada"?"checked":"")>
+                    <label class="k-radio-label mr-3" for="rbInstPrivada">Privada</label>
+                </div>
+                <div class="row ml-1">
+                    <input type="radio" name="TipoInstitucion" id="rbInstInterna" class="k-radio" value="Interna" @(Model.TipoInstitucion=="Interna"?"checked":"")>
+                    <label class="k-radio-label mr-3" for="rbInstInterna">Interna</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="col-sm-3">
+                <label class="label-dato-form">
+                    Dirección
+                </label>
+            </div>
+            <div class="col-sm-9">
+                <input id="remitenteDireccion" name="Direccion" type="text" class="k-textbox w-100" value="@Model.Direccion" />
+                <span class="help-block">Avenida del Mar N° 84, Viña del Mar, Valparaíso, Chile.</span>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="col-sm-3">
+                <label class="label-dato-form">
+                    Correo electrónico
+                </label>
+            </div>
+            <div class="col-sm-9">
+                <input id="remitenteEmail" name="Email" type="text"  class="k-textbox w-100 multiple-email" value="@Model.Email" />
+                @*<input id="remitenteEmail" name="Email" type="email" data-email-msg="Formato de email no válido" class="k-textbox w-100" />*@
+                <span class="help-block">Ej.: micorreo@empresa.cl; micorreo@empresa.com; micorreo@empresa.net</span>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="col-sm-3">
+                <label class="label-dato-form">
+                    Teléfono
+                </label>
+            </div>
+            <div class="col-sm-5">
+                <input id="remitenteTelefono" name="Telefono" type="text" class="k-textbox w-100 telefono" value="@Model.Telefono" />
+            </div>
+        </div>
+
+    </form>
+</div>
+
+
+<div class="container-fluid pt-3 mt-2" style="border-top: 1px solid lightgray;">
+    <div class="form-row">
+        <div class="offset-sm-3 col-sm-2 text-center">
+            <button type="button" id="btnGrabaRemitente" class="k-primary-blue k-button" onclick="return grabaRemitente(event);">Guardar</button>
+        </div>
+        <div class="offset-sm-2 col-sm-2 text-center">
+            <button type="button" id="btnCancelaRemitente" class="k-danger k-button" onclick="cancelaRemitente(event);">Cancelar</button>
+        </div>
+    </div>
+</div>

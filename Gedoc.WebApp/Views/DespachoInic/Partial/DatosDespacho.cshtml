@@ -1,0 +1,60 @@
+﻿@using Gedoc.Helpers.Enum
+@using Gedoc.WebApp.Helpers
+@model Gedoc.WebApp.Models.DespachoIniciativaModel
+
+@{
+    Layout = null;
+    FlujoIngreso form = ViewBag.Form;
+}
+
+
+<h4 class="head-datos-form">Despacho</h4>
+<div class="container-fluid">
+
+    <div class="form-row" style="white-space: nowrap;">
+        <div class="col-md-3">
+            <label class="label-dato-form">
+                Antecedente / Acuerdo
+            </label>
+        </div>
+        <div class="col-md-9">
+            @*<div class="k-block text-area-out">
+                <div class="text-area-in texto-largo" id="pnAntecedenteAcuerdo" contenteditable="true"
+                    data-spanleyenda="leyenda-pnAntecedenteAcuerdo" maxlength="255">@Html.Raw(Model.AntecedenteAcuerdo)</div>
+                </div>
+            </div>*@
+            <textarea name="AntecedenteAcuerdo" rows="6" cols="20" id="pnAntecedenteAcuerdo" class="form-control texto-largo" data-spanleyenda="leyenda-pnAntecedenteAcuerdo"
+                      data-maxlength="255" style="width: 100% !important;">@Html.Raw(Model.AntecedenteAcuerdo)</textarea>
+            <span class="help-block-right" id="leyenda-pnAntecedenteAcuerdo"> </span>
+
+        </div>
+
+    </div>
+
+    <div class="form-row" style="white-space: nowrap;">
+        <div class="col-md-3">
+            <label class="label-dato-form">
+                Materia de Despacho<span class="marca-obligatorio" title="Este campo es obligatorio.">*</span>
+            </label>
+        </div>
+        <div class="col-md-9">
+            <textarea name="Materia" rows="6" cols="20" id="tbMateria" class="form-control texto-largo" data-spanleyenda="leyenda-pnMateria"
+                          data-maxlength="1000" style="width: 100% !important;" required>@Html.Raw(Model.Materia)</textarea>
+
+            <span class="k-invalid-msg" data-for="Materia"></span>
+            <span class="help-block-right" id="leyenda-pnMateria"> </span>
+        </div>
+    </div>
+
+</div>
+
+
+<script>
+
+    function inicializaPanelDespacho() {
+
+
+    }
+
+    //# sourceURL=PanelDespacho
+</script>

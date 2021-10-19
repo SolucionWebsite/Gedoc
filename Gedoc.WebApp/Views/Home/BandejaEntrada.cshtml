@@ -1,0 +1,537 @@
+﻿@using Gedoc.Helpers.Dto
+@using Gedoc.Helpers
+@using Gedoc.Helpers.Enum
+@using Gedoc.WebApp.Models
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = ViewBag.TituloBandeja;
+    List<AccionPermitidaBandejaDto> accionesEstadoEtapa = ViewBag.Acciones;
+    List<AccionBandejaDto> accionesOtras = ViewBag.AccionesOtras;
+    int idBandeja = ViewBag.IdBandeja ?? 0;
+    int codigoBandeja = ViewBag.CodigoBandeja ?? 0;
+
+    bool mostrarTabPriorizacion = (bool)ViewBag.MostrarTabPrio;
+    bool mostrarTabOficio = (bool)ViewBag.MostrarTabOfic;
+    bool mostrarColorNuevaFechaPrio = codigoBandeja == (int)Bandeja.EncargadoUt ||
+                      codigoBandeja == (int)Bandeja.SecretariaUt ||
+                      codigoBandeja == (int)Bandeja.ProfesionalUt ||
+                      codigoBandeja == (int)Bandeja.Transparencia;
+    bool compruebaFirmaOficios = codigoBandeja == (int)Bandeja.JefaturaUt;
+}
+
+<style>
+    .k-grid {
+        font-size: 0.8em;
+    }
+
+        .k-grid tbody td {
+            padding: 5px;
+        }
+
+    #divBandeja, #tabStripPestannas .k-content {
+        padding: 0px;
+    }
+
+    #gridBandeja .k-header.k-filterable, #gridBandejaPrio .k-header.k-filterable {
+        padding-right: 12px;
+    }
+
+    #gridBandejaPrio .k-grid-footer {
+        display: none;
+    }
+
+    .sin-borde {
+        padding: 0px;
+        border: 0px;
+    }
+</style>
+
+<script src="~/Scripts/accionesbandeja.js"></script>
+<script src="~/Scripts/form.js"></script>
+
+@section scripts{
+    <script>
+        var noCerrarDatePicker = false;
+        var fechaRegistro = {};
+        var fechaUltimaSelecc = {};
+        var datePickerAbierto = 0;
+        var actualizando = false;
+
+        $(function () {
+
+            $(".textDiasBandeja").text("@ViewBag.DiasBandeja días");
+            $(".textDiasBandejaPrio").text("@(ViewBag.DiasBandejaPrio ?? 0) días");
+
+
+        });
+
+        function showBusquedaBandeja() {
+            //var result = Main.muestraDivVentanaModal("Búsqueda en Bandeja de Entrada", "modalBusquedaAvanzadaBandeja");
+            var result = Main.muestraVentanaModal("Búsqueda en @(Html.Raw(ViewBag.TituloBandeja))",
+                '@Url.Action("BusquedaBandeja", "Home", new { bandejaId = idBandeja })',
+                "680px",
+                "");
+            result.then(function(result) {
+                if (result) {
+                    $("#gridBandeja").data("kendoGrid").dataSource.read();
+                    $("#gridBandeja").data("kendoGrid").dataSource.page(0);
+                }
+            });
+        }
+
+        function nuevoIngresoHist() {
+            var result = Main.showConfirm("nuevoIngresoHist", "¿Nuevo Ingreso Histórico?");
+            result.then(function(isOk) {
+                //if (isOk) alert("OK");
+                //else alert("CANCEL");
+            });
+        }
+
+        function buildAccionesIngresos(estadoId, etapaId, ingresoId, docIngreso, acciones) {
+            var acciones = acciones || @Html.Raw(Json.Encode(accionesEstadoEtapa));
+            var enReasignacionUt = etapaId == @((int)EtapaIngreso.Reasignacion);
+
+            var accionesHtml = [];
+            for (var i = 0; i < acciones.length; i++) {
+                if (acciones[i].EstadoId == estadoId && acciones[i].EtapaId == etapaId) {
+                    var accionesIngreso = acciones[i].Acciones;
+                    //TODO: ordenar las acciones según su orden definido en la tabla en bd
+                    for (var j = 0; j < accionesIngreso.length; j++) {
+                        var datosAccion = getDatosAccion(accionesIngreso[j]);
+                        // Se crea el control html con la acción encontrada
+                        if (datosAccion.TipoAccion == 'G') {
+                            if (enReasignacionUt && datosAccion.IdAccion == "AU")
+                                datosAccion.IdAccion = "RAU";
+                            var acc = '<a href="#" onclick="ejecutaAccion(' +
+                                ingresoId +
+                                ', \'' +
+                                datosAccion.IdAccion +
+                                '\'' +
+                                ', \'' +
+                                datosAccion.Titulo +
+                                (docIngreso ? (" - " + docIngreso) : "") +
+                                '\'' +
+                                ', \'' +
+                                docIngreso +
+                                '\'); return false;"><img width="20" height="20" src="Content/images/' +
+                                datosAccion.Icono +
+                                '" title="' +
+                                datosAccion.Hint +
+                                '" /></a>';
+                            accionesHtml.push(acc);
+                        }
+                    }
+                    break;
+                }
+            }
+
+            return accionesHtml.join(' '); // .replace('"', '\\"');
+        }
+
+        function ejecutaAccion(idIngreso, idAccion, titulo, docIngreso) {
+            //TODO: eliminar esto cdo ya no sea necesario:
+            var accionesNoPermitidas = ["BD", "CD", "DO"];
+            if (accionesNoPermitidas.includes(idAccion)) {
+                return;
+            }
+
+            if (idAccion == "DE") { // FORM DE NUEVO DESPACHOS
+                Acciones.ejecutaAccionNuevaVentana('Oficio CMN - ' + docIngreso,
+                    '@Url.Action("AccionDespacho", "Despacho")' + '?idAccion=' + idAccion + '&idDespacho=' + idIngreso,
+                    null,
+                    "100vp",
+                    idAccion);
+            } else if (idAccion == "DI") { // FORM NUEVO DESPACHO INICIATIVAS
+                Acciones.ejecutaAccionNuevaVentana('Nuevo Despacho Iniciativa CMN',
+                    '@Url.Action("AccionDespacho", "DespachoInic")' + '?idAccion=' + idAccion + '&idDespacho=0',
+                    null,
+                    "100vp",
+                    idAccion);
+            } else if (idAccion == "BI") { // GRILLA BITACORAS
+                Acciones.ejecutaAccionNuevaVentana('Bitácora - ' + docIngreso,
+                    '@Url.Action("BitacorasIngresoForm", "Bitacora")' +
+                    '?idAccion=' + idAccion + '&idBitacora=0&idIngreso=' + idIngreso + '&idBandeja=@idBandeja',
+                    null,
+                    "",
+                    idAccion,
+                    false);
+            } else if (idAccion == "AD") { // GRILLA ADJUNTOS
+                Acciones.ejecutaAccionNuevaVentana('Adjuntos - ' + docIngreso,
+                    '@Url.Action("AdjuntosIngresoForm", "Adjunto")' +
+                    '?idIngreso=' + idIngreso + '&idBandeja=' + @idBandeja,
+                    null,
+                    "",
+                    idAccion,
+                    false);
+            } else if (idAccion == "PAP"){ // PAPELERA DE RECICLAJE
+                Acciones.ejecutaAccionNuevaVentana(titulo,
+                    '@Url.Action("Index", "Papelera")' +
+                    '?idAccion=' +
+                    idAccion +
+                    '&idIngreso=' +
+                    idIngreso +
+                    '&idBandeja=@idBandeja',
+                    null,
+                    "100vp");
+            } else if (idAccion == "BORRARREQ"){ // ELIMINAR REQUERIMIENTO
+                Main.showConfirm("¡Atención! El requerimiento  " + docIngreso + " será eliminado. ¿desea continuar?",
+                        "Eliminar Requerimiento",
+                        true)
+                    .then(function(isOk) {
+                        if (isOk) {
+                            eliminarRequerimiento(idIngreso);
+                        }
+                    });
+            }else { // OTRAS ACCIONES: Form de Asignación, Priorización, Asignación Profesional, etc, etc
+                Acciones.ejecutaAccionNuevaVentana(titulo,
+                    '@Url.Action("AccionIngreso", "Requerimiento")' +
+                    '?idAccion=' + idAccion + '&idIngreso=' + idIngreso,
+                    null,
+                    "100vp",
+                    idAccion);
+            }
+        }
+
+        function eliminarRequerimiento(idIngreso) {
+
+            kendo.ui.progress($("#gridBandeja"), true);
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("EliminarRequerimiento", "Home")',
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify({
+                    id: idIngreso
+                }),
+                dataType: "json",
+                success: function (data) {
+                    kendo.ui.progress($("#gridBandeja"), false);
+                    Main.showAlert(data.Mensaje);
+                    if ($("#gridBandeja").length && $("#gridBandeja").data("kendoGrid")) {
+                        $("#gridBandeja").data("kendoGrid").dataSource.read();
+                    }
+                },
+                error: function (data) {
+                    kendo.ui.progress($("#gridBandeja"), false);
+                    Main.showAlert("Error al eliminar");
+                }
+            });
+        }
+
+        function getDatosAccion(accionId) {
+            var datosAcciones = @Html.Raw(Json.Encode(ViewBag.DatosAcciones));
+
+            for (var i = 0; i < datosAcciones.length; i++) {
+                if (datosAcciones[i].Id == accionId) {
+                    return datosAcciones[i];
+                }
+            }
+            return { "Icono": "", "Hint": "" }
+        }
+
+        function semaforoIngreso(dataItem) {
+            if (!dataItem.Resolucion || dataItem.EstadoTitulo == "Cerrado")
+                return "<center><img src='Content/images/Semaforo-Neutro.png'  width='24px' title='Requerimiento sin Priorización'/></center>";
+            if (dataItem.DiasResolucion == 5) {
+                return "<center><img src='Content/images/Semaforo-Amarillo.png'  width='24px' title='" + (dataItem.DiasResolucion || "") + "'/></center>";
+            }
+            if (dataItem.DiasResolucion > 5) {
+                return "<center><img src='Content/images/Semaforo-Verde.png'  width='24px' title='A " + (dataItem.DiasResolucion || "") + " días de vencer'/></center>";
+            }
+            return "<center><img src='Content/images/Semaforo-Rojo.png'  width='24px' title='Vencido'/></center>";
+        }
+
+        var destacarTemporales = true;
+        var destacarTransparencia = true;
+        var destacarReasignacion = true;
+        var destacarProridadForzada = true;
+
+        function coloreaRowGrid(dataItem, that)
+        {
+            // Si es requerimiento en Asignación Temporal
+            if (dataItem.TipoIngreso == 'TEMPORAL') {
+                if (destacarTemporales)
+                    $(that).css("background-color", "#86C5EF");
+                //else
+                //    $(that).css("background-color", "inherits");
+            }
+            // Si es requerimiento de Transparencia
+            if (dataItem.TipoIngreso == 'SIAC/TRANSPARENCIA') {
+                if (destacarTransparencia)
+                    $(that).css("background-color", "#D2E5F2");
+                //else
+                //    $(that).css("background-color", "inherits");
+            }
+            // Si es requerimiento en etapa Reasignación
+            if (dataItem.EtapaTitulo == 'Reasignación') {
+                if (destacarReasignacion)
+                    $(that).css("background-color", "#FFF67C");
+                //else
+                //    $(that).css("background-color", "inherits");
+            }
+            // Si es requerimiento q tiene asignado la  Nueva Fecha Resolución Estimada (campo ForzarPrioridadFecha)
+            if (@Json.Encode(mostrarColorNuevaFechaPrio) &&
+                dataItem.ForzarPrioridadFecha  &&
+                dataItem.EstadoId != '@((int)EstadoIngreso.Cerrado)' /*ingresos cerrado no se colorean*/) {
+                if (destacarProridadForzada)
+                    $(that).css("background-color", "#ffe6e6");
+                //else
+                //    $(that).css("background-color", "inherits");
+            }
+        }
+
+        function ventanaOficios(titulo, url) {
+            var result = Main.muestraVentanaModal(titulo, url, "85%", '', undefined, null, false);
+            result.then(function (result) {
+                if ($("#gridBandejaPrio").length && $("#gridBandejaPrio").data("kendoGrid")) {
+                    $("#gridBandejaPrio").data("kendoGrid").dataSource.read();
+                }
+                if ($("#gridBandeja").length && $("#gridBandeja").data("kendoGrid")) {
+                    $("#gridBandeja").data("kendoGrid").dataSource.read();
+                } else {
+                    location.reload(true);
+                }
+            });
+        }
+
+    </script>
+}
+
+
+<div class="container-fluid">
+    <div class="row mb-2">
+        <div class="col-md-8">
+            <div class="row">
+                <h5>
+                    <span class="badge badge-info">@ViewBag.TituloBandeja</span>
+                </h5>
+                <h5>
+                    <a href="#" class="badge badge-light ml-4 enlace-accion" onclick="showBusquedaBandeja();return false;">
+                        <span class="k-icon k-i-search"></span>
+                        Búsqueda en Bandeja de Entrada
+                    </a>
+                </h5>
+            </div>
+
+            <div class="row m-2">
+                @if (accionesOtras.Any(a => a.IdAccion == "NR"))
+                {
+                    <h5>
+                        <a href="#" class="badge badge-light mr-3 enlace-accion" onclick="ejecutaAccion(0, 'NR', '@accionesOtras.FirstOrDefault(a => a.IdAccion == "NR").Titulo');return false;">
+                            <span class="k-icon k-i-plus-outline"></span>
+                            Nuevo Requerimiento
+                        </a>
+                    </h5>
+                }
+                else
+                {
+                    <div style="width: 200px;"></div>
+                }
+
+                @if (accionesOtras.Any(a => a.IdAccion == "RH"))
+                {
+                    <h5>
+                        <a href="#" class="badge badge-light mr-3 enlace-accion" onclick="ejecutaAccion(0, 'RH', '@accionesOtras.FirstOrDefault(a => a.IdAccion == "RH").Titulo');return false;">
+                            <span class="k-icon k-i-plus-outline"></span>
+                            Nuevo Requerimiento Histórico
+                        </a>
+                    </h5>
+                }
+                else
+                {
+                    <div style="width: 250px;"></div>
+                }
+
+                @if (accionesOtras.Any(a => a.IdAccion == "DI"))
+                {
+                    <h5>
+                        <a href="#" class="badge badge-light mr-3 enlace-accion" onclick="ejecutaAccion(0, 'DI', '@accionesOtras.FirstOrDefault(a => a.IdAccion == "RH").Titulo');return false;">
+                            <span class="k-icon k-i-plus-outline"></span>
+                            Nuevo Despacho Iniciativas CMN
+                        </a>
+                    </h5>
+                }
+            </div>
+            @if (codigoBandeja == (int)Bandeja.ProfesionalUt) //Profesional UT
+            {
+                <div class="row ml-2 notificacionPriorizados" style="display:none;">
+                    <div style="width: 200px;"></div>
+                    <h5>
+                        <a href="javascript:void(0);" class="badge badge-light mr-3 enlace-accion" style="cursor:default;">
+                            <span class="k-icon k-i-notification"></span>
+                            <span id="cantPrio">0</span> Notificaciones
+                        </a>
+                    </h5>
+                </div>
+            }
+        </div>
+
+        <div class="col-md-4" style="text-align: right;">
+            <table style="width: auto; display: inline-table; font-size: 0.8em;">
+                <tbody>
+                    <tr style="text-align: left;">
+                        <td colspan="2">
+                            <b>Simbología de Registros de Requerimientos</b>
+                        </td>
+                    </tr>
+                    <tr style="text-align: left;">
+                        <td style="width: 50px; background-color: #D2E5F2" class="p-0" @*onclick="destacarTransparencia = !destacarTransparencia; $('#gridBandeja').data('kendoGrid').dataSource.read(); $(this).next().css('text-decoration', (destacarTransparencia?'none':'line-through'));"*@></td>
+                        <td class="p-0">&nbsp; Requerimiento Transparencia</td>
+                    </tr>
+                    <tr style="text-align: left;">
+                        <td style="width: 50px; background-color: #86C5EF " class="p-0" @*onclick="destacarTemporales= !destacarTemporales; $('#gridBandeja').data('kendoGrid').dataSource.read(); $(this).next().css('text-decoration', (destacarTemporales?'none':'line-through'));"*@></td>
+                        <td class="p-0">&nbsp; Requerimiento en Asignación Temporal</td>
+                    </tr>
+                    <tr style="text-align: left;">
+                        <td style="width: 50px; background-color: #FFF67C" class="p-0" @*onclick="destacarReasignacion= !destacarReasignacion; $('#gridBandeja').data('kendoGrid').dataSource.read(); $(this).next().css('text-decoration', (destacarReasignacion?'none':'line-through'));"*@></td>
+                        <td class="p-0">&nbsp; Requerimiento en Etapa de Reasignación</td>
+                    </tr>
+                    @if (mostrarColorNuevaFechaPrio)
+                    {
+                        <tr style="text-align: left;">
+                            <td style="width: 50px; background-color: #ffe6e6; cursor: pointer;" class="p-0" onclick="destacarProridadForzada = !destacarProridadForzada; $('#gridBandeja').data('kendoGrid').dataSource.read(); if ($('#gridBandejaPrio').data('kendoGrid')) $('#gridBandejaPrio').data('kendoGrid').dataSource.read(); /*$(this).next().css('text-decoration', (destacarProridadForzada?'none':'line-through'));*/"></td>
+                            <td class="p-0">&nbsp; Requerimiento Priorizado</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+</div>
+
+
+@*@helper EnlaceDespachoIngreso()
+    {
+        <a href="\\#" class="text-center enlace-grilla"
+           onclick="ventanaOficios('Oficios CMN asociados al ingreso #= data.DocumentoIngreso #', '@Url.Action("DespachosIngresoForm", "Despacho")?idRequerimiento=#= Id #&idBandeja=@ViewBag.IdBandeja'); return false;">
+            #: CantOficiosCmn #
+        </a>
+    }*@
+
+@*Pestañas de la bandeja: Bandeja de Entrada, Priorizados y Oficios*@
+@(Html.Kendo().TabStrip()
+    .Name("tabStripPestannas")
+    .Items(tabstrip =>
+    {
+        tabstrip.Add()
+            .Text("Bandeja de Entrada")
+            .Selected(true)
+            .Content(
+                Html.Partial("Partial/PestannaBandejaEntrada", new ViewDataDictionary
+                {
+                    { "CodigoBandeja", codigoBandeja },
+                    { "IdBandeja", idBandeja }
+                }).ToHtmlString()
+        );
+
+        tabstrip.Add()
+            .Text("Priorizados")
+            .Visible(mostrarTabPriorizacion)
+            .Content(mostrarTabPriorizacion
+                ? Html.Partial("Partial/PestannaPriorizados", new ViewDataDictionary
+                {
+                    { "CodigoBandeja", codigoBandeja},
+                    { "IdBandeja", idBandeja },
+                    { "AccionesPrio", ViewBag.AccionesPrio },
+                    { "IdBandejaPrio", ViewBag.IdBandejaPrio }
+                }).ToHtmlString()
+                : ""
+        );
+
+        tabstrip.Add()
+            .Text("Oficios")
+            .Visible(mostrarTabOficio)
+            .Content(mostrarTabOficio
+                ? Html.Partial("Partial/PestannaOficios", new ViewDataDictionary
+                {
+                    { "CodigoBandeja", codigoBandeja },
+                    { "IdBandeja", idBandeja },
+                    { "IdBandejaOfic", ViewBag.IdBandejaOfic },
+                    { "AccionesOfic", ViewBag.AccionesOfic },
+                    { "CurrentUserRoles", ViewBag.CurrentUserRoles }
+                }).ToHtmlString()
+                : ""
+            );
+    })
+)
+
+
+
+<div id="divPapelera" class="mt-3">
+    <a href="#" onclick="ejecutaAccion(0, 'PAP', 'Papelera de Reciclaje');return false;">
+        <img width="48" height="48" src="@Url.Content("~/Content/images/papelera.png")" title="Papelera de reciclaje">
+    </a>
+</div>
+
+
+<script>
+
+    $(function () {
+        //******
+    });
+
+    function muestraCantidadPriorizados(id) {
+        if (!$(".notificacionPriorizados").length) return;
+        //var data = {
+        //    param: lastParamGridPrio
+        //};
+        var data = {
+            Dato: '@codigoBandeja',
+            ExtraData: "NOTIF"
+        };
+        $.ajax({
+            type: "GET",
+            url: "@Url.Action("GetCantidadPriorizados")",
+            data : data
+        }).done(function (response) {
+            $("#cantPrio").text(response);
+            var cantPriorizados = response;
+            if (cantPriorizados > 0)
+                $(".notificacionPriorizados").show();
+            else
+                $(".notificacionPriorizados").hide();
+        }).fail(function (error) {
+            Main.unwait();
+            Main.showError("Ha ocurrido un error al obtener la cantidad de Requerimientos Priorizados ("+error+").", "Error");
+        });
+    }
+
+    function comprobarFirmaOficios() {
+        var data = { };
+        $.ajax({
+            type: "POST",
+            url: "@Url.Action("ActualizarOficiosFirmadosDig", "Oficio")",
+            data : data
+        }).done(function (response) {
+            if (response.Codigo > 0) {
+                Main.showInfo(response.Mensaje, "Oficios firmados digital");
+                $("#gridBandejaOfic").data("kendoGrid").dataSource.read();
+            }
+            else if (response.Codigo < 0) // si Codigo == 0 no se hace nada
+                Main.showError(response.Mensaje);
+        }).fail(function (error) {
+            Main.unwait();
+            //Main.showError("Ha ocurrido un error al comprobar y actualizar los oficios pendientes de firma digital. ("+error+").", "Error");
+            console.error("Ha ocurrido un error al comprobar y actualizar los oficios pendientes de firma digital. (" +
+                error +
+                ").");
+        });
+    }
+
+</script>
+@if (codigoBandeja == (int)Bandeja.ProfesionalUt) //Profesional UT
+{
+    <script>
+        muestraCantidadPriorizados();
+    </script>
+}
+
+
+@if (compruebaFirmaOficios)
+{
+    <script>
+       setTimeout(function (e) {  comprobarFirmaOficios(); }, 300)
+        
+    </script>
+}

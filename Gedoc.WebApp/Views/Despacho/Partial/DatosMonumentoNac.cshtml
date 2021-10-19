@@ -1,0 +1,147 @@
+﻿@using Gedoc.Helpers.Dto
+@using Gedoc.Helpers.Enum
+@using Gedoc.WebApp.Helpers
+@using Gedoc.WebApp.Models
+@model Gedoc.WebApp.Models.DespachoModel
+
+@{
+    Layout = null;
+    var req = Model.RequerimientoMain ?? new RequerimientoModel();
+}
+
+<script>
+
+    function inicializaPanelMonNacDesp() {
+
+
+    }
+
+    //# sourceURL=PanelMonNacDesp
+</script>
+
+
+<h4 class="head-datos-form">Monumento Nacional</h4>
+<div class="container-fluid">
+
+    <div class="form-row">
+        <div class="col-md-3">
+            <label class="label-dato-form">
+                Categoría de monumento nacional
+            </label>
+        </div>
+        <div class="col-md-9">
+            <label id="lbCatMonNac">@(req.MonumentoNacionalCategoriaMonumentoNacCodigo)</label>
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="col-md-3">
+            <label class="label-dato-form">
+                Código de monumento nacional
+            </label>
+        </div>
+        <div class="col-md-9">
+            <label id="lbCodMonNac">@req.MonumentoNacionalCodigoMonumentoNac</label>
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="col-md-3">
+            <label class="label-dato-form">
+                Denomincación Oficial
+            </label>
+        </div>
+        <div class="col-md-9">
+            <label id="lbDenomOfic">@req.MonumentoNacionalDenominacionOficial</label>
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="col-md-3">
+            <label class="label-dato-form">
+                Otras denominaciones
+            </label>
+        </div>
+        <div class="col-md-9">
+            <label id="lbCatMonNac">@req.MonumentoNacionalOtrasDenominaciones</label>
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="col-md-3">
+            <label class="label-dato-form">
+                Nombre o uso actual
+            </label>
+        </div>
+        <div class="col-md-9">
+            <label id="lbCatMonNac">@req.MonumentoNacionalNombreUsoActual</label>
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="col-md-3">
+            <label class="label-dato-form">
+                Dirección de monumento nacional
+            </label>
+        </div>
+        <div class="col-md-9">
+            <label id="lbCatMonNac">@req.MonumentoNacionalDireccionMonumentoNac</label>
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="col-md-3">
+            <label class="label-dato-form">
+                Referencia de localización o localidad
+            </label>
+        </div>
+        <div class="col-md-9">
+            <label id="lbCatMonNac">@req.MonumentoNacionalReferenciaLocalidad</label>
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="col-md-3">
+            <label class="label-dato-form">
+                Región
+            </label>
+        </div>
+        <div class="col-md-9">
+            <label id="lbCatMonNac">@req.RegionTitulos</label>
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="col-md-3">
+            <label class="label-dato-form">
+                Provincia
+            </label>
+        </div>
+        <div class="col-md-9">
+            <label id="lbCatMonNac">@req.ProvinciaTitulos</label>
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="col-md-3">
+            <label class="label-dato-form">
+                Comuna
+            </label>
+        </div>
+        <div class="col-md-9">
+            <label id="lbCatMonNac">@req.ComunaTitulos</label>
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="col-md-3">
+            <label class="label-dato-form">
+                Rol SII propiedad
+            </label>
+        </div>
+        <div class="col-md-9">
+            <label id="lbCatMonNac">@req.MonumentoNacionalRolSii</label>
+        </div>
+    </div>
+
+</div>

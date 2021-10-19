@@ -1,0 +1,71 @@
+﻿@using Gedoc.Helpers.Enum
+@using Gedoc.WebApp.Helpers
+@using Gedoc.WebApp.Models
+@model Gedoc.WebApp.Models.DespachoModel
+
+@{
+    Layout = null;
+    var req = Model.RequerimientoMain ?? new RequerimientoModel();
+}
+
+
+<h4 class="head-datos-form">Proyecto</h4>
+<div class="container-fluid">
+
+
+    <div class="form-row">
+        <div class="col-md-3">
+            <label class="label-dato-form">
+                Nombre de proyecto o programa
+            </label>
+        </div>
+        <div class="col-md-9">
+            <label id="lbNombreProy">@req.NombreProyectoPrograma</label>
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="col-md-3">
+            <label class="label-dato-form">
+                Número de caso
+            </label>
+        </div>
+        <div class="col-md-9">
+            <label id="lbNumeroCaso">@req.CasoId</label>
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="col-md-3">
+            <label class="label-dato-form">
+                Nombre de caso
+            </label>
+        </div>
+        <div class="col-md-9">
+            <label id="lbNombreCaso">@req.CasoTitulo</label>
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="col-md-3">
+            <label class="label-dato-form">
+                Etiqueta
+            </label>
+        </div>
+        <div class="col-md-9">
+            <label id="lbEtiqueta">@req.EtiquetaTitulos</label>
+        </div>
+    </div>
+
+</div>
+
+
+<script>
+
+    function inicializaPanelProyectoDesp() {
+
+
+    }
+
+    //# sourceURL=PanelProyectoDesp
+</script>

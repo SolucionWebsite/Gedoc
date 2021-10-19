@@ -1,0 +1,292 @@
+﻿@using Gedoc.Helpers
+@using Gedoc.Helpers.Dto
+@using Gedoc.Helpers.Enum
+@using Gedoc.WebApp.Models
+
+@{
+    ViewBag.Title = "Mantenedor de Calendario de Bitácoras";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<script src="~/Scripts/accionesbandeja.js"></script>
+
+<style>
+    /*Sin esto no se muestra en el pager del grid de calendario el combo de cantidad de registros a mostrar ni
+    el texto de "Elementos mostrados X de T" a pesar de q aparentemente esta bien configurado para q se muestre*/
+    #gridCalendario .k-pager-sizes.k-label,
+    #gridCalendario .k-pager-info.k-label {
+        display: flex !important;
+    }
+
+    #divGridCalendario {
+        font-size: 0.8em;
+    }
+</style>
+
+<script>
+    function extraDataGrillaCalendario() {
+        var tipoBitK = $("#TipoBitacora").data("kendoDropDownList");
+        var annoK = $("#Anno").data("kendoDropDownList");
+        return {
+            tipoBitacoraId: tipoBitK.value() || 0,
+            anno: annoK.value() || 0
+        };
+    }
+</script>
+
+<h4 class="header-level1">@ViewBag.Title</h4>
+
+<div class="div-main">
+
+    <div class="form-row">
+        <div class="col-md-2">
+            <label class="label-dato-form">
+                Tipo de Bitácora
+            </label>
+        </div>
+        <div class="col-md-3">
+            @(Html.Kendo().DropDownList()
+                .Name("TipoBitacora")
+                .OptionLabel("[Seleccione un Tipo de Bitácora]")
+                .HtmlAttributes(new { @class = "w-100" })
+                .DataTextField("Titulo")
+                .DataValueField("Id")
+                .Messages(Gedoc.WebApp.Helpers.KendoHelper.SetDropDownListMessages)
+                .DataSource(source =>
+                {
+                    source
+                        .Custom()
+                        .Schema(schema => schema.Data("Data"))
+                        .Transport(transport =>
+                        {
+                            transport.Read(read =>
+                            {
+                                read.Action("MantenedorGenerico", "Json", new { idM = (int)Mantenedor.TipoBitacora, extra = "Acuerdo"})
+                                    .Type(HttpVerbs.Post);
+                            });
+                        });
+                })
+                )
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="col-md-2">
+            <label class="label-dato-form">
+                Año
+            </label>
+        </div>
+        <div class="col-md-3">
+
+            @(Html.Kendo().DropDownList()
+                .Name("Anno")
+                .OptionLabel("[Seleccione un Año]")
+                .HtmlAttributes(new { @class = "w-100" })
+                .DataTextField("Titulo")
+                .DataValueField("Id")
+                .Messages(Gedoc.WebApp.Helpers.KendoHelper.SetDropDownListMessages)
+                .DataSource(source =>
+                {
+                    source
+                        .Custom()
+                        .Schema(schema => schema.Data("Data"))
+                        .Transport(transport =>
+                        {
+                            transport.Read(read =>
+                            {
+                                read.Action("CalendarioBitacoraAnnos", "Bitacora").Data("filterAnnos")
+                                    .Type(HttpVerbs.Post);
+                            });
+                        });
+                })
+             //   .Enable(false)
+             //   .AutoBind(false)
+             //   .CascadeFrom("TipoBitacora")
+                )
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="offset-md-2 col-md-3">
+
+            @(Html.Kendo().Button()
+                .Name("btnBuscar")
+                .HtmlAttributes(new { type = "button", @class = "k-primary"})
+                .Events(events => events.Click("buscar"))
+                .Content("Buscar")
+                )
+        </div>
+    </div>
+
+    <div id="divGridCalendario" style="display: none;">
+
+        @(Html.Kendo().DataSource<CalendarioBitacoraDto>()
+            .Name("dataSourceGridCalendario")
+            .Ajax(dataSource => dataSource
+                .Read(read =>
+                {
+                    read.Action("CalendarioBitacoraByTipo", "Bitacora")
+                        .Type(HttpVerbs.Post)
+                        .Data("extraDataGrillaCalendario");
+                })
+                .ServerOperation(false)
+                .PageSize(10)
+            )
+            )
+        @(Html.Kendo().Grid<CalendarioBitacoraDto>()
+            .Name("gridCalendario")
+            .HtmlAttributes(new { @class = "w-100" })
+            .DataSource("dataSourceGridCalendario")
+            .Scrollable(scr => scr.Height("auto"))
+            .Pageable(p => p.AlwaysVisible(true).PageSizes(new int[3] { 10, 50, 100 }).Enabled(true).Info(true)
+                .Messages(m => m.ItemsPerPage("registros por página")))
+            .Sortable()
+            .Navigatable()
+            .Search( s => { s.Field(f => f.Anno).Field(f => f.TipoBitacoraTitulo).Field(f => f.FechaStr); })
+            .ToolBar(toolbar =>
+            {
+                toolbar.Search();
+                toolbar.Custom()
+                    .HtmlAttributes ( new { onclick= "nuevoCalendario(); return false;", id = "btnNuevoCalendario" } )
+                    .Name("NuevoCalendario")
+                        .Text("Nuevo registro")
+                        .IconClass("k-icon k-i-plus-outline")
+                        .Url("#")
+                        ;
+            })
+            .Columns(columns =>
+            {
+                columns.Bound(c => c.Anno)
+                    .Width(100)
+                    .HtmlAttributes(new { @class = "text-center" })
+                    .Title("<center>Año<span class='k-icon k-i-kpi' style='color: lightgray;'></span></center>");
+                columns.Bound(c => c.TipoBitacoraTitulo)
+                    //.Width(100)
+                    .HtmlAttributes(new { @class = "text-center" })
+                    .Title("<center>Tipo de Bitácora<span class='k-icon k-i-kpi' style='color: lightgray;'></span></center>");
+                columns.Bound(c => c.Fecha)
+                    //.Width(130)
+                    .HtmlAttributes(new { @class = "text-center"})
+                    .Title("<center>Fecha<span class='k-icon k-i-kpi' style='color: lightgray;'></span></center>")
+                    .Format(GeneralData.FORMATO_FECHA_CORTO_GRID);
+                columns.Bound(c => c.Id)
+                    .Width(200)
+                    .HtmlAttributes(new { @class = "text-center" })
+                    .Title("<center>Acción</center>")
+                    .Sortable(false)
+                    .ClientTemplate("#= buildAccionesCalendario(data.Id) #");
+
+            })
+            )
+
+    </div>
+
+
+</div>
+
+<script>
+    $(function () {
+        $(".k-grid-search input").prop("placeholder", "Buscar...");
+        $(".k-grid-search input").prop("title", "Buscar...");
+    });
+
+    function buscar(e) {
+        var tipoBitK = $("#TipoBitacora").data("kendoDropDownList");
+        var annoK = $("#Anno").data("kendoDropDownList");
+        if (!tipoBitK.value() || !annoK.value()) {
+            var msg = "Debe seleccionar " +
+                (!tipoBitK.value() ? "un Tipo de Bitácora" : "") +
+                (!tipoBitK.value() && !annoK.value() ? " y " : "") +
+                (!annoK.value() ? "un Año" : "") + 
+                " para buscar.";
+            Main.showAlert(msg);
+            return false;
+        }
+        // Si el usuario especifica filtros, hace clic en Buscar, luego cambia los filtros pero sin hacer nuevamente clic en Buscar entonces el Nuevo Registro tiene q
+        // corresponder al Tipo de Bitácora y Año q está mostrando la grilla no de los filtros seleccionados pues estos no corresponden a lo q se ve en la grilla si no se hace el Buscar.
+        // Se guardan los filtros aplicados en el data() del Nuevo Registro para rescatarlos al crear nuevo registro.
+        $("#btnNuevoCalendario").data("filtros", { tipoBitId: tipoBitK.value(), tipoBitText: tipoBitK.text(), anno: annoK.value()});
+        $("#divGridCalendario").show();
+        refrescaGridCalendario();
+    }
+
+    function refrescaGridCalendario() {
+        var gridK = $("#gridCalendario").data("kendoGrid");
+        if (gridK) {
+            gridK.dataSource.read();
+        }
+    }
+
+    function buildAccionesCalendario(idcalendario) {
+        var enlace = "";
+        enlace = "<button class='k-button mr-1' onclick='editarCalendario(\"" + idcalendario + "\")' title='Editar' type='button' data-role='button' role='button'><span class='k-icon k-i-edit'></span></button>" +
+            "<button class='k-button' id='btnDelCal" + idcalendario + "' onclick='eliminarCalendario(\"" + idcalendario + "\")' title='Eliminar' type='button' data-role='button' role='button'><span class='k-icon k-i-trash'></span></button>";
+        enlace = '<div style="display: inline-flex;">' + enlace + '</div>';
+        return enlace;
+    }
+
+    function nuevoCalendario() {
+        // Se rescatan los filtros aplicados correspondientes a los datos de la grilla. Esto es para el caso en q el el usuario especifica filtros, 
+        // hace clic en Buscar, luego cambia los filtros pero sin hacer nuevamente clic en Buscar hace clic en Nuevo Registro entonces el nuevo registro tiene q
+        // corresponder al Tipo de Bitácora y Año q está mostrando la grilla no de los filtros seleccionados pues estos no corresponden a lo q se ve en la grilla si no se hace el Buscar.
+        var filtros = $("#btnNuevoCalendario").data("filtros");
+        // Si el usuario especifica filtros sin hacer clic en buscar, les vuelvo a poner los filtros q está mostrando la grilla, sino la grilla mostrará otros datos después de grabar el nuevo registro
+        var tipoBitK = $("#TipoBitacora").data("kendoDropDownList");
+        var annoK = $("#Anno").data("kendoDropDownList");
+        if (filtros.tipoBitId != tipoBitK.value() || filtros.anno != annoK.value()) {
+            tipoBitK.value(filtros.tipoBitId);
+            annoK.value(filtros.anno);
+        }
+        Acciones.ejecutaAccionNuevaVentana("Nuevo Calendario Bitácora",
+            '@Url.Action("FormCalendario")' + '?calendarioId=' + 0 + '&anno=' + filtros.anno + "&tipoBitacoraId=" + filtros.tipoBitId + "&tipoBitacoraTitulo=" + filtros.tipoBitText
+            , 600, '', "BITA", refrescaGridCalendario);
+    }
+
+    function editarCalendario(idcalendario, anno) {
+        Acciones.ejecutaAccionNuevaVentana("Editar Calendario Bitácora",
+            '@Url.Action("FormCalendario")' + '?calendarioId=' + idcalendario
+            , 600, '', "BITA", refrescaGridCalendario);
+    }
+
+    function eliminarCalendario(idcalendario) {
+        var btnEliminar = "#btnDelCal" + idcalendario;
+        Main.showConfirm("Se va a eliminar el registro seleccionado, ¿desea continuar?", "Eliminar registro", true)
+            .then(function (esOk) {
+                if (esOk) {
+                    Main.wait("", btnEliminar);
+                    var url = "@Url.Action("EliminaCalendario")?calendarioId=" + idcalendario;
+                    $.ajax({
+                        type: "POST",
+                        url: url
+                        //dataType: "json",
+                    }).done(function(response) {
+                        Main.unwait(btnEliminar);
+                        if (response.Codigo) {
+                            refrescaGridCalendario();
+                            if (response.Codigo > 0) {
+                                Main.showInfo(response.Mensaje, "Registro eliminado");
+                            } else {
+                                Main.showError(response.Mensaje, "Error");
+                            }
+                        } else {
+                            Main.showError("Error inesperado al realizar la operación, por favor, vuelva a intentarlo",
+                                "Error");
+                        }
+                    }).fail(function(error) {
+                        Main.unwait(btnEliminar);
+                        Main.showError("Ha ocurrido un error al realizar la operación, por favor, vuelva a intentarlo.",
+                            "Error");
+                    });
+                }
+            });
+    }
+
+    function filterAnnos() {
+        var tipoBit = ""; // $("#TipoBitacora").val();
+        var checkAnnoActual = true; // tipoBit.length > 0;
+        return { tipoBitacoraId: tipoBit, checkAnnoActual: checkAnnoActual };
+
+    }
+
+
+
+</script>

@@ -1,0 +1,273 @@
+﻿@using Gedoc.Helpers.Dto
+@using Gedoc.WebApp.Models
+
+@{
+    ViewBag.Title = "Mantenedor de Plantillas de Oficios";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<script src="~/Scripts/accionesbandeja.js"></script>
+
+<style>
+</style>
+
+<style>
+    #gridPlantillaOficio {
+        font-size: 0.8em;
+    }
+
+    /*separar los radio button del Si/nobr en columna Activo*/
+    .k-filter-menu-container input[type="radio"] {
+        margin-left: 8px;
+    }
+
+</style>
+
+<script>
+
+    function onChangeDataSourceGridPlantilla(e) {
+        dataSourceSharedGridPlantilla.data(e.items);
+    }
+
+    function onFilterMenuGridPlantillaInit(e) {
+        $(e.container).find('.k-check-all').click();
+        var grid = e.sender;
+        var dsGrid = grid.dataSource;
+        var dsShared = dataSourceSharedGridPlantilla;
+        e.container.data("kendoPopup").bind("open",
+            function() {
+                dsShared.sort({ field: e.field, dir: "asc" });
+                var uniqueDsResult = removeDuplicates(dsGrid.data(), e.field);
+                dsShared.data(uniqueDsResult);
+            });
+        function removeDuplicates(items, field) {
+            var getter = function (item) { return item[field] },
+                result = [],
+                index = 0,
+                seen = {};
+            while (index < items.length) {
+                var item = items[index++],
+                    text = getter(item);
+                if (text !== undefined && text !== null && !seen.hasOwnProperty(text)) {
+                    result.push(item);
+                    seen[text] = true;
+                }
+            }
+            return result;
+        }
+    }
+
+    function buildAccionesPlantilla(id, titulo) {
+        var enlace = "";
+        var btn = "<button class='k-button mr-1' onclick='editarPlantilla(\"" + id +
+            "\")' title='Editar' type='button' data-role='button' role='button'><span class='k-icon k-i-edit'></span></button>";
+        enlace += btn;
+        btn = "<button class='k-button' id='btnDelPlantilla" + id +
+            "' onclick='eliminarPlantilla(\"" + id + "\", \"" + titulo +
+            "\")' title='Eliminar' type='button' data-role='button' role='button'><span class='k-icon k-i-trash'></span></button>";
+        enlace += btn;
+
+        enlace = '<div style="display: inline-flex;">' + enlace + '</div>';
+        return enlace;
+    }
+</script>
+
+
+<h4 class="header-level1">@ViewBag.Title</h4>
+
+<div class="div-main">
+
+    @(Html.Kendo().DataSource<PlantillaOficioDto>()
+        .Name("dataSourceGridPlantilla")
+        .Ajax(dataSource => dataSource
+            .Read(read =>
+            {
+                read.Action("GetPlantillaOficioAll", "Oficio")
+                    .Type(HttpVerbs.Post);
+            })
+            .Events(ev =>
+            {
+                ev.Change("onChangeDataSourceGridPlantilla");
+            })
+            .PageSize(10)
+            .ServerOperation(false)
+        )
+        )
+    @(Html.Kendo().DataSource<PlantillaOficioDto>()
+        .Name("dataSourceSharedGridPlantilla")
+        .Ajax(dataSource => dataSource
+            .Read(read =>
+            {
+                read.Action("GetPlantillaOficioAll", "Oficio")
+                    .Type(HttpVerbs.Post);
+            })
+            .ServerOperation(false)
+        )
+        )
+    @(Html.Kendo().Grid<PlantillaOficioDto>()
+        .Name("gridPlantillaOficio")
+        .EnableCustomBinding(true)
+        .DataSource("dataSourceGridPlantilla")
+        .HtmlAttributes(new { @class = "k-grid-alternate" })
+        .Scrollable(scr => scr.Height("auto"))
+        .Pageable(p => p.AlwaysVisible(true).PageSizes(new int[3] {15, 50, 100}).Info(true).Enabled(true))
+        .Sortable(s => s.Enabled(true))
+        .Filterable(s => s.Enabled(true))
+        .Navigatable()
+        .ToolBar(toolbar =>
+        {
+            toolbar.Search();
+            toolbar.Custom()
+                .HtmlAttributes ( new { onclick= "nuevaPlantilla(); return false;" } )
+                .Name("NuevaPlantilla")
+                .Text("Agregar")
+                .IconClass("k-icon k-i-plus-outline")
+                .Url("#")
+                ;
+        })
+        .NoRecords("No existen documentos.")
+        //.NoRecords(x => x.Template("<div class='empty-grid'>No existen Despachos asociados al presente ingreso.</div>"))
+        .Events(events => events
+            .FilterMenuInit("onFilterMenuGridPlantillaInit")
+        )
+        .Columns(columns =>
+        {
+            columns.Bound(c => c.Id)
+                .Width(60)
+                .Title("<center>ID</center>")
+                .Filterable(ftb => ftb.Multi(true).DataSource("dataSourceSharedGridPlantilla"));
+            columns.Bound(c => c.Nombre)
+                .Width(400)
+                .Title("<center>Nombre</center>")
+                .Filterable(ftb => ftb.Multi(true).DataSource("dataSourceSharedGridPlantilla"));
+            columns.Bound(c => c.Descripcion)
+                //.Width(100)
+                .Title("<center>Descripción</center>")
+                .Filterable(ftb => ftb.Multi(false).DataSource("dataSourceSharedGridPlantilla"));
+            columns.Bound(c => c.Activo)
+                .Width(100)
+                .ClientTemplate("<div class='text-center mt-3' style='height: 16px;' id='divChk#=data.Id#'><input type='checkbox' #= Activo ? checked='checked':'' # class='chkActivo' /></div>")
+                .Filterable(true); ;
+            //columns.Command(command =>
+            //{
+            //    command.Custom("Editar").Click("editarPlantilla").IconClass("k-icon k-i-edit");
+            //})
+            //    .Title("<center>Acción</center>")
+            //    .Width(60);
+            columns.Bound(c => c.Id)
+                .Width(200)
+                .Title("<center>Acción</center>")
+                .Sortable(false)
+                .Filterable(false)
+                .ClientTemplate("#= buildAccionesPlantilla(data.Id, data.Nombre) #");
+        })
+        )
+
+</div>
+
+<script>
+    $(function() {
+        $('#gridPlantillaOficio').on('click',
+            '.chkActivo',
+            function() {
+                var checked = $(this).is(':checked');
+                var grid = $('#gridPlantillaOficio').data().kendoGrid;
+                var dataItem = grid.dataItem($(this).closest('tr'));
+                dataItem.set('Activo', checked);
+                cambiaActivoPlantilla(dataItem, this);
+            });
+
+        $(".k-grid-search input").prop("placeholder", "Buscar...");
+        $(".k-grid-search input").prop("title", "Buscar...");
+    });
+
+    function cambiaActivoPlantilla(dataItem, checkbox) {
+        var divChk = "#" + $(checkbox).closest('div')[0].id;
+        Main.wait("", divChk);
+
+        //Form.setValueHiddeFieldTextArea("ObservacionesAdjuntos", "pnObservacionAdj");
+
+        var data = $.param({ Id: dataItem.Id, Activo: dataItem.Activo });
+        var url = "@Url.Action("SaveActivo")";
+        $.ajax({
+            type: "POST",
+            url: url,
+            data: data
+        }).done(function (response) {
+            Main.unwait(divChk);
+            if (response.Codigo) {
+                Main.showInfo((dataItem.Activo ? "Activada" : "Desactivada") + " con éxito la plantilla " + dataItem.Nombre);
+            } else {
+                Main.showAlert("Error inesperado al cambiar el estado de Activo de la plantilla " + dataItem.Nombre + ", por favor, vuelva a intentarlo",
+                    "Error");
+            }
+        }).fail(function (error) {
+            Main.unwait(divChk);
+            Main.showError("Ha ocurrido un error al cambiar el estado de Activo de la plantilla " + dataItem.Nombre + ", por favor, vuelva a intentarlo.",
+                "Error");
+        });
+    }
+
+    function nuevaPlantilla() {
+        Acciones.ejecutaAccionNuevaVentana("Nueva Plantilla de Oficio",
+            '@Url.Action("FormPlantillaOficio")' + '?id=0'
+            , "100%", 'MAX', "PLANT", refrescaGrid);
+    }
+
+    @*function editarPlantilla(e) {
+        e.preventDefault();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        Acciones.ejecutaAccionNuevaVentana("Editar Plantilla Oficio ",
+            '@Url.Action("FormPlantillaOficio")' + '?id=' + dataItem.Id
+            , "100%", "MAX", "PLANT", refrescaGrid);
+        return false;
+    }*@
+
+    function editarPlantilla(id) {
+        Acciones.ejecutaAccionNuevaVentana("Editar Plantilla Oficio ",
+            '@Url.Action("FormPlantillaOficio")' + '?id=' + id
+            , "100%", "MAX", "PLANT", refrescaGrid, false);
+        return false;
+    }
+
+    function eliminarPlantilla(id, titulo) {
+        var btnEliminar = "#btnDelPlantilla" + id;
+        Main.showConfirm("Se va a eliminar la plantilla " + titulo + ", ¿desea continuar?", "Eliminar registro", true)
+            .then(function (esOk) {
+                if (esOk) {
+                    Main.wait("", btnEliminar);
+                    var url = "@Url.Action("MarcaEliminaPlantilla")?id=" + id;
+                    $.ajax({
+                        type: "POST",
+                        url: url
+                        //dataType: "json",
+                    }).done(function(response) {
+                        Main.unwait(btnEliminar);
+                        if (response.Codigo) {
+                            refrescaGrid();
+                            if (response.Codigo > 0) {
+                                Main.showInfo(response.Mensaje, "Registro eliminado");
+                            } else {
+                                Main.showError(response.Mensaje, "Error");
+                            }
+                        } else {
+                            Main.showError("Error inesperado al realizar la operación, por favor, vuelva a intentarlo",
+                                "Error");
+                        }
+                    }).fail(function(error) {
+                        Main.unwait(btnEliminar);
+                        Main.showError("Ha ocurrido un error al realizar la operación, por favor, vuelva a intentarlo.",
+                            "Error");
+                    });
+                }
+            });
+    }
+
+    function refrescaGrid() {
+        var gridK = $("#gridPlantillaOficio").data("kendoGrid");
+        if (gridK) {
+            gridK.dataSource.read();
+        }
+    }
+
+</script>

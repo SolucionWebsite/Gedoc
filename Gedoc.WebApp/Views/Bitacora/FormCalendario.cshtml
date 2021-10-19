@@ -1,0 +1,175 @@
+﻿
+@using Gedoc.Helpers
+@using Gedoc.Helpers.Enum
+@using Newtonsoft.Json
+@model Gedoc.WebApp.Models.CalendarioBitacoraModel
+@{
+    Layout = null;
+    var anno = Model.Fecha.HasValue ? Model.Fecha.GetValueOrDefault().Year : (Model.Anno.HasValue ? Model.Anno.Value : 0);
+    var minDate = new DateTime(anno > 0 ? anno : 2000, 1, 1);
+    var maxDate = new DateTime(anno > 0 ? anno : DateTime.Now.Year, 12, 31);
+    ResultadoOperacion accesoForm = ViewBag.AccesoForm ?? new ResultadoOperacion(1, "OK", null);
+}
+
+
+<script src="~/Scripts/form.js"></script>
+
+
+@*<h4 class="head-datos-form">Calendario Bitácoras</h4>*@
+<div class="div-main-form">
+
+    <form id="formCalendario" action="@Url.Action("SaveCalendario")" class="form-datos">
+        @Html.AntiForgeryToken()
+        @Html.HiddenFor(a => a.Id)
+        @Html.HiddenFor(a => a.TipoBitacoraCod)
+
+
+        <div class="form-row" >
+            <div class="col-md-3">
+                <label class="label-dato-form">
+                    Tipo de Bitácora
+                </label>
+            </div>
+            <div class="col-md-4 date-picker-si">
+                <label id="lbDocumentoIngreso">@Model.TipoBitacoraTitulo</label>
+            </div>
+        </div>
+
+        <div class="form-row" >
+            <div class="col-md-3">
+                <label class="label-dato-form">
+                    Año
+                </label>
+            </div>
+            <div class="col-md-4 date-picker-si">
+                <label id="lbDocumentoIngreso">@Model.Anno</label>
+            </div>
+        </div>
+
+        <div class="form-row" >
+            <div class="col-md-3">
+                <label class="label-dato-form">
+                    Fecha<span class="marca-obligatorio" title="Este campo es obligatorio."> *</span>
+                </label>
+            </div>
+            <div class="col-md-9">
+                @(Html.Kendo().DatePicker()
+                    .Name("Fecha")
+                    .HtmlAttributes(new { required = "required" })
+                    .Min(minDate)
+                    .Max(maxDate)
+                    .Culture("es-ES")
+                    .Format(GeneralData.FORMATO_FECHA_CORTO)
+                    .ParseFormats(new List<string>() { GeneralData.FORMATO_FECHA_CORTO }) )
+                <span class="k-invalid-msg" data-for="Fecha"></span>
+            </div>
+        </div>
+
+
+        <div class="footer-modal">
+            <div class="form-row">
+                <div class="offset-md-3 col-md-2 text-center">
+                    <button type="button" id="btnGrabaCalendario" class="k-primary-blue k-button" onclick="grabaCalendario(event);">Guardar</button>
+                </div>
+                <div class="offset-md-2 col-md-2 text-center">
+                    <button type="button" id="btnCancelaCalendario" class="k-danger k-button" onclick="cancelaCalendario(event);">Cancelar</button>
+                </div>
+            </div>
+        </div>
+
+    </form>
+
+</div>
+
+
+<script>
+
+    @if (accesoForm.Codigo < 0)
+    {
+        <text>
+            Main.showAlert("@Html.Raw(accesoForm.Mensaje)")
+                .then(function (result) {
+                    Main.cierraModal(null, false, "winFormIngreso");
+                });
+        </text>
+    }
+
+    $(function () {
+
+        Form.setDateInputLang($("#Fecha"));
+
+        //Form.inicializaForm();
+
+        configValidacionForm();
+
+    });
+
+    function configValidacionForm() {
+        var container = $("#formCalendario");
+        kendo.init(container);
+        container.kendoValidator({
+            rules: {
+                fechaCorrecta: function (input) {
+                    if (input.is("[data-role=datepicker]")) {
+                        return input.data("kendoDatePicker").value();
+                    } else {
+                        return true;
+                    }
+                }
+            },
+            messages: {
+                required: "Este campo es obligatorio",
+                fechaCorrecta: "Fecha incorrecta"
+            }
+        });
+    }
+
+    function grabaCalendario(e) {
+
+        Main.wait("Grabando...");
+
+        var currentTarget = $(e.currentTarget);
+        var form = $("#formCalendario");
+
+        var validator = form.data("kendoValidator");
+        if (!validator.validate()) {
+            Main.unwait();
+            Main.showError("Por favor, revise los datos de la página. Hay datos incompletos o erróneos.");
+            return false;
+        }
+
+        var data = $(form).serialize();
+        var url = $(form).attr("action");
+        $.ajax({
+            type: "POST",
+            url: url,
+            data: data,
+            //dataType: "json"
+        }).done(function (response) {
+            Main.unwait();
+            if (response.Codigo) {
+                if (response.Codigo > 0) {
+                    Main.showInfo(response.Mensaje).then(function (result) {
+                        Main.cierraModal(currentTarget, true, "winFormIngreso");
+                    });
+                } else {
+                    Main.showError(response.Mensaje, "Error");
+                }
+            } else {
+                Main.showAlert("Error inesperado al realizar la operación, por favor, vuelva a intentarlo",
+                    "Error");
+            }
+        }).fail(function (error) {
+            Main.unwait();
+            Main.showError("Ha ocurrido un error al realizar la operación, por favor, vuelva a intentarlo.",
+                "Error");
+        });
+    };
+
+    function cancelaCalendario(e) {
+        Main.cierraModal($(e.currentTarget), { resultado: false }, "winFormIngreso");
+    };
+
+
+    //# sourceURL=FormCalendario
+</script>

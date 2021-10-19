@@ -1,0 +1,59 @@
+﻿@using Gedoc.Helpers.Enum
+@using Gedoc.WebApp.Helpers
+@model Gedoc.WebApp.Models.RequerimientoModel
+
+@{
+    Layout = null;
+    Dictionary<CampoIngreso, AspectoCampo> accesoCampos = ViewBag.AccesoCampos;
+}
+
+
+<h4 class="head-datos-form">Unidad Técnica - Reasignación de Profesional</h4>
+<div class="container-fluid">
+
+    @*<div class="form-row">
+        <div class="col-md-3">
+            <label class="label-dato-form">
+                Plazo
+            </label>
+        </div>
+        <div class="col-md-9">
+            <label id="lblPlazoPriorizacion">5</label>
+        </div>
+    </div>*@
+
+    <div class="form-row">
+        <div class="col-md-3">
+            <label class="label-dato-form">
+                Profesional de UT<span class="marca-obligatorio" title="Este campo es obligatorio." id="marcaProf"> *</span>
+            </label>
+        </div>
+        <div class="col-md-9">
+            @(Html.Kendo().ComboBox()
+                .Name("ProfesionalId")
+                .DataTextField("Titulo")
+                .DataValueField("Id")
+                .Filter("contains")
+                .HtmlAttributes(new Dictionary<string, object> { { "class", "w-100" } })
+                .Messages(Gedoc.WebApp.Helpers.KendoHelper.SetComboBoxMessages)
+                )
+        </div>
+    </div>
+
+</div>
+
+
+<script>
+
+    function inicializaPanelReasignacionProfUt() {
+        var ds;
+        if ($("#ProfesionalId").length) {
+            // TODO: asignar bien el datasource, tiene q mostrar los profesionales de la ut asignada
+            ds = Main.getDataSourceKendoGenerico($("#ProfesionalId"),
+                '@Url.Action("MantenedorGenerico", "Json")?idM=@((int)Mantenedor.Profesional)&extra=@Model.UtAsignadaId');
+            $("#ProfesionalId").data("kendoComboBox").setDataSource(ds);
+        }
+    }
+
+    //# sourceURL=PanelReAsignacionProfUt
+</script>

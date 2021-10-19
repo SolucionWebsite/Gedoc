@@ -1,0 +1,106 @@
+﻿@using Gedoc.Helpers.Enum
+@using Gedoc.WebApp.Helpers
+@using Newtonsoft.Json
+@using Gedoc.WebApp.Models
+@model Gedoc.WebApp.Models.DespachoIniciativaModel
+
+@{
+    Layout = null;
+}
+
+<script>
+
+    function onSelectCaso(e) {
+        $("#lbNumeroCaso").text(e.dataItem.Id);
+    }
+
+    //# sourceURL=PanelProyectoDesp2
+</script>
+
+
+<h4 class="head-datos-form">Proyecto</h4>
+<div class="container-fluid">
+
+    <div class="form-row">
+        <div class="col-md-3">
+            <label class="label-dato-form">
+                Nombre de proyecto o programa
+            </label>
+        </div>
+        <div class="col-md-9">
+            @Html.TextBoxFor(a => a.NombreProyectoPrograma, new { @class = "k-textbox w-100" })
+            <span class="help-block" id="leyenda-proyecto">Identificar el proyecto como se indica en el documento.</span>
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="col-md-3">
+            <label class="label-dato-form">
+                Número de caso
+            </label>
+        </div>
+        <div class="col-md-9">
+            <label id="lbNumeroCaso">@(Model.CasoId.HasValue ? Model.CasoId.Value.ToString() : "")</label>
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="col-md-3">
+            <label class="label-dato-form">
+                Nombre de caso
+            </label>
+        </div>
+        <div class="col-md-9">
+            @(Html.Kendo().ComboBox()
+                    .Name("CasoId")
+                    .DataTextField("Titulo")
+                    .DataValueField("Id")
+                    .Filter("contains")
+                    .HtmlAttributes(new Dictionary<string, object> {{"class", "w-100"}})
+                    .Events(events => events.Select("onSelectCaso"))
+                    .Messages(Gedoc.WebApp.Helpers.KendoHelper.SetComboBoxMessages)
+                )
+
+        </div>
+    </div>
+
+
+    <div class="form-row">
+        <div class="col-md-3">
+            <label class="label-dato-form">
+                Etiqueta<span class="marca-obligatorio" title="Este campo es obligatorio."> *</span>
+            </label>
+        </div>
+        <div class="col-md-9">
+            <select id="Etiqueta" name="Etiqueta" multiple required></select>
+
+            <span class="k-invalid-msg" data-for="Etiqueta"></span><br />
+        </div>
+    </div>
+
+
+</div>
+
+<script>
+
+    function inicializaPanelProyectoDesp() {
+        var ds;
+        if ($("#CasoId").length) {
+            ds= Main.getDataSourceKendoGenerico($("#CasoId"), '@Url.Action("MantenedorGenerico", "Json")?idM=@((int) Mantenedor.Caso)');
+            $("#CasoId").data("kendoComboBox").setDataSource(ds);
+        }
+
+        if ($("#Etiqueta").length) {
+            $("#Etiqueta").kendoMultiSelect(
+                Main.getMultiSelectConfig($("#Etiqueta"),
+                    '@Url.Action("MantenedorGenerico", "Json")?idM=@((int) Mantenedor.Etiqueta)',
+                    "",
+                    "",
+                    @Html.Raw(JsonConvert.SerializeObject(Model.Etiqueta)))
+            );
+        }
+
+    }
+
+    //# sourceURL=PanelProyectoDesp
+</script>

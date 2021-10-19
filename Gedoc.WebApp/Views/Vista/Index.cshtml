@@ -1,0 +1,37 @@
+﻿@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+
+@if (@ViewBag.IdVista == 1)
+{
+    ViewBag.Title = "Vista Requerimientos por Etiqueta";
+    @Html.Partial("~/Views/Vista/VistaEtiqueta.cshtml")
+    ;
+}
+else if (@ViewBag.IdVista == 2)
+{
+    ViewBag.Title = "Vista Requerimientos por Remitente";
+    @Html.Partial("~/Views/Vista/VistaRemitente.cshtml")
+    ;
+}
+else if (@ViewBag.IdVista == 3)
+{
+    ViewBag.Title = "Vista Requerimientos por Género";
+    @Html.Partial("~/Views/Vista/VistaGenero.cshtml")
+    ;
+}
+else if (@ViewBag.IdVista == 4)
+{
+    ViewBag.Title = "Vista Despachos por Destinatario";
+    @Html.Partial("~/Views/Vista/VistaDestinatario.cshtml")
+    ;
+}
+else
+{
+    <text>
+        <h3>Id de vista desconocido</h3>
+    </text>
+}

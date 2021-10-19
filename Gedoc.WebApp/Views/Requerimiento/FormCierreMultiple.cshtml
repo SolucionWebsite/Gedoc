@@ -1,0 +1,217 @@
+﻿@using Gedoc.Helpers
+@using Gedoc.Helpers.Dto
+@using Gedoc.Helpers.Enum
+@model Gedoc.WebApp.Models.RequerimientoModel
+
+@{
+    ViewBag.Title = "Cierre múltiple de requerimientos";
+    Layout = null;
+    List<GenericoDto> motivos = ViewBag.MotivosCierre ?? new List<GenericoDto>();
+    ResultadoOperacion accesoForm = ViewBag.AccesoForm ?? new ResultadoOperacion(1, "OK", null);
+    List<int> reqIds = ViewBag.ReqIds ?? new List<int>();
+    string reqIdsStr = string.Join(", ", reqIds);
+    List<string> reqDocs = ViewBag.ReqDocs ?? new List<string>();
+}
+
+<script src="~/Scripts/form.js"></script>
+
+<script>
+
+    @if (accesoForm.Codigo < 0)
+    {
+        <text>
+    Main.showAlert("@Html.Raw(accesoForm.Mensaje)")
+        .then(function (result) {
+            Main.cierraModal(null, false, "winFormIngreso");
+        });
+        </text>
+    }
+
+
+    //# sourceURL=FormCierreMultiple1
+</script>
+
+
+@Html.Partial("~/Views/Partial/TemplateTagMultiselect.cshtml", Model)
+
+
+<div class="container-fluid">
+
+    <form id="formCierreMultiple" action="" class="form-datos">
+        <h4 class="head-datos-form">Documento</h4>
+        <div class="form-row">
+            <div class="col-md-3">
+                <label class="label-dato-form">
+                    Documento(s) de ingreso(s)
+                </label>
+            </div>
+            <div class="col-md-9">
+                <span style="color: red">@string.Join(", ", reqDocs)</span>
+            </div>
+        </div>
+
+        <h4 class="head-datos-form">Cierre</h4>
+        <div class="form-row">
+            <div class="col-md-3">
+                <label class="label-dato-form">
+                    Comentario de cierre<span class="marca-obligatorio" title="Este campo es obligatorio."> *</span>
+                </label>
+            </div>
+            <div class="col-md-9">
+
+                <textarea name="ComentarioCierre" rows="4" cols="20" id="ComentarioCierre" class="form-control texto-largo"
+                          data-spanleyenda="leyenda-pnComentarioCierre"
+                          data-maxlength="255" style="width: 100% !important;" required="true"></textarea>
+                <span class="help-block-right" id="leyenda-pnComentarioCierre"> </span>
+                <span class="k-invalid-msg" data-for="ComentarioCierre"></span>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="col-md-3" style="white-space: nowrap">
+                <label class="label-dato-form">
+                    Motivo de cierre<span class="marca-obligatorio" title="Este campo es obligatorio."> *</span>
+                </label>
+            </div>
+            <div class="col-md-9">
+                @for (int i = 0; i < motivos.Count; i++)
+                {
+                    @(Html.Kendo().RadioButtonFor(m => m.MotivoCierreId)
+                    .Label(motivos[i].Titulo)
+                    .HtmlAttributes(new {required = "required"})
+                    .Value(motivos[i].Id))
+                    @:<br />
+                }
+                <span class="k-invalid-msg" data-for="MotivoCierreId"></span><br />
+            </div>
+        </div>
+
+        <div class="form-row pb-0">
+            <div class="col-md-3" style="white-space: nowrap">
+                <label class="label-dato-form">
+                    Cerrar requerimientos<span class="marca-obligatorio" title="Este campo es obligatorio."> *</span>
+                </label>
+            </div>
+            <div class="col-md-2">
+
+                @(Html.Kendo().RadioButton().Name("CerrarReqSiNo").HtmlAttributes(new { required = "true" }).Label("Sí").Value(true))
+                @(Html.Kendo().RadioButton().Name("CerrarReqSiNo").HtmlAttributes(new { required = "true", @class = "ml-3"}).Label("No").Value(false))
+
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="offset-md-3 col-md-9">
+                <span class="k-invalid-msg" data-for="CerrarReqSiNo"></span><br />
+            </div>
+        </div>
+
+
+        <div class="footer-modal">
+            <div class="form-row">
+                <div class="offset-md-3 col-md-2 text-center">
+                    <button type="button" id="btnGrabaCierreMulti" class="k-primary-blue k-button" onclick="grabaCierreMultiple(event);">Guardar</button>
+                </div>
+                <div class="offset-md-2 col-md-2 text-center">
+                    <button type="button" id="btnCancelaCierreMulti" class="k-danger k-button" onclick="cancelaCierreMultiple(event);">Cancelar</button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+
+
+<script>
+    $(function () {
+
+        configValidacionForm();
+
+        Form.inicializaForm();
+
+    });
+
+    function configValidacionForm() {
+        var container = $("#formCierreMultiple");
+        kendo.init(container);
+        container.kendoValidator({
+            rules: {
+                radio: function (input) {
+                    if (input.filter("[type=radio]").length && input.attr("required")) {
+                        return container.find("[type=radio][name=" + input.attr("name") + "]").is(":checked");
+                    }
+                    return true;
+                },
+            },
+            divRequired: function(input) {
+                if ($(input).attr("id") == "ComentarioCierre") {
+                    var divCierre = $("#pnComentarioCierre");
+                    if (divCierre.length && !divCierre.text().length)
+                        return false;
+                    return true;
+                } else {
+                    return true;
+                }
+            },
+            messages: {
+                required: "Este campo es obligatorio",
+                radio: "Este campo es obligatorio",
+                divRequired: "Este campo es obligatorio"
+            }
+        });
+    }
+
+    function grabaCierreMultiple(e) {
+
+        Main.wait("Grabando...");
+
+        var currentTarget = $(e.currentTarget);
+        var form = $("#formCierreMultiple");
+
+        var validator = form.data("kendoValidator");
+        //validator.validateInput($("#FechaFromSelecc"));
+        if (!validator.validate()) {
+            Main.unwait();
+            Main.showError("Por favor, revise los datos de la página. Hay datos incompletos o erróneos.");
+            return false;
+        }
+
+        var ids = [@reqIdsStr];
+        var comentarioCierre = $("#ComentarioCierre").val();
+        var motivoCierre = $("[name='MotivoCierreId']:checked").val();
+        var cerrarSiNo = $("[name='CerrarReqSiNo']:checked").val();
+        
+        //Cierra en el servidor
+        $.ajax({
+            url: '@Url.Action("CerrarRequerimientos")',
+            type: "POST",
+            data: JSON.stringify({'reqIds': ids, motivoCierre: motivoCierre, cerrar: cerrarSiNo, comentarioCierre: comentarioCierre}),
+            contentType: "application/json",
+            dataType: "json"
+        }).done(function (response) {
+            Main.unwait();
+            if (response.Codigo) {
+                if (response.Codigo > 0) {
+                    Main.showInfo(response.Mensaje).then(function (result) {
+                        Main.cierraModal(currentTarget, true, "winFormIngreso");
+                    });
+                } else {
+                    Main.showError(response.Mensaje, "Error");
+                }
+            } else {
+                Main.showAlert("Error inesperado al realizar la operación, por favor, vuelva a intentarlo",
+                    "Error");
+            }
+        }).fail(function (error) {
+            Main.unwait();
+            Main.showError("Ha ocurrido un error al realizar la operación, por favor, vuelva a intentarlo.",
+                "Error");
+        });
+    };
+
+    function cancelaCierreMultiple(e) {
+        Main.cierraModal($(e.currentTarget), { resultado: false }, "winFormIngreso");
+    };
+
+    //# sourceURL=FormCierreMultiple2
+</script>

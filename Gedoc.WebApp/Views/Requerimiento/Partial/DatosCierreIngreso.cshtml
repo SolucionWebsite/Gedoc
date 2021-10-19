@@ -1,0 +1,78 @@
+﻿@using Gedoc.Helpers.Dto
+@model Gedoc.WebApp.Models.RequerimientoModel
+
+@{
+    Layout = null;
+    List<GenericoDto> motivos = ViewBag.MotivosCierre ?? new List<GenericoDto>();
+}
+
+
+<h4 class="head-datos-form">Cierre</h4>
+<div class="container-fluid">
+
+    <div class="form-row">
+        <div class="col-md-3">
+            <label class="label-dato-form">
+                Comentario de cierre<span class="marca-obligatorio" title="Este campo es obligatorio."> *</span>
+            </label>
+        </div>
+        <div class="col-md-9">
+            @*<div class="k-block text-area-out">
+                <div class="text-area-in texto-largo" id="pnComentarioCierre" contenteditable="true" maxlength="255"
+                     data-spanleyenda="leyenda-pnComentarioCierre">
+                    @Html.Raw(Model.ComentarioCierre)</div>
+            </div>*@
+
+            <textarea name="ComentarioCierre" rows="4" cols="20" id="tbComentarioCierre" class="form-control texto-largo" 
+						  data-spanleyenda="leyenda-pnComentarioCierre"
+                          data-maxlength="255" style="width: 100% !important;">@Html.Raw(Model.ComentarioCierre)</textarea>
+            <span class="help-block-right" id="leyenda-pnComentarioCierre"> </span>
+            <span class="k-invalid-msg" data-for="ComentarioCierre"></span>
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="col-md-3" style="white-space: nowrap">
+            <label class="label-dato-form">
+                Motivo de cierre<span class="marca-obligatorio" title="Este campo es obligatorio."> *</span>
+            </label>
+        </div>
+        <div class="col-md-9">
+            @for (int i = 0; i < motivos.Count; i++)
+            {
+                @(Html.Kendo().RadioButtonFor(m => m.MotivoCierreId)
+                    .Label(motivos[i].Titulo)
+                    .HtmlAttributes(new {required = "required"})
+                    .Value(motivos[i].Id))
+                @:<br/>
+            }
+            <span class="k-invalid-msg" data-for="MotivoCierreId"></span><br/>
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="col-md-3" style="white-space: nowrap">
+            <label class="label-dato-form">
+                Cerrar requerimiento<span class="marca-obligatorio" title="Este campo es obligatorio."> *</span>
+            </label>
+        </div>
+        <div class="col-md-2">
+
+            @(Html.Kendo().RadioButtonFor(m => m.CerrarReq).Label("Sí").Value(true))
+            @(Html.Kendo().RadioButtonFor(m => m.CerrarReq).HtmlAttributes(new {@class = "ml-3"}).Label("No").Value(false))
+
+        </div>
+    </div>
+
+</div>
+
+
+<script>
+    function inicializaPanelCierre() {
+
+    }
+
+
+    //# sourceURL=PanelCierreIngreso
+
+</script>

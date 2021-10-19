@@ -1,0 +1,662 @@
+﻿@using Gedoc.Helpers
+@using Gedoc.Helpers.Dto
+@using Gedoc.Helpers.Enum
+@using Gedoc.Repositorio.Model
+@using Gedoc.WebApp.Models
+@using Rol = Gedoc.Helpers.Enum.Rol
+
+
+@{
+    int codigoBandeja = ViewBag.CodigoBandeja ?? 0;
+    int idBandeja = ViewBag.IdBandeja ?? 0;
+    int[] rolesUsuario = ViewBag.CurrentUserRoles ?? new int[0];
+    bool esProf = rolesUsuario.Contains((int) Rol.ProfesionalUt);
+
+    #region Definición de acciones por Estado-Etapa del oficio
+
+    List<AccionPermitidaBandejaDto> accionesEstadoEtapaOfic = ViewBag.AccionesOfic ?? new List<AccionPermitidaBandejaDto>();
+
+    #endregion
+
+}
+
+<style>
+    .agregar-container { display: inline-block; }
+
+    .tool-buscar { float: right; }
+
+</style>
+
+<script>
+    var lastParamGridOfic = {};
+    var exportFlag = false;
+
+    $(function() {
+
+        // Búsqueda en la grilla
+        $("#textoBusqGridOfic").on("search",
+            function(e) {
+                var grid = $("#gridBandejaOfic").data("kendoGrid");
+                if (grid && grid.dataSource) {
+                    grid.dataSource.filter({});
+                }
+            });
+
+    });
+
+    function buildIngresosOficios(id, numOficio, reqDatos) {
+        var texto = "";
+        if (reqDatos && reqDatos.length) {
+            for (var i = 0; i < reqDatos.length; i++) {
+                var dato = reqDatos[i];
+                var enlace = Main.getTemplateFicha(dato.Titulo, dato.Id, dato.Titulo);
+                texto += texto ? ("; " + enlace) : enlace;
+            }
+        }
+
+        return texto;
+    }
+
+    function buildAccionesOficios(estadoId, etapaId, id, numOficio, urlArchivo, reqDatos) {
+        var acciones = @Html.Raw(Json.Encode(accionesEstadoEtapaOfic));
+        var numDocsReq = reqDatos && reqDatos.length ? reqDatos.map(a => a.Titulo).join(';') : "";
+
+        var accionesHtml = [];
+        for (var i = 0; i < acciones.length; i++) {
+            if (acciones[i].EstadoId == estadoId &&
+                acciones[i].EtapaId == etapaId /*&& acciones[i].BandejasId.includes(@codigoBandeja)*/) {
+                var accionesOficio = acciones[i].AccionesDetalle;
+                for (var j = 0; j < accionesOficio.length; j++) {
+                    var accion = accionesOficio[j];
+                    // Se crea el control html con la acción encontrada
+                    var btnAcc = "";
+                    if (accion.IdAccion == "@AccionOficio.VERFIRMADO.ToString()" ||
+                        accion.IdAccion == "@AccionOficio.VER.ToString()") {
+                        var urlDescarga = accion.IdAccion == "@AccionOficio.VERFIRMADO.ToString()"
+                            ? (urlArchivo && urlArchivo.startsWith("http")
+                                ? urlArchivo
+                                : "@Url.Action("GetArchivoOficio", "Oficio")" + "?oficioId=" + id)
+                            : "@Url.Action("GetOficioPdf", "Oficio")" + "?oficioId=" + id;
+                        btnAcc = "<a href='" +
+                            urlDescarga +
+                            "' class='mr-1' id='" +
+                            accion.IdAccion +
+                            id +
+                            "' " +
+                            "target='_blank' title='" +
+                            accion.Titulo +
+                            "' >" +
+                            "<span class='k-icon " +
+                            accion.Icono +
+                            "'></span></a>";
+                    } else {
+                        btnAcc = "<a href='#' class='mr-1' id='" +
+                            accion.IdAccion +
+                            id +
+                            "' onclick='" +
+                            accion.Onclick +
+                            "(\"" +
+                            id +
+                            "\", \"" +
+                            numOficio +
+                            "\", \"" +
+                            numDocsReq +
+                            "\"); return false;' title='" +
+                            accion.Titulo +
+                            "' >" +
+                            "<span class='k-icon " +
+                            accion.Icono +
+                            "'></span></a>";
+                    }
+                    accionesHtml.push(btnAcc);
+                }
+                break;
+            }
+        }
+
+        return accionesHtml.join(' '); // .replace('"', '\\"');
+    }
+
+    function buildObservacionesOfico(oficioId, observaciones) {
+        if (!observaciones) return "";
+        return "<span>" +
+            observaciones + // "</span><span class='k-icon'>...</span>" +
+            "<a href='#' class='' id='lnkObsOfic" +
+            oficioId +
+            "' onclick='muestraGrillaObserv(" +
+            oficioId +
+            "); return false;' title='Observaciones' >" +
+            "<span class='enlace-grilla' style='font-weight: bold;'>...</span></a>";
+    }
+
+    function muestraGrillaObserv(oficioId) {
+        var url = '@Url.Action("GrillaOficioObservaciones", "Oficio")' + "?oficioId=" + oficioId;
+        var result = Main.muestraVentanaModal('Observaciones - Oficio ID ' + oficioId,
+            url,
+            860,
+            '',
+            false,
+            "winGrillaObsOfic");
+
+    }
+
+    function muestraGrillaAdjuntos(oficioId, numOficio) {
+        var titulo = 'Adjuntos - ' + (numOficio ? ' Número Oficio ' + numOficio : 'Oficio ID ' + oficioId);
+        var url = '@Url.Action("AdjuntosOficioForm", "AdjuntoOficio")' +
+            '?idOficio=' +
+            oficioId +
+            '&idBandeja=' +
+            @idBandeja;
+
+        var result = Main.muestraVentanaModal(titulo, url, null, '', false, "winFormIngreso", undefined);
+        result.then(function(result) {
+            if (result == true || result.Resultado == true || accion == "BI") {
+                // To ok
+            } else {
+                // hubo error o se canceló la acción, no se hace nada
+            }
+        });
+    }
+
+    function extraDataGrillaOfic() {
+        return {
+            Dato: '@idBandeja',
+            FilterText:
+                $('#textoBusqGridOfic').val()
+        };
+    }
+
+    function extraDataGrillaOficFiltro() {
+        var result = extraDataGrillaOfic();
+        result.ExtraData = "FILTROS";
+        return result;
+    }
+
+    function onDataBoundGridOfic(e) {
+        //var grid = this;
+        //grid.tbody.find('>tr:not(.k-grouping-row)').each(function() {
+        //    var dataItem = grid.dataItem(this);
+        //    coloreaRowGrid(dataItem, this);
+        //});
+
+    }
+
+    function onRequestEndGridOfic(e) {
+        Main.enEspera($('#gridBandejaOfic'), false);
+        Main.notificaResultado(e);
+    }
+
+    function onExcelExport(e) {
+        var grid = this;
+        var colAcciones = 8;
+        
+        e.workbook.fileName = "Oficios.xlsx";
+        var sheet = e.workbook.sheets[0];
+        //para no exportar la columna Acciones al excel:
+        //for (var r = 0; r < sheet.rows.length; r++) {
+        //    sheet.rows[r].cells.splice(colAcciones, 1);
+        //}
+        // Se personalizan los títulos de columnas pues sino entonces aparecen con el código HTML de la grilla. Se conservan el fontsize, textalign y background q se asigna por defecto al exportar a Excel
+        var fontSize = sheet.rows[0].cells[0].fontSize;
+        var textAlign = sheet.rows[0].cells[0].textAlign;
+        var background = sheet.rows[0].cells[0].background;
+        var color = sheet.rows[0].cells[0].color;
+        var headers = [
+            { value: "ID", fontSize: fontSize, textAlign: textAlign, background: background, color: color },
+            { value: "Nº Oficio", fontSize: fontSize, textAlign: textAlign, background: background, color: color },
+            { value: "Nº Ingresos", fontSize: fontSize, textAlign: textAlign, background: background, color: color },
+            { value: "Fecha Creación", fontSize: fontSize, textAlign: textAlign, background: background, color: color },
+            { value: "Etapa", fontSize: fontSize, textAlign: textAlign, background: background, color: color },
+            { value: "Estado", fontSize: fontSize, textAlign: textAlign, background: background, color: color },
+            { value: "Fecha Estado", fontSize: fontSize, textAlign: textAlign, background: background, color: color },
+            { value: "Observaciones", fontSize: fontSize, textAlign: textAlign, background: background, color: color }
+        ];
+        sheet.rows.splice(0, 1, { cells: headers });
+
+        exportGridWithTemplatesContent(e);
+
+
+        // Funciona para no exportar la columna Acciones al excel, pero después de exportar a Excel se modifica el ancho de la columna Acciones de la grilla:
+        //if (!exportFlag) {
+        //    grid.hideColumn(colAcciones); // index of the column you want to exclude
+        //    e.preventDefault();
+        //    exportFlag = true;
+        //    setTimeout(function() {
+        //        grid.saveAsExcel();
+        //    });
+        //} else {
+        //    e.workbook.fileName = "Oficios.xlsx";
+        //    var sheet = e.workbook.sheets[0];
+        //    var fontSize = sheet.rows[0].cells[0].fontSize;
+        //    var textAlign = sheet.rows[0].cells[0].textAlign;
+        //    var background = sheet.rows[0].cells[0].background;
+        //    var headers = [
+        //        { value: "ID", fontSize: fontSize, textAlign: textAlign, background: background },
+        //        { value: "Nº Oficio", fontSize: fontSize, textAlign: textAlign, background: background },
+        //        { value: "Nº Ingresos", fontSize: fontSize, textAlign: textAlign, background: background },
+        //        { value: "Fecha Creación", fontSize: fontSize, textAlign: textAlign, background: background },
+        //        { value: "Etapa", fontSize: fontSize, textAlign: textAlign, background: background },
+        //        { value: "Estado", fontSize: fontSize, textAlign: textAlign, background: background },
+        //        { value: "Fecha Estado", fontSize: fontSize, textAlign: textAlign, background: background },
+        //        { value: "Observaciones", fontSize: fontSize, textAlign: textAlign, background: background }
+        //    ];
+        //    sheet.rows.splice(0, 1, { cells: headers });
+
+        //    exportGridWithTemplatesContent(e);
+
+        //    grid.showColumn(colAcciones);
+        //    exportFlag = false;
+        //}
+    }
+
+    function exportGridWithTemplatesContent(e) {
+        var colObservaciones = 7; // La columna Observaciones tiene ClientTamplate pero en este caso necesito q se ignore el template y aparezca en el excel tal cual el valor del campo Observaciones
+
+        var data = e.data;
+        var gridColumns = e.sender.columns;
+        var sheet = e.workbook.sheets[0];
+        var visibleGridColumns = [];
+        var columnTemplates = [];
+        // Create element to generate templates in.
+        var elem = document.createElement('div');
+
+        // Get a list of visible columns
+        for (var i = 0; i < gridColumns.length; i++) {
+            if (!gridColumns[i].hidden) {
+                visibleGridColumns.push(gridColumns[i]);
+            }
+        }
+
+        // Create a collection of the column templates, together with the current column index
+        for (var i = 0; i < visibleGridColumns.length; i++) {
+            if (visibleGridColumns[i].template && i != colObservaciones) {
+                columnTemplates.push({ cellIndex: i, template: kendo.template(visibleGridColumns[i].template) });
+            }
+        }
+
+        // Traverse all exported rows.
+        for (var i = 1; i < sheet.rows.length; i++) {
+            var row = sheet.rows[i];
+            // Traverse the column templates and apply them for each row at the stored column position.
+
+            // Get the data item corresponding to the current row.
+            var dataItem = data[i - 1];
+            for (var j = 0; j < columnTemplates.length; j++) {
+                var columnTemplate = columnTemplates[j];
+                // Generate the template content for the current cell.
+                elem.innerHTML = columnTemplate.template(dataItem);
+                if (row.cells[columnTemplate.cellIndex] != undefined)
+                // Output the text content of the templated cell into the exported cell.
+                    row.cells[columnTemplate.cellIndex].value = elem.textContent || elem.innerText || "";
+            }
+        }
+    }
+
+    //function onChangeDataSourceGridOfic(e) {
+    //    if (dataSourceSharedGridOfic.data() && !dataSourceSharedGridOfic.data().length) {
+    //        // Se leen los datos para los filtros de columna sólo 1 vez, no cada vez q cambien el datasource del grid con la página, orden y demás
+    //        dataSourceSharedGridOfic.read(); // .data(e.items);
+    //    }
+    //}
+
+    function seleccionarPlantillaNuevoOficio() {
+        var titulo = "Seleccionar Plantilla de Oficio";
+        var url = '@Url.Action("FormSeleccionarPlantillaOficio", "Oficio")';
+        var result = Main.muestraVentanaModal(titulo, url, null, '', true, "winFormSeleccPlantilla", undefined, true);
+        result.then(function(result) {
+            if (result == true || result.Resultado == true) {
+                nuevoOficio(result.TramiteId, result.PlantillaId, result.ReqsId, result.UtId);
+            } else {
+                // hubo error o se canceló la acción, no se hace nada
+            }
+        });
+    }
+
+    function nuevoOficio(tramiteId, plantillaId, reqsId, utId) {
+        var reqsIdStr = reqsId.join(";");
+        Acciones.ejecutaAccionNuevaVentana("Nuevo Oficio",
+            '@Url.Action("FormOficio", "Oficio")' +
+            '?id=0&tramId=' +
+            tramiteId +
+            '&plantId=' +
+            plantillaId +
+            '&reqsId=' +
+            reqsIdStr +
+            '&utId=' +
+            utId,
+            null,
+            'MAX',
+            "OFIC",
+            refrescaGridOfic);
+    }
+
+    function refrescaGridOfic() {
+        var gridK = $("#gridBandejaOfic").data("kendoGrid");
+        if (gridK) {
+            gridK.dataSource.read();
+        }
+    }
+
+    function editarOficio(id, numOficio) {
+        Acciones.ejecutaAccionNuevaVentana(
+            id == 0
+            ? "Nuevo Oficio"
+            : "Editar Oficio - " + (numOficio ? " Número de Oficio " + numOficio : " ID " + id),
+            '@Url.Action("FormOficio", "Oficio")' + '?id=' + id,
+            null,
+            id == 0 ? '100%' : "MAX",
+            "OFIC",
+            refrescaGridOfic,
+            false);
+    }
+
+    function eliminarOficio(id, numOficio) {
+        Main.showConfirm(
+                "Se eliminará el oficio " +
+                (numOficio ? " con Número de Oficio " + numOficio : " de ID " + id) +
+                ". ¿Desea continuar?",
+                "Eliminar Oficio",
+                true)
+            .then(function(isOk) {
+                if (isOk) {
+                    ejecutaAccionOficio(id, numOficio, "@AccionOficio.BORRAR.ToString()");
+                }
+            });
+    }
+
+    @*function verOficioPdf(id, numOficio) {
+        Main.muestraVentanaModal("Oficio PDF", "@(Url.Action("FormOficioPdf", "Oficio"))?id=" + id
+            , 600, 200, false, "winOficioPdf", undefined, true);
+        //setTimeout(function () {
+            //$(".k-window .k-window-content.k-content .k-loading-image").hide();
+            //Main.wait("Cargando datos, por favor espere...", ".k-window .k-window-content.k-content .k-loading-mask");
+        //}, 100);
+        $(".k-window .k-window-content.k-content .k-loading-mask").addClass("text-center");
+        $(".k-window .k-window-content.k-content .k-loading-text").text("Cargando datos, por favor espere...");
+        $(".k-window .k-window-content.k-content .k-loading-text").css("position", "relative");
+
+    }*@
+
+    @*function verOficioFirmadoPdf(id, numOficio) {
+        Main.muestraVentanaModal("Oficio PDF", "@(Url.Action("FormOficioPdf", "Oficio"))?id=" + id
+            , 600, 200, false, "winOficioPdf", undefined, true);
+        //setTimeout(function () {
+            //$(".k-window .k-window-content.k-content .k-loading-image").hide();
+            //Main.wait("Cargando datos, por favor espere...", ".k-window .k-window-content.k-content .k-loading-mask");
+        //}, 100);
+        $(".k-window .k-window-content.k-content .k-loading-mask").addClass("text-center");
+        $(".k-window .k-window-content.k-content .k-loading-text").text("Cargando datos, por favor espere...");
+        $(".k-window .k-window-content.k-content .k-loading-text").css("position", "relative");
+
+    }*@
+
+    function enviarEncargadoOficio(id, numOficio) {
+        Main.showConfirm(
+                "El oficio " +
+                (numOficio ? " con Número de Oficio " + numOficio : " de ID " + id) +
+                " será enviado al Encargado UT. ¿Desea continuar?",
+                "Enviar a Encargado UT",
+                true)
+            .then(function(isOk) {
+                if (isOk) {
+                    ejecutaAccionOficio(id, numOficio, "@AccionOficio.AENCARGADO.ToString()");
+                }
+            });
+    }
+
+    function devolverProfesionalOficio(id, numOficio, numDocsReq) {
+        var titulo = "Devolver a Profesional UT - ID " + id + (numDocsReq ? " - Ingreso " + numDocsReq : "");
+        Main.showPrompt(titulo, "Observaciones", "Aceptar", false, 500, true)
+            .then(function(isOk) {
+                if (isOk.result) {
+                    if (!isOk.texto) {
+                        Main.showError("Tiene que especificar un valor en el campo Observaciones.");
+                        return false;
+                    }
+                    ejecutaAccionOficio(id, numOficio, "@AccionOficio.DEVOLVERPROF.ToString()", isOk.texto);
+                }
+            });
+    }
+
+    function enviarVisadorOficio(id, numOficio) {
+        Main.showConfirm(
+                "El oficio " +
+                (numOficio ? " con Número de Oficio " + numOficio : " de ID " + id) +
+                " será enviado a Visador General. ¿Desea continuar?",
+                "Enviar a Visador General",
+                true)
+            .then(function(isOk) {
+                if (isOk) {
+                    ejecutaAccionOficio(id, numOficio, "@AccionOficio.AVISADOR.ToString()");
+                }
+            });
+    }
+
+    function devolverEncargadoOficio(id, numOficio, numDocsReq) {
+        var titulo = "Devolver a Encargado UT - ID " + id + (numDocsReq ? " - Ingreso " + numDocsReq : "");
+        Main.showPrompt(titulo, "Observaciones", "Aceptar", false, 500, true)
+            .then(function(isOk) {
+                if (isOk.result) {
+                    if (!isOk.texto) {
+                        Main.showError("Tiene que especificar un valor en el campo Observaciones.");
+                        return false;
+                    }
+                    ejecutaAccionOficio(id, numOficio, "@AccionOficio.DEVOLVERENC.ToString()", isOk.texto);
+                }
+            });
+    }
+
+    function enviarJefaturaOficio(id, numOficio) {
+        Main.showConfirm(
+                "El oficio " +
+                (numOficio ? " con Número de Oficio " + numOficio : " de ID " + id) +
+                " será enviado a Jefatura CMN. ¿Desea continuar?",
+                "Enviar a Jefatura CMN",
+                true)
+            .then(function(isOk) {
+                if (isOk) {
+                    ejecutaAccionOficio(id, numOficio, "@AccionOficio.AJEFATURA.ToString()");
+                }
+            });
+    }
+
+    function devolverVisadorOficio(id, numOficio, numDocsReq) {
+        var titulo = "Devolver a Visador General - ID " + id + (numDocsReq ? " - Ingreso " + numDocsReq : "");
+        Main.showPrompt(titulo, "Observaciones", "Aceptar", false, 500, true)
+            .then(function(isOk) {
+                if (isOk.result) {
+                    if (!isOk.texto) {
+                        Main.showError("Tiene que especificar un valor en el campo Observaciones.");
+                        return false;
+                    }
+                    ejecutaAccionOficio(id, numOficio, "@AccionOficio.DEVOLVERVIS.ToString()", isOk.texto);
+                }
+            });
+    }
+
+    @*function editarFirmadoOficio(id, numOficio) {
+        Acciones.ejecutaAccionNuevaVentana("Editar Oficio - " + (numOficio ? " Número de Oficio " + numOficio : " ID " + id),
+            '@Url.Action("FormOficioEdicionFirmado", "Oficio")' + '?id=' + id + "&accion=" + "EDITFIRMADO"
+            , "550", "200", "OFIC", refrescaGridOfic);
+    }*@
+
+    function enviarFirmaOficio(id, numOficio) {
+        Main.showConfirm(
+                "El oficio " +
+                (numOficio ? " con Número de Oficio " + numOficio : " de ID " + id) +
+                " será enviado a firma. ¿Desea continuar?",
+                "Enviar a firma",
+                true)
+            .then(function(isOk) {
+                if (isOk) {
+                    Main.wait("Enviando a firma oficio ID " + id + "...")
+                    ejecutaAccionOficio(id, numOficio, "AFIRMA");
+                }
+            });
+
+        @*var url = '@Url.Action("FormOficioEdicionFirmado", "Oficio")' + '?id=' + id + "&accion=" + "@AccionOficio.AFIRMA.ToString()";
+        var result = Main.muestraVentanaModal("Enviar a Firma", url, "550", '150', true, "winFormIngreso", undefined, true);
+        result.then(function (result) {
+            if (result == true || result.resultado == true ) {
+                refrescaGridOfic();
+            } else {
+                // hubo error o se canceló la acción, no se hace nada
+            }
+        });*@
+    }
+
+    function ejecutaAccionOficio(id, numOficio, accion, observaciones) {
+
+        var data = {
+            accion: accion,
+            model: { Id: id, NumeroOficio: numOficio, Accion: accion, Observaciones: observaciones }
+        };
+        var url = "@Url.Action("EjecutaAccionOficio", "Oficio")";
+        $.ajax({
+            type: "POST",
+            url: url,
+            data: data
+        }).done(function(response) {
+            Main.unwait();
+            if (response.Codigo) {
+                if (response.Codigo > 0) {
+                    Main.showInfo(response.Mensaje);
+                    refrescaGridOfic();
+                } else {
+                    Main.showError(response.Mensaje, "Error");
+                }
+            } else {
+                Main.showAlert("Error inesperado al realizar la operación, por favor, vuelva a intentarlo",
+                    "Error");
+            }
+        }).fail(function(error) {
+            Main.unwait();
+            Main.showError("Ha ocurrido un error al realizar la operación, por favor, vuelva a intentarlo.",
+                "Error");
+        });
+    }
+
+    //# sourceURL=PestañaOficios
+</script>
+
+
+<div id="divOficioMain">
+    @(Html.Kendo().DataSource<OficioDto>()
+        .Name("dataSourceGridOfic")
+        .Ajax(dataSource => dataSource
+            .Read(read =>
+            {
+                read.Action("DatosBandejaEntradaOfic", "Oficio")
+                    .Type(HttpVerbs.Post)
+                    .Data("extraDataGrillaOfic");
+            })
+            .Events(ev =>
+            {
+                //ev.RequestStart("function() { Main.enEspera($('#gridBandeja'), true) }")
+                ev
+                    .RequestEnd("onRequestEndGridOfic");
+                //.Change("onChangeDataSourceGridOfic");
+            })
+            .PageSize(10)
+        //.Aggregates(aggregates => { aggregates.Add(p => p.Resolucion).Count(); })
+        //.Group(groups => groups.Add(p => p.Resolucion))
+        )
+        )
+    @(Html.Kendo().Grid<OficioDto>()
+        .Name("gridBandejaOfic")
+        .ToolBar(toolbar =>
+        {
+            toolbar.Template(@<text>
+
+                                 <a class="k-button k-button-icontext k-grid-excel" href="#"><span class="k-icon k-i-excel"></span>Exportar a Excel</a>
+
+                                 @if (idBandeja == (int) Bandeja.ProfesionalUt)
+                                 {
+                                     <div class="agregar-container">
+                                         <a href="\\#" class="k-button" title="Agregar" onclick="seleccionarPlantillaNuevoOficio();return false;"><span class="k-icon k-i-plus-outline "></span>Agregar</a>
+                                     </div>
+                                 }
+
+                                 <div class="tool-buscar text-right">
+                                     <label class="" for="textoBusqGridOfic">Buscar:</label>
+                                     <input type="search" id="textoBusqGridOfic" class="k-textbox" style="width: 150px">
+                                 </div>
+                              </text>);
+        })
+        .Excel(ex => ex.AllPages(true))
+        .NoRecords("No existen documentos.")
+//.ToolBar(t => t.Template(@<text>
+//                             <div class="form-row">
+//                                 <div class="col-md-1">
+//                                 </div>
+//                                 <div class="col-md-6 offset-md-5 text-right">
+//                                     <label class="" for="textoBusqGridOfic">Buscar:</label>
+//                                     <input type="search" id="textoBusqGridOfic" class="k-textbox" style="width: 150px">
+//                                     <div class="" style="line-height: normal; font-size: 0.9em;"><b>Importante:</b> en esta bandeja se despliegan los ingresos de los últimos <span id="mesesBandejaOfic1" class="textDiasBandejaOfic">6 meses</span> asociados a tu perfil, si necesita buscar en la bandeja, utiliza el casillero <b>Buscar</b>. Si el ingreso es anterior a <span id="mesesBandejaOfic2" class="textDiasBandejaOfic">6 meses</span> debe utilizar <b>Búsqueda en Bandeja de Entrada</b>. Para registros en general, es decir no asociados a tu perfil debes utilizar <b>Búsqueda Avanzada</b>. </div>
+//
+//                                 </div>
+//                             </div>
+//                          </text>))
+        .DataSource("dataSourceGridOfic")
+        .Scrollable(scr => scr.Height("auto"))
+        .Pageable(p => p.AlwaysVisible(true).PageSizes(new int[3] {10, 50, 100}).Enabled(true)
+            .Messages(m => m.ItemsPerPage("registros por página")))
+        .Sortable()
+        .Navigatable()
+        .Events(e => e
+            .DataBound("onDataBoundGridOfic")
+            .ExcelExport("onExcelExport")
+//.FilterMenuInit("onFilterMenuInitGridOfic")
+        )
+//.Filterable(s => s.Enabled(true))
+        .Columns(columns =>
+        {
+            columns.Bound(c => c.Id)
+                .Width(50)
+                .HtmlAttributes(new {@class = "text-center"})
+                .Title("<center>ID <span class='k-icon k-i-kpi' style='color: lightgray;'></span></center>")
+                .Sortable(true)
+                .Filterable(false);
+            columns.Bound(c => c.NumeroOficio)
+                .Width(110)
+                .HtmlAttributes(new {@class = "text-center"})
+                .Title("<center>N° Oficio <span class='k-icon k-i-kpi' style='color: lightgray;'></span></center>")
+                .Sortable(true)
+                .Filterable(false);
+            columns.Bound(c => c.RequerimientoPrincipalId)
+                .Width(150)
+                .Title("<center>N° Ingresos <span class='k-icon k-i-kpi' style='color: lightgray;'></span></center>")
+                .ClientTemplate("#= buildIngresosOficios(data.Id, data.NumeroOficio, data.Requerimiento)#")
+                .Sortable(true)
+                .Filterable(false);
+            columns.Bound(c => c.FechaCreacion)
+                .Width(120)
+                .Title("<center>Fecha <br>Creación <span class='k-icon k-i-kpi' style='color: lightgray;'></span></center>")
+                .Format(GeneralData.FORMATO_FECHA_CORTO_GRID)
+                .Filterable(false);
+            columns.Bound(c => c.EtapaOficioTitulo)
+                .Width(140)
+                .Title("<center>Etapa <span class='k-icon k-i-kpi' style='color: lightgray;'></span></center>")
+                .Filterable(false);
+            columns.Bound(c => c.EstadoOficioTitulo)
+                .Width(140)
+                .Title("<center>Estado <span class='k-icon k-i-kpi' style='color: lightgray;'></span></center>")
+                .Filterable(false);
+            columns.Bound(c => c.FechaUltEstado)
+                .Width(120)
+                .Title("<center>Fecha<br>Estado <span class='k-icon k-i-kpi' style='color: lightgray;'></span></center>")
+                .Format(GeneralData.FORMATO_FECHA_LARGO_GRID)
+                .Filterable(false);
+            columns.Bound(c => c.Observaciones)
+                .Width(250)
+                .Title("<center>Observaciones <span class='k-icon k-i-kpi' style='color: lightgray;'></span></center>")
+                .ClientTemplate("#= buildObservacionesOfico(data.Id, data.Observaciones)#")
+                .Filterable(false);
+            columns.Bound(c => c.Id)
+                .Title("<center>Acciones</center>")
+                .Width(170)
+                .ClientTemplate("#= buildAccionesOficios(data.EstadoId, data.EtapaId, data.Id, data.NumeroOficio, data.UrlArchivo, data.Requerimiento)#")
+                .Sortable(false)
+                .Filterable(false);
+        }))
+</div>

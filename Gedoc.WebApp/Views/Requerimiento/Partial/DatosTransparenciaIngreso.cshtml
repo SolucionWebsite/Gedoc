@@ -1,0 +1,110 @@
+﻿@using Gedoc.Helpers.Dto
+@using Gedoc.Helpers.Enum
+@model Gedoc.WebApp.Models.RequerimientoModel
+
+@{
+    Layout = null;
+    Dictionary<CampoIngreso, AspectoCampo> accesoCampos = ViewBag.AccesoCampos;
+}
+
+<script>
+    function extraDataProfTransp() {
+        return {
+            idM: @((int) Mantenedor.Profesional), 
+            extra: $("#UtTransparenciaId").data("kendoComboBox").value()
+        }
+    }
+
+</script>
+
+<h4 class="head-datos-form grupo-transparencia">SIAC/Transparencia</h4>
+<div class="container-fluid grupo-transparencia">
+
+
+    <div class="form-row">
+        <div class="col-md-3">
+            <label class="gdoc-formlabel">
+                Unidad Técnica Apoyo Transparencia
+            </label>
+        </div>
+        <div class="col-md-9">
+            @(Html.Kendo().ComboBox()
+                .Name("UtTransparenciaId")
+                .HtmlAttributes(new { @class = "w-100" })
+                .DataTextField("Titulo")
+                .DataValueField("Id")
+                .Filter(FilterType.Contains)
+                .Messages(Gedoc.WebApp.Helpers.KendoHelper.SetComboBoxMessages)
+                .DataSource(source =>
+                {
+                    source.Read(read =>
+                    {
+                        read.Type(HttpVerbs.Post)
+                            .Action("MantenedorGenerico", "Json", new { idM = (int)Mantenedor.UnidadTecnica });
+                    }).ServerFiltering(false);
+                    source.Custom().Schema(s => s.Data("Data").Total("Total"));
+                })
+                )
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="col-md-3">
+            <label class="gdoc-formlabel">
+                Profesional de UT Apoyo Transparencia
+            </label>
+        </div>
+        <div class="col-md-9">
+            @(Html.Kendo().ComboBox()
+                .Name("ProfesionalTranspId")
+                .HtmlAttributes(new { @class = "w-100" })
+                .DataTextField("Titulo")
+                .DataValueField("Id")
+                .Filter(FilterType.Contains)
+                .Messages(Gedoc.WebApp.Helpers.KendoHelper.SetComboBoxMessages)
+                .DataSource(source => {
+                    source.Read(read =>
+                    {
+                        read.Type(HttpVerbs.Post)
+                            .Action("MantenedorGenerico", "Json")
+                            .Data("extraDataProfTransp");
+                    }).ServerFiltering(false);
+                    source.Custom().Schema(s => s.Data("Data").Total("Total"));
+                })
+                //.AutoBind(false)
+                //.CascadeFrom("UtTransparenciaId")
+                )
+        </div>
+    </div>
+
+    @*@Html.HiddenFor(a => a.ObservacionesTransparencia)*@
+    <div class="form-row">
+        <div class="col-md-3">
+            <label class="gdoc-formlabel">
+                Observaciones de SIAC/Transparencia
+            </label>
+        </div>
+        <div class="col-md-9">
+            @*<div class="k-block text-area-out">
+                <div class="text-area-in texto-largo" runat="server" ID="pnObservacionesTransparencia" contenteditable="true"
+                     data-spanleyenda="leyenda-pnObservacionesTransparencia" maxlength="255">@Html.Raw(Model.ObservacionesTransparencia)</div>
+            </div>*@
+
+            <textarea name="ObservacionesTransparencia" rows="4" cols="20" id="tbObservacionesTransparencia" class="form-control texto-largo" 
+						  data-spanleyenda="leyenda-pnObservacionesTransparencia"
+                          data-maxlength="255" style="width: 100% !important;">@Html.Raw(Model.ObservacionesTransparencia)</textarea>
+
+            <span class="help-block-right" id="leyenda-pnObservacionesTransparencia"> </span>
+        </div>
+    </div>
+    
+</div>
+
+<script>
+    function inicializaPanelTransparencia() {
+
+    }
+
+    //# sourceURL=PanelTransparenciaIngreso
+
+</script>

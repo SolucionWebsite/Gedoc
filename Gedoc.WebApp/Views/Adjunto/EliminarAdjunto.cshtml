@@ -1,0 +1,287 @@
+﻿@using Gedoc.Helpers
+@using Gedoc.Helpers.Enum
+@using Gedoc.WebApp.Models
+@model Gedoc.WebApp.Models.AdjuntoModel
+
+@{
+    Culture = "es-ES";
+    ViewBag.Title = "Eliminar Adjuntos";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<script src="~/Scripts/form.js"></script>
+
+
+@Html.Partial("~/Views/Partial/TemplateTagMultiselect.cshtml", Model)
+
+<h4 class="header-level1">@ViewBag.Title</h4>
+<div class="div-main">
+
+    <form id="formIngreso" action="@Url.Action("Save")" class="form-datos">
+        @Html.AntiForgeryToken()
+
+        <div class="form-row">
+            <div class="col-md-2">
+                <label class="label-dato-form">
+                    Fecha desde
+                </label>
+            </div>
+            <div class="col-md-3">
+                @(Html.Kendo().DatePicker()
+                    .Name("FechaCargaDesde")
+                    .Max(DateTime.Today)
+                    .Format("dd/MM/yyyy")
+                 )
+            </div>
+            <div class="col-md-2">
+                @(Html.Kendo().Button()
+                    .Name("btnConsultar")
+                    .HtmlAttributes(new { type = "button", @class = "k-primary", style = "display:none;"})
+                    .Events(events => events.Click("consultar"))
+                    .Content("Consultar")
+                 )
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="col-md-2">
+                <label class="label-dato-form">
+                    Fecha hasta
+                </label>
+            </div>
+            <div class="col-md-3">
+                @(Html.Kendo().DatePicker()
+                    .Name("FechaCargaHasta")
+                    .Max(DateTime.Today)
+                    .Format("dd/MM/yyyy")
+                )
+            </div>
+        </div>
+
+
+        <div id="divGrillaAdjuntos">
+            <div class="form-row">
+                <div class="col-md-5"></div>
+                <div class="col-md-2">
+                    @(Html.Kendo().Button()
+                    .Name("btnEliminar")
+                    .HtmlAttributes(new { type = "button", @class = "k-danger k-button" })
+                    .Events(events => events.Click("eliminar"))
+                    .Content("Eliminar ")
+                    )
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="col-md-12">
+                    @(Html.Kendo().Grid<Gedoc.Helpers.Dto.AdjuntoDto>()
+                          .Name("grid")
+                          .Columns(columns =>
+                          {
+                              columns.Bound(c => c.Id)
+                                  .Title("<center><input type='checkbox' /></center>")
+                                  .HeaderTemplate("<center><input type='checkbox' id='header-chb' class='k-checkbox header-checkbox'><label class='k-checkbox-label' for='header-chb'></label></center>")
+                                  .Width(40)
+                                  .ClientTemplate("<center><input type='checkbox' id='adj#=Id#' class='k-checkbox row-checkbox' /><label class='k-checkbox-label' for='adj#=Id#'></label></center>")
+                                  .Sortable(false)
+                                  .Filterable(false);
+                              columns.Bound(c => c.FechaCarga).Width(100).HtmlAttributes(new { style = "text-align:center;" }).Title("<center>Fecha de Carga</center>").Format(GeneralData.FORMATO_FECHA_CORTO_GRID);
+                              columns.Bound(c => c.NombreArchivo).Width(250).HtmlAttributes(new { style="text-align:center;"}).Title("<center>Nombre Archivo</center>");
+                              columns.Bound(c => c.UrlArchivo).Width(330).Title("<center>Ruta de Archivo</center>");
+                              columns.Bound(c => c.RequerimientoDocumentoIngreso).Width(130).Title("<center>Documento Ingreso</center>");
+                              columns.Bound(c => c.CreadoPor).Width(200).HtmlAttributes(new { style = "text-align:center;" }).Title("<center>Creado Por</center>").Format("{0:dd/MM/yyyy}");
+                          })
+                          //.HtmlAttributes(new { style = "height: 600px;" })
+                          .ToolBar(t => t.Search())
+                          //.Editable(editable=>editable.Mode(GridEditMode.PopUp))
+                          .Pageable(pager => pager.AlwaysVisible(true).PageSizes(new List<object> { 5, 10, 20, 100, 250 }))
+                          .Sortable(sortable =>
+                          {
+                              sortable.SortMode(GridSortMode.SingleColumn);
+
+                          })
+                          .Scrollable(s => s.Height("auto"))
+                          .DataSource(dataSource => dataSource
+                              .Ajax()
+                              .ServerOperation(false)
+                              //.Model(model =>
+                              //{
+                              //    model.Id(u => u.Id);
+                              //    model.Field(u => u.Id).Editable(false);
+                              //})
+                              .Read(read => read.Action("Grid_Read", "Adjunto").Data("currentDates"))
+                              //.Update(update => update.Action("Grid_Update", "Adjunto").Data("currentDates"))
+                              .Model(m => m.Id(id => id.Id))
+                              .Sort(s => s.Add("FechaCarga").Ascending())
+                          )
+                    )
+                </div>
+            </div>
+        </div>
+    </form>
+
+</div>
+<script>
+
+    var checkedIds = new Array();
+
+    function consultar() {
+        primeraConsulta = false;
+
+        var dateStrD = $("#FechaCargaDesde").val().trim();
+        var dateStrH = $("#FechaCargaHasta").val().trim();
+
+        if (dateStrD == "" || dateStrH == "") {
+             Main.showAlert("Debe especificar 'Fecha desde' y 'Fecha hasta'.");
+            return;
+        }
+
+        var dateD = dateStrD.split(/\s|\/|:/);
+        var dateH = dateStrH.split(/\s|\/|:/);
+        var dD = new Date(dateD[2], dateD[1], dateD[0]);
+        var dH = new Date(dateH[2], dateH[1], dateH[0]);
+
+        if (dD > dH) {
+             Main.showAlert("'Fecha desde' debe ser anterior o igual a 'Fecha hasta'.");
+        }
+        else {
+            $( "#header-chb" ).prop( "checked", false ); // Se desmarca el check de la cabecera
+            $('#grid').data('kendoGrid').dataSource.read();
+            $("#grid").data("kendoGrid").dataSource.page(0);
+        }
+    }
+
+    function currentDates() {
+        return {
+            fDesde: $("#FechaCargaDesde").val(),
+            fHasta: $("#FechaCargaHasta").val()
+        }
+    }
+
+    var primeraConsulta = true;
+
+    $(document).ready(function () {
+
+        kendo.ui.progress($("#divNotificacion"), true);
+
+        $('#grid').data('kendoGrid').table.on("click", ".row-checkbox", selectRow);
+
+        $('#header-chb').change(function (ev) {
+            var checked = ev.target.checked;
+            $('.row-checkbox').each(function (idx, item) {
+                if (checked) {
+                    if (!($(item).closest('tr').is('.k-state-selected'))) {
+                        $(item).click();
+                    }
+                } else {
+                    if ($(item).closest('tr').is('.k-state-selected')) {
+                        $(item).click();
+                    }
+                }
+            });
+        });
+
+        var grid = $('#grid').data('kendoGrid');
+        grid.bind("dataBound", onDataBound);
+        grid.dataSource.fetch();
+
+        $("#FechaCargaDesde").attr("readonly", true);
+        $("#FechaCargaHasta").attr("readonly", true);
+
+        $("#divGrillaAdjuntos").hide();
+
+        $(".k-textbox.k-grid-search input").attr("placeholder", "Buscar...");
+    });
+
+    function selectRow() {
+        var checked = this.checked,
+            row = $(this).closest("tr"),
+            grid = $("#grid").data("kendoGrid"),
+            dataItem = grid.dataItem(row);
+
+        checkedIds[dataItem.Id] = checked;
+
+        if (checked) {
+            //-select the row
+            row.addClass("k-state-selected");
+
+            var checkHeader = true;
+
+            $.each(grid.items(), function (index, item) {
+                if (!($(item).hasClass("k-state-selected"))) {
+                    checkHeader = false;
+                }
+            });
+
+            $("#header-chb")[0].checked = checkHeader;
+        } else {
+            //-remove selection
+            row.removeClass("k-state-selected");
+            $("#header-chb")[0].checked = false;
+        }
+    }
+
+    function eliminar() {
+        var grd = $('#grid').data('kendoGrid');
+        var cantReg = grd.select().length;
+        if (!cantReg) {
+            Main.showAlert("Por favor, seleccione al menos 1 adjunto para eliminar.");
+            return false;
+        }
+        Main.showConfirm("Está acción eliminará " + cantReg + " adjuntos, ¿confirma la eliminación?", "Eliminar adjunto", true)
+            .then(function (isOk) {
+                if (!isOk) return false;
+                var ix = 0;
+                var ids = new Array(grd.select().length);
+                grd.select().each(function () {
+                    var dataItem = grd.dataItem($(this));
+                    if (dataItem) {
+                        ids[ix] = dataItem.Id;
+                    }
+                    ix++;
+                });
+
+                //Borra en el servidor
+                $.ajax({
+                    url: '@Url.Action("EliminaAdjunto")',
+                    type: "POST",
+                    data: JSON.stringify({'adjuntoIds': ids}),
+                    contentType: "application/json",
+                    dataType: "json",
+                    success: function (data) {
+                        if (data && data.Codigo > 0) {
+                            Main.showAlert(data.Mensaje);
+                            grd.dataSource.read();
+                        } else {
+                            Main.showError(data.Mensaje);
+                        }
+                    },
+                    error: function (data) {
+                             Main.showAlert('Ocurrió un error al eliminar los adjuntos. Verifique si aún existen realizando una nueva búsqueda.');
+                    }
+                });
+            }, function () { });
+    }
+
+    function onDataBound(e) {
+        var view = this.dataSource.view();
+        if (view.length <= 0) {
+            if (!primeraConsulta)
+                 Main.showAlert("No se encontraron adjuntos en el periodo indicado.");
+            else {
+                $("#btnConsultar").fadeIn(369);
+                kendo.ui.progress($("#divNotificacion"), false);            }
+        }
+        else
+            $("#divGrillaAdjuntos").show();
+
+        /*for (var i = 0; i < view.length; i++) {
+            if (checkedIds[view[i].id]) {
+                this.tbody.find("tr[data-uid='" + view[i].uid + "']")
+                    .addClass("k-state-selected")
+                    .find(".k-checkbox")
+                    .attr("checked", "checked");
+            }
+        }*/
+    }
+
+</script>

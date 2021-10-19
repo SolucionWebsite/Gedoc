@@ -1,0 +1,520 @@
+﻿@using Gedoc.Helpers
+@using Gedoc.Helpers.Dto
+@using Gedoc.Helpers.Enum
+@using Gedoc.WebApp.Models
+
+
+@{
+    int codigoBandeja = ViewBag.CodigoBandeja ?? 0;
+    List<AccionPermitidaBandejaDto> accionesEstadoEtapaPrio = ViewBag.AccionesPrio;
+    bool columnaNuevaFechaPrioSoloLectura = codigoBandeja == (int)Bandeja.ProfesionalUt;
+    bool mostrarColumnaAccionesPrio = codigoBandeja == (int)Bandeja.EncargadoUt ||
+                                      codigoBandeja == (int)Bandeja.SecretariaUt;
+}
+
+<script>
+    var lastParamGridPrio = {};
+
+    $(function () {
+
+        // Búsqueda en la grilla
+        $("#textoBusqGridPrio").on("search",
+            function (e) {
+                var grid = $("#gridBandejaPrio").data("kendoGrid");
+                if (grid && grid.dataSource) {
+                    grid.dataSource.filter({});
+                }
+            });
+
+    });
+
+    function buildAccionesIngresosPrio(estadoId, etapaId, ingresoId, docIngreso) {
+        var acciones = @Html.Raw(Json.Encode(accionesEstadoEtapaPrio));
+        return buildAccionesIngresos(estadoId, etapaId, ingresoId, docIngreso, acciones);
+    }
+
+    function onRequestEndGridPrio(e) {
+        lastParamGridPrio = e.response.Resultado.Extra;
+        Main.enEspera($('#gridBandejaPrio'), false);
+        Main.notificaResultado(e);
+    }
+
+    function onRequestEndSharedDsGridPrio(e) {
+        // la data en el datasource dataSourceSharedGridPrio viene como un List<GroupResult> pero necesito q esté como
+        // List<RequerimientoDto> q es lo q hago aquí.
+        // TODO: q el metodo de obtención de datos de este datasource devuelva ya la data como List<RequerimientoDto>
+        if (dataSourceSharedGridPrio.data() && dataSourceSharedGridPrio.data().length && dataSourceSharedGridPrio.data()[0].Items) {
+            dataSourceSharedGridPrio.data(dataSourceSharedGridPrio.data()[0].Items);
+        }
+    }
+
+    function onFilterMenuInitGridPrio(e) {
+        var ds = dataSourceSharedGridPrio;
+        $(e.container).find('.k-check-all').click();
+        // var grid = e.sender;
+        e.container.data("kendoPopup").bind("open",
+            function () {
+                // Solo aplicable para columnas a mostrar filtros estilo Excel, para las q no entonces se ignora
+                if (e.field == "Resolucion" || e.field == "ForzarPrioridadFecha") {
+                    return;
+                }
+                ds.sort({ field: e.field, dir: "asc" });
+                var datos = ds.data(); // grid.dataSource.view();
+                // la data en el datasource dataSourceSharedGridPrio viene como un List<GroupResult> pero necesito q esté como
+                // List<RequerimientoDto> q es lo q hago aquí:
+                datos = datos && datos.length && datos[0].Items ? datos[0].Items : datos;
+                var uniqueDsResult = removeDuplicates(datos, e.field);
+                ds.data(uniqueDsResult);
+            });
+        function removeDuplicates(items, field) {
+            var getter = function (item) {
+                if (false /*(field == "Resolucion" || field == "ForzarPrioridadFecha") && moment(item[field]).isValid*/) {
+                    var dateStr = moment(item[field]).format(Main.formatoFechaMom);
+                    //***item[field] = dateStr;/**/
+                    return dateStr;
+                } else {
+                    return item[field];
+                }
+            },
+                result = [],
+                index = 0,
+                seen = {};
+            while (index < items.length) {
+                var item = items[index++],
+                    text = getter(item);
+                if (text !== undefined && text !== null && !seen.hasOwnProperty(text)) {
+                    result.push(item);
+                    seen[text] = true;
+                }
+            }
+            return result;
+        }
+    }
+
+    function btnGrabarNuevaFechaClick(id) {
+        actualizando = true;
+        var todos = $("#chbTodosNuevaFecha" + id + ":checked").length > 0;
+        if (todos) {
+            var total = dataSourceGridPrio.totalPages();
+            total = total > 1 ? " las " + total + " páginas de " : "";
+            Main.showConfirm(
+                "Se van a actualizar todos los registros actualmente cargados en " + total + " la grilla, ¿desea continuar?",
+                    "Actualizar todos",
+                    true)
+                .then(function(esOk) {
+                    if (esOk) {
+                        grabarNuevaFecha(id, true, false);
+                    } else {
+                        actualizando = false;
+                        var nameDateK = "NuevaFecha" + id;
+                        var fechaK = $('[name ="' + nameDateK + '"]').data("kendoDatePicker");
+                        if (fechaK) {
+                            fechaK.value(fechaRegistro);
+                        }
+                        return false;
+                    }
+                });
+
+        } else {
+            grabarNuevaFecha(id, false, false);
+        }
+    };
+
+    function btnLimpiarNuevaFechaClick(id) {
+        actualizando = true;
+        var todos = $("#chbTodosNuevaFecha" + id + ":checked").length > 0;
+        if (todos) {
+            var total = dataSourceGridPrio.totalPages();
+            total = total > 1 ? " las " + total + " páginas de " : "";
+            Main.showConfirm(
+                "Se va a limpiar la Nueva Fecha de Resolución Estimada en todos los registros<br/> actualmente cargados en " + total + " la grilla, ¿desea continuar?",
+                "Actualizar todos",
+                true)
+                .then(function (esOk) {
+                    if (esOk) {
+                        grabarNuevaFecha(id, true, true);
+                    } else {
+                        actualizando = false;
+                        var nameDateK = "NuevaFecha" + id;
+                        var fechaK = $('[name ="' + nameDateK + '"]').data("kendoDatePicker");
+                        if (fechaK) {
+                            fechaK.value(fechaRegistro);
+                        }
+                        return false;
+                    }
+                });
+
+        } else {
+            grabarNuevaFecha(id, false, true);
+        }
+    };
+
+    function grabarNuevaFecha(id, todos, limpiar) {
+        var nameDateK = "NuevaFecha" + id;
+        var fechaK = $('[name ="' + nameDateK + '"]').data("kendoDatePicker");
+        if (!fechaK) {
+            Main.showError("Ha ocurrido un error al actualizar la fecha, por favor, vuelva a intentar la operación.");
+            return false;
+        }
+        if (!limpiar && !fechaK.value()) {
+            Main.showAlert("Por favor, seleccione una fecha.");
+            return false;
+        }
+        var nuevaFecha = limpiar ? null : moment(fechaK.value()).format('YYYY-MM-DD HH:mm');
+
+        Main.wait("");
+        var url = "@Url.Action("SaveForzarPrioridad")";
+        var data = {
+            param: lastParamGridPrio,
+            nuevaFecha: nuevaFecha,
+            idRequerimiento: todos ? 0 : id
+        };
+        $.ajax({
+            type: "POST",
+            url: url,
+            data : data
+        }).done(function (response) {
+            actualizando = false;
+            Main.unwait();
+            if (response.Codigo) {
+                if (response.Codigo > 0) {
+                    Main.showInfo(response.Mensaje, "Datos actualizados");
+                    // Se refrescan las grillas
+                    if ($("#gridBandejaPrio").length && $("#gridBandejaPrio").data("kendoGrid")) {
+                        $("#gridBandejaPrio").data("kendoGrid").dataSource.read();
+                    }
+                    if ($("#gridBandeja").length && $("#gridBandeja").data("kendoGrid")) {
+                        $("#gridBandeja").data("kendoGrid").dataSource.read();
+                    }
+                } else {
+                    Main.showError(response.Mensaje, "Error");
+                }
+            } else {
+                Main.showError("Error inesperado al realizar la operación, por favor, vuelva a intentarlo",
+                    "Error");
+            }
+        }).fail(function (error) {
+            actualizando = false;
+            Main.unwait();
+            Main.showError("Ha ocurrido un error al realizar la operación, por favor, vuelva a intentarlo.",
+                "Error");
+        });
+
+        // si todo ok:
+        var datepicker = $("#NuevaFecha" + id).data("kendoDatePicker");
+        if (datepicker) {
+            datepicker.close();
+        }
+
+        muestraCantidadPriorizados();
+    }
+
+    function extraDataGrillaPrio() {
+        return {
+            Dato: '@ViewBag.IdBandejaPrio',
+            FilterText: $('#textoBusqGridPrio').val()/*, Habilitar si se quiere q la búsqueda en Bandeja se refleje también en la pestaña Priorizados, en ese caso hacer el read() del datasource de la grilla cdo se haga la busqueda en bandeja
+                DocumentoIngreso: $("#busqDocumentoIngreso").val(),
+                FechaDesde: $("#busqFechaDesde").val(),
+                FechaHasta: $("#busqFechaHasta").val(),
+                UnidadTecnica: $("#busqUnidadTecnica").val(),
+                Estado: $("#busqEstado").val()*/
+        };
+    }
+
+    function extraDataGrillaPrioFiltro() {
+        var result = extraDataGrillaPrio();
+        result.ExtraData = "FILTROS";
+        return result;
+    }
+
+    function onDataBoundGridPrio(e) {
+        var grid = this;
+        grid.tbody.find('>tr:not(.k-grouping-row)').each(function() {
+            var dataItem = grid.dataItem(this);
+            coloreaRowGrid(dataItem, this);
+        });
+
+        //Generar el control DatePicker de Kendo en la columna Nueva Fecha Resolucion Estimada
+        $(".nueva-fecha-cell").each(function () {
+            eval($(this).children("script").last().html());
+            var tr = $(this).closest('tr');
+            var item = grid.dataItem(tr);
+            kendo.bind($(this), item);
+        });
+    }
+
+    function onChangeNewFecha(e) {
+        noCerrarDatePicker = true;
+        fechaUltimaSelecc = this.value();
+    }
+
+    function onOpenNewFecha(e) {
+        fechaRegistro = this.value();
+        datePickerAbierto = this;
+        $(".k-link.k-nav-today").removeAttr("href");
+        $(".k-link.k-nav-today").off();
+        $(".k-link.k-nav-today").removeClass("k-link k-nav-today");
+
+        if (this.dateView && this.dateView.calendar) {
+            this.dateView.calendar.bind("navigate", function () {
+                asignaClickDiaCalendarioPrio();
+            });
+
+        }
+        $(".chkbox-forzar-todos").prop("checked", false);
+        asignaClickDiaCalendarioPrio();
+    }
+
+    function asignaClickDiaCalendarioPrio() {
+        $(".k-calendar-view a.k-link").off("click", onClickDiaCalendarioPrio);
+        $(".k-calendar-view a.k-link").on("click", onClickDiaCalendarioPrio);
+    }
+
+    function onClickDiaCalendarioPrio(e) {
+        var fechaClick = getFechaDetePickerBase0(this.dataset.value);
+        if (moment(fechaClick).isSame(fechaRegistro) ||
+            moment(fechaClick).isSame(fechaUltimaSelecc)) {
+            e.preventDefault();
+            return false;
+        }
+        noCerrarDatePicker = true; // Funciona, pero el problema es q al seleccionar en el calendario la fecha
+        // q ya está seleccionada entra dos veces al onCloseNewFecha y la segunda vez
+        // tiene el noCerrarDatePicker en false y entonces se cierra el calendario, por eso el e.preventDefault() de arriba
+    };
+
+    function getFechaDetePickerBase0(fechaBase0Str) {
+        // la fecha el DatePicker la maneja internamente con el # de mes en base a 0 (Enero - 0, Febrero -1, etc)
+        // aquí devuelvo esa fecha pero con el mes en base a 1 q es lo normal.
+        // fechaBase0 viene en formato yyyy/MM/dd
+        if (fechaBase0Str.includes("/0/")) {
+            return fechaBase0.replace("/0/", "/1/");
+        } else {
+            return moment(fechaBase0Str, "YYYY/MM/DD").add(1, 'months');
+        }
+    }
+
+    function onCloseNewFecha(e) {
+        var fechaSelecc = this.value();
+        if (noCerrarDatePicker) {
+            e.preventDefault();
+            noCerrarDatePicker = false;
+            return false;
+        }
+        fechaUltimaSelecc = {};
+        noCerrarDatePicker = false;
+        // Siempre q se cierre el calendario (al pinchar fuera del calendario o al actualizar la fecha para el registro)
+        // se vuelve a mostrar la fecha q tiene el registro
+        if (!actualizando) {
+            this.value(fechaRegistro);
+        }
+    }
+
+    function onChangeDataSourceGridPrio(e) {
+        if (dataSourceSharedGridPrio.data() && !dataSourceSharedGridPrio.data().length) {
+            // Se leen los datos para los filtros de columna sólo 1 vez, no cada vez q cambien el datasource del grid con la página, orden y demás
+            dataSourceSharedGridPrio.read(); // .data(e.items);
+        }
+    }
+
+</script>
+
+
+<div id="divPriorizacion">
+
+        @helper EnlaceDespachoIngresoPrio()
+        {
+            <a href="\\#" class="text-center enlace-grilla"
+               onclick="ventanaOficios('Oficios CMN asociados al ingreso #= data.DocumentoIngreso #', '@Url.Action("DespachosIngresoForm", "Despacho")?idRequerimiento=#= Id #&idBandeja=@ViewBag.IdBandeja'); return false;">
+                #: CantOficiosCmn #
+            </a>
+        }
+
+        @*Data source para filtros de la grilla de priorizados*@
+        @(Html.Kendo().DataSource<RequerimientoModel>()
+        .Name("dataSourceSharedGridPrio")
+        .Ajax(dataSource => dataSource
+            .Read(read =>
+            {
+                read.Action("DatosBandejaEntradaPrio", "Home")
+                    .Type(HttpVerbs.Post)
+                    .Data("extraDataGrillaPrioFiltro");
+            })
+            .Events(ev =>
+            {
+                ev.RequestEnd("onRequestEndSharedDsGridPrio");
+            })
+            .ServerOperation(false)
+        )
+        )
+        @(Html.Kendo().DataSource<RequerimientoModel>()
+                .Name("dataSourceGridPrio")
+                .Ajax(dataSource => dataSource
+                    .Read(read =>
+                    {
+                        read.Action("DatosBandejaEntradaPrio", "Home")
+                            .Type(HttpVerbs.Post)
+                            .Data("extraDataGrillaPrio");
+                    })
+                    .Events(ev =>
+                    {
+                        //ev.RequestStart("function() { Main.enEspera($('#gridBandeja'), true) }")
+                        ev
+                            .RequestEnd("onRequestEndGridPrio")
+                            .Change("onChangeDataSourceGridPrio");
+                    })
+                    .PageSize(10)
+                    .Aggregates(aggregates =>
+                    {
+                        aggregates.Add(p => p.Resolucion).Count();
+                    })
+                    .Group(groups => groups.Add(p => p.Resolucion))
+                )
+                )
+        @(Html.Kendo().Grid<RequerimientoModel>()
+                .Name("gridBandejaPrio")
+                .ToolBar(t => t.Template(@<text>
+                                             <div class="form-row">
+                                                 <div class="col-md-1">
+                                                 </div>
+                                                 <div class="col-md-6 offset-md-5 text-right">
+                                                     <label class="" for="textoBusqGridPrio">Buscar:</label>
+                                                     <input type="search" id="textoBusqGridPrio" class="k-textbox" style="width: 150px">
+                                                     <div class="" style="line-height: normal; font-size: 0.9em;"><b>Importante:</b> en esta bandeja se despliegan los ingresos de los últimos <span id="mesesBandejaPrio1" class="textDiasBandejaPrio">6 meses</span> asociados a tu perfil, si necesita buscar en la bandeja, utiliza el casillero <b>Buscar</b>. Si el ingreso es anterior a <span id="mesesBandejaPrio2" class="textDiasBandejaPrio">6 meses</span> debe utilizar <b>Búsqueda en Bandeja de Entrada</b>. Para registros en general, es decir no asociados a tu perfil debes utilizar <b>Búsqueda Avanzada</b>. </div>
+
+                                                 </div>
+                                             </div>
+                                          </text>))
+                //.EnableCustomBinding(true)
+                .NoRecords("No existen documentos.")
+                .DataSource("dataSourceGridPrio")
+                .Scrollable(scr => scr.Height("auto"))
+                .Pageable(p => p.AlwaysVisible(true).PageSizes(new int[3] {10, 50, 100}).Enabled(true)
+                    .Messages(m => m.ItemsPerPage("registros por página")))
+                .Sortable()
+                .Navigatable()
+                .Events(e => e
+                    .DataBound("onDataBoundGridPrio")
+                    .FilterMenuInit("onFilterMenuInitGridPrio"))
+                .Filterable(s => s.Enabled(true))
+                //.Groupable()
+                //.Selectable(s => s.Mode(GridSelectionMode.Single	))
+                .Columns(columns =>
+                {
+                    columns.Bound(c => c.Id)
+                        .Width(130)
+                        .Title("Documento<br>Ingreso <span class='k-icon k-i-kpi' style='color: lightgray;'></span>")
+                        .ClientTemplate("#= Main.getTemplateFicha(data.DocumentoIngreso, data.Id, data.DocumentoIngreso) #" + "<br>" +
+                                        "#= Main.getTemplateResumen(data.DocumentoIngreso, data.Id) #")
+                        .Sortable(true)
+                        .Filterable(false);
+                    columns.Bound(c => c.FechaIngreso)
+                        .Width(90)
+                        .Title("<center>Fecha de<br>Ingreso <span class='k-icon k-i-kpi' style='color: lightgray;'></span></center>")
+                        .Format(GeneralData.FORMATO_FECHA_LARGO_GRID)
+                        .Filterable(false);
+                    columns.Bound(c => c.RemitenteNombre)
+                        .Width(130)
+                        .Title("<center>Remitente <span class='k-icon k-i-kpi' style='color: lightgray;'></span></center>")
+                        .Filterable(false);
+                    columns.Bound(c => c.RemitenteInstitucion)
+                        .Width(180)
+                        .Title("<center>Institución Remitente <span class='k-icon k-i-kpi' style='color: lightgray;'></span></center>")
+                        .Filterable(false);
+                    columns.Bound(c => c.Id)
+                        .Width(50)
+                        .Title("<center><img src='Content/images/semaforo.png' width='25px'></center>")
+                        .ClientTemplate("#=semaforoIngreso(data)#")
+                        .Sortable(false)
+                        .Filterable(false);
+                    columns.Bound(c => c.Materia)
+                        .Title("<center>Materia <span class='k-icon k-i-kpi' style='color: lightgray;'></span></center>")
+                        .Width(250)
+                        .ClientTemplate("<span title='#:data.Materia#'> #:Main.acortaTexto(data.Materia, 100)#" + "</span>")
+                        .Filterable(false);
+                    columns.Bound(c => c.AsignacionUt)
+                        .Width(90)
+                        .Title("<center>Fecha de<br>Asignación<br>UT <span class='k-icon k-i-kpi' style='color: lightgray;'></span></center>")
+                        .Format(GeneralData.FORMATO_FECHA_CORTO_GRID)
+                        .Filterable(false);
+                    columns.Bound(c => c.Resolucion) /** Agrupación ***/
+                        .Width(100)
+                        .Title("<center>Fecha<br>Resolución <span class='k-icon k-i-kpi' style='color: lightgray;'></span><br>Estimada <span class='k-icon'></span></center>")
+                        .Format(GeneralData.FORMATO_FECHA_CORTO_GRID)
+                        //.GroupHeaderTemplate(@<text>@item.Key (Count: @item.Count)</text>)
+                        .ClientGroupHeaderTemplate("<b>#= value == null ? '[sin fecha]' : kendo.format('{0:dd/MM/yyyy}', value)  # (#= count # registros)</b>")
+                        .Filterable(true);//ftb => ftb.Multi(true).DataSource("dataSourceSharedGridPrio"));
+                    //.ClientGroupHeaderTemplate("#= kendo.toString(kendo.parseDate(value), 'dd/MM/yyyy') # (#= count # registros)");
+                    columns.Bound(c => c.DiasResolucion)
+                        .Width(100)
+                        .Title("<center> Días para<br>vencimiento<span class='k-icon k-i-kpi' style='color: lightgray;'></span><br><span class='k-icon'></span></center>")
+                        .Sortable(true)
+                        .ClientTemplate("<center>#: Resolucion == null ? '' : DiasResolucion #</center>")
+                        .Filterable(ftb => ftb.Multi(true).DataSource("dataSourceSharedGridPrio"));
+                    columns.Bound(c => c.ForzarPrioridadFecha)
+                        .Width(130)
+                        .Title("<center>Nueva Fecha<br>Resolución<br>Estimada <span class='k-icon k-i-kpi' style='color: lightgray;'></span></center>")
+                        .Format(GeneralData.FORMATO_FECHA_CORTO_GRID)
+                        .Visible(columnaNuevaFechaPrioSoloLectura)
+                        .Filterable(true);
+                    columns.Bound(c => c.ForzarPrioridadFecha) /*********************/
+                        .Width(150)
+                        .HtmlAttributes(new {@class = "nueva-fecha-cell"})
+                        .Title("<center>Nueva Fecha<br>Resolución<br>Estimada <span class='k-icon k-i-kpi' style='color: lightgray;'></span></center>")
+                        .ClientTemplate(
+                            Html.Kendo().DatePicker()
+                                .Name("NuevaFecha#=Id#")
+                                .HtmlAttributes(new {@class = "w-100 datepicker-cell",
+                                    value = "#: ForzarPrioridadFecha == null ? '' : kendo.toString(ForzarPrioridadFecha, 'dd/MM/yyyy') #",
+                                    onkeydown = "javascript:return false;"
+                                })
+                                .Min(DateTime.Today)
+                                //.Value("#: ForzarPrioridadFecha #")
+                                .Culture("es-ES")
+                                .Format(GeneralData.FORMATO_FECHA_CORTO)
+                                .ParseFormats(new List<string>() {GeneralData.FORMATO_FECHA_CORTO})
+                                .DateInput(false)
+                                .Footer("<input id='chbTodosNuevaFecha#=Id#' type='checkbox' class='k-checkbox chkbox-forzar-todos'> Aplicar a todos</input>" +
+                                        "<button type='button' id='btnGrabarNuevaFecha#=Id#' class='btn btn-primary btn-sm ml-1' onclick='btnGrabarNuevaFechaClick(#=Id#)' title='Grabar la fecha seleccionada'>Aceptar</ button >" +
+                                        "<button type='button' id='btnLimpiarNuevaFecha#=Id#' class='btn btn-success btn-sm ml-2' onclick='btnLimpiarNuevaFechaClick(#=Id#)' title='Limpiar la Nueva Fecha de Resolución Estimada'>Limpiar</ button >")
+                                .Events(events => events
+                                    .Open("onOpenNewFecha")
+                                    .Close("onCloseNewFecha")
+                                    .Change("onChangeNewFecha"))
+                                .ToClientTemplate().ToString())
+                        .Format(GeneralData.FORMATO_FECHA_CORTO_GRID)
+                        .Visible(!columnaNuevaFechaPrioSoloLectura)
+                        .Filterable(true);
+                    columns.Bound(c => c.CantOficiosCmn)
+                        .Width(80)
+                        .Title("<center> Oficios<br>CMN <span class='k-icon k-i-kpi' style='color: lightgray;'></span></center>")
+                        .HtmlAttributes(new {@class = "text-center", @title = "Oficios CMN del ingreso #: DocumentoIngreso #"})
+                        .ClientTemplate(
+                            EnlaceDespachoIngresoPrio().ToHtmlString()
+                        )
+                        .Sortable(true)
+                        .Filterable(false);
+                    columns.Bound(c => c.EstadoTitulo)
+                        .Width(100)
+                        .Title("<center>Estado <span class='k-icon k-i-kpi' style='color: lightgray;'></span></center>")
+                        .Filterable(false);
+                    columns.Bound(c => c.EtapaTitulo)
+                        .Width(100)
+                        .Title("<center>Etapa <span class='k-icon k-i-kpi' style='color: lightgray;'></span></center>")
+                        .Filterable(false);
+                    columns.Bound(c => c.UtAsignadaTitulo)
+                        .Width(100)
+                        .Title("<center>Unidad<br>Técnica <span class='k-icon k-i-kpi' style='color: lightgray;'></span></center>")
+                        .Filterable(false);
+                    columns.Bound(c => c.ProfesionalNombre)
+                        .Width(120)
+                        .Title("<center>Profesional<br>UT <span class='k-icon k-i-kpi' style='color: lightgray;'></span></center>")
+                        .Filterable(false);
+                    columns.Bound(c => c.Id)
+                        .Title("<center>Acciones</center>")
+                        .Width(100)
+                        .ClientTemplate("#= buildAccionesIngresosPrio(data.EstadoId, data.EtapaId, data.Id, data.DocumentoIngreso)#")
+                        .Sortable(false)
+                        .Filterable(false).
+                        Visible(mostrarColumnaAccionesPrio);
+                }))
+    </div>

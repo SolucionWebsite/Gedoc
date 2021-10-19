@@ -1,0 +1,216 @@
+﻿@using Gedoc.Helpers
+@using Gedoc.Helpers.Dto
+@using Gedoc.WebApp.Models
+
+@{
+    ViewBag.Title = "Reservar Correlativo Oficio";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<script src="~/Scripts/accionesbandeja.js"></script>
+<script src="~/Scripts/form.js"></script>
+
+<style>
+</style>
+
+<style>
+    #gridReservaCorr {
+        font-size: 0.8em;
+    }
+
+    /*separar los radio button del Si/nobr en columna Activo*/
+    .k-filter-menu-container input[type="radio"] {
+        margin-left: 8px;
+    }
+</style>
+
+<script>
+
+</script>
+
+
+<h4 class="header-level1">@ViewBag.Title</h4>
+
+<div class="div-main">
+
+    @(Html.Kendo().DataSource<ReservaCorrelativoDto>()
+        .Name("dataSourceGridReservaCorr")
+        .Ajax(dataSource => dataSource
+            .Read(read =>
+            {
+                read.Action("GetReservaCorrelativoAll", "Oficio")
+                    .Type(HttpVerbs.Post);
+            })
+            .PageSize(10)
+            .ServerOperation(false)
+        )
+    )
+    @(Html.Kendo().Grid<ReservaCorrelativoDto>()
+        .Name("gridReservaCorr")
+        .EnableCustomBinding(true)
+        .DataSource("dataSourceGridReservaCorr")
+        .HtmlAttributes(new { @class = "k-grid-alternate" })
+        .Scrollable(scr => scr.Height("auto"))
+        .Pageable(p => p.AlwaysVisible(true).PageSizes(new int[3] { 15, 50, 100 }).Info(true).Enabled(true))
+        .Sortable(s => s.Enabled(true))
+        .Filterable(s => s.Enabled(false))
+        .Navigatable()
+        .ToolBar(toolbar =>
+        {
+            toolbar.Excel().Text("Exportar a Excel");
+            toolbar.Search();
+            toolbar.Custom()
+                .HtmlAttributes(new { onclick = "confirmReservarCorrelativo(); return false;" })
+                .Name("ReservarCorrelativo")
+                .Text("Reservar")
+                .IconClass("k-icon k-i-plus-outline")
+                .Url("#")
+                ;
+        })
+        .Excel(e => e.AllPages(true))
+        .NoRecords("No existen registros.")
+        .Columns(columns =>
+        {
+            columns.Bound(c => c.CorrelativoStr)
+                .Width(90)
+                .HtmlAttributes(new { @class = "text-center" })
+                .Title("<center>N° Correlativo <span class='k-icon k-i-kpi' style='color: lightgray;'></span></center>");
+            columns.Bound(c => c.FechaCreacion)
+                .Width(100)
+                .HtmlAttributes(new { @class = "text-center" })
+                .Title("<center>Fecha Reserva <span class='k-icon k-i-kpi' style='color: lightgray;'></span></center>")
+                .Format(GeneralData.FORMATO_FECHA_LARGO_GRID);
+            columns.Bound(c => c.UsuarioCreacionNombresApellidos)
+                .Width(150)
+                .Title("<center>Usuario <span class='k-icon k-i-kpi' style='color: lightgray;'></span></center>");
+            columns.Bound(c => c.Observaciones)
+                .Width(400)
+                .Title("<center>Observaciones <span class='k-icon k-i-kpi' style='color: lightgray;'></span></center>");
+        })
+        .Events(e => e
+            .ExcelExport("onExcelExport")
+        )
+    )
+
+</div>
+
+<script>
+    $(function() {
+        $(".k-grid-search input").prop("placeholder", "Buscar...");
+        $(".k-grid-search input").prop("title", "Buscar...");
+    });
+
+    function confirmReservarCorrelativo() {
+        Main.showPrompt("Reservar Correlativo de Oficio", "Observaciones", "Aceptar", false, 100, true)
+            .then(function(isOk) {
+                if (isOk.result) {
+                    reservarCorrelativo(isOk.texto);
+                }
+            });
+    }
+
+    function reservarCorrelativo(observaciones) {
+        Main.wait("Grabando...");
+        var data = { observaciones: observaciones };
+        var url = "@Url.Action("ReservarCorrelativoOficio", "Oficio")";
+        $.ajax({
+            type: "POST",
+            url: url,
+            data: data
+        }).done(function (response) {
+            Main.unwait();
+            if (response.Codigo) {
+                if (response.Codigo > 0) {
+                    Main.showInfo(response.Mensaje);
+                    refrescaGridReserva();
+                } else {
+                    Main.showError(response.Mensaje, "Error");
+                }
+            } else {
+                Main.showAlert("Error inesperado al realizar la operación, por favor, vuelva a intentarlo",
+                    "Error");
+            }
+        }).fail(function (error) {
+            Main.unwait();
+            Main.showError("Ha ocurrido un error al realizar la operación, por favor, vuelva a intentarlo.",
+                "Error");
+        });
+    }
+
+    function refrescaGridReserva() {
+        var gridK = $("#gridReservaCorr").data("kendoGrid");
+        if (gridK) {
+            gridK.dataSource.read();
+        }
+    }
+
+    function onExcelExport(e) {
+        var grid = this;
+        //var colAcciones = 8;
+        
+        e.workbook.fileName = "ReservaCorrelativos.xlsx";
+        var sheet = e.workbook.sheets[0];
+        //para no exportar la columna Acciones al excel:
+        //for (var r = 0; r < sheet.rows.length; r++) {
+        //    sheet.rows[r].cells.splice(colAcciones, 1);
+        //}
+        // Se personalizan los títulos de columnas pues sino entonces aparecen con el código HTML de la grilla. Se conservan el fontsize, textalign y background q se asigna por defecto al exportar a Excel
+        var fontSize = sheet.rows[0].cells[0].fontSize;
+        var textAlign = sheet.rows[0].cells[0].textAlign;
+        var background = sheet.rows[0].cells[0].background;
+        var color = sheet.rows[0].cells[0].color;
+        var headers = [
+            { value: "Nº Correlativo", fontSize: fontSize, textAlign: textAlign, background: background, color: color },
+            { value: "Fecha Reserva", fontSize: fontSize, textAlign: textAlign, background: background, color: color },
+            { value: "Usuario", fontSize: fontSize, textAlign: textAlign, background: background, color: color },
+            { value: "Observaciones", fontSize: fontSize, textAlign: textAlign, background: background, color: color }
+        ];
+        sheet.rows.splice(0, 1, { cells: headers });
+
+        exportGridWithTemplatesContent(e);
+    }
+
+    function exportGridWithTemplatesContent(e) {
+        var colObservaciones = -1; // La columna Observaciones tiene ClientTamplate pero en este caso necesito q se ignore el template y aparezca en el excel tal cual el valor del campo Observaciones
+
+        var data = e.data;
+        var gridColumns = e.sender.columns;
+        var sheet = e.workbook.sheets[0];
+        var visibleGridColumns = [];
+        var columnTemplates = [];
+        // Create element to generate templates in.
+        var elem = document.createElement('div');
+
+        // Get a list of visible columns
+        for (var i = 0; i < gridColumns.length; i++) {
+            if (!gridColumns[i].hidden) {
+                visibleGridColumns.push(gridColumns[i]);
+            }
+        }
+
+        // Create a collection of the column templates, together with the current column index
+        for (var i = 0; i < visibleGridColumns.length; i++) {
+            if (visibleGridColumns[i].template && i != colObservaciones) {
+                columnTemplates.push({ cellIndex: i, template: kendo.template(visibleGridColumns[i].template) });
+            }
+        }
+
+        // Traverse all exported rows.
+        for (var i = 1; i < sheet.rows.length; i++) {
+            var row = sheet.rows[i];
+            // Traverse the column templates and apply them for each row at the stored column position.
+
+            // Get the data item corresponding to the current row.
+            var dataItem = data[i - 1];
+            for (var j = 0; j < columnTemplates.length; j++) {
+                var columnTemplate = columnTemplates[j];
+                // Generate the template content for the current cell.
+                elem.innerHTML = columnTemplate.template(dataItem);
+                if (row.cells[columnTemplate.cellIndex] != undefined)
+                // Output the text content of the templated cell into the exported cell.
+                    row.cells[columnTemplate.cellIndex].value = elem.textContent || elem.innerText || "";
+            }
+        }
+    }
+
+</script>

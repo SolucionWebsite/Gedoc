@@ -1,0 +1,55 @@
+﻿body {
+    width: 100% !important;
+    /*background-color: gray; ****** SOLO PARA PRUEBAS **********/
+}
+
+html {
+    /*background-color: blue; ****** SOLO PARA PRUEBAS **********/
+}
+
+.encabezado-pdf {
+    display: none !important;
+    width: 0px;
+    height: 0px;
+}
+
+.pie-pdf {
+    display: none !important;
+    width: 0px;
+    height: 0px;
+}
+
+.encabezado-impresion {
+    width: 100% !important;
+    margin-left: 10px !important;
+    /*background-color: yellow; ****** SOLO PARA PRUEBAS **********/
+}
+
+.pie-impresion {
+    width: 100% !important;
+    margin-left: 10px !important;
+    /*background-color: yellow;    ****** SOLO PARA PRUEBAS **********/
+}
+
+#body-encabezado-impresion {
+    /*background-color: gray; ****** SOLO PARA PRUEBAS **********/
+}
+
+#body-pie-impresion {
+    /*background-color: gray; ****** SOLO PARA PRUEBAS **********/
+}
+
+div.pie-impresion p, div.pie-impresion span {
+    line-height: inherit !important;
+}
+
+div.pie-impresion p {
+    margin-bottom: 0px !important;
+}
+
+/*evitar q las imagenes section corten con el cambio de página*/
+img {
+    page-break-before: auto; /* 'always,' 'avoid,' 'left,' 'inherit,' or 'right' */
+    page-break-after: auto; /* 'always,' 'avoid,' 'left,' 'inherit,' or 'right' */
+    page-break-inside: avoid; /* or 'auto' */
+}

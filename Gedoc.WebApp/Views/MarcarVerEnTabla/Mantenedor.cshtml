@@ -1,0 +1,278 @@
+﻿@using Gedoc.Helpers
+
+@{
+    ViewBag.Title = "Mantenedor de Requerimientos marcados para Tabla";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    .k-grid {
+        font-size: 0.8em;
+    }
+
+        .k-grid tbody td {
+            padding: 5px;
+        }
+
+    .w-100-2 {
+        width: 100% !important;
+        display: block;
+    }
+</style>
+
+<h4 class="header-level1">@ViewBag.Title</h4>
+<h5 class="header-level2">Filtros</h5>
+
+
+<div class="div-main">
+
+    <div class="row">
+
+        <div class="col-6">
+            <div class="form-row">
+                <div class="col-md-3">
+                    <label class="label-dato-form">
+                        Unidad Técnica
+                    </label>
+                </div>
+                <div class="col-md-8">
+                    @(Html.Kendo().ComboBox()
+                          .Name("UnidadTecnicaId")
+                          .Filter("contains")
+                          .DataTextField("Text")
+                          .DataValueField("Value")
+                          .Messages(Gedoc.WebApp.Helpers.KendoHelper.SetComboBoxMessages)
+                          .BindTo(ViewBag.UnidadTecnicaList)
+                          .Suggest(true)
+                          .HtmlAttributes(new { style = "width:100%;" })
+                          )
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="col-md-3">
+                    <label class="label-dato-form">
+                        Fecha Desde <span class="marca-obligatorio">*</span>
+                    </label>
+                </div>
+                <div class="col-md-8">
+                    @(Html.Kendo().DatePicker()
+                        .Name("FechaDesde")
+                        .Value(DateTime.Now.AddYears(-1))
+                        .Max(DateTime.Today)
+                        .Format("dd/MM/yyyy")
+                        .Events(e=> e.Change("onChangeFechaDesde").Close("onChangeFechaDesde"))
+                        .HtmlAttributes(new { required = "required", validationmessage = "Seleccione una fecha" })
+                        )
+                </div>
+            </div>
+
+
+
+        </div>
+
+        <div class="col-6">
+
+            <div class="form-row">
+                <div class="col-md-3">
+                    <label class="label-dato-form">
+                        Creador por
+                    </label>
+                </div>
+                <div class="col-md-8">
+                    @(Html.Kendo().ComboBox()
+                          .Name("UsuarioId")
+                          .Filter("contains")
+                          .DataTextField("Text")
+                          .DataValueField("Value")
+                          .Messages(Gedoc.WebApp.Helpers.KendoHelper.SetComboBoxMessages)
+                          .BindTo(ViewBag.UsuariosList)
+                          .Suggest(true)
+                          .HtmlAttributes(new { style = "width:100%;" })
+                          )
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="col-md-3">
+                    <label class="label-dato-form">
+                        Fecha Hasta <span class="marca-obligatorio">*</span>
+                    </label>
+                </div>
+                <div class="col-md-8">
+                    @(Html.Kendo().DatePicker()
+                        .Name("FechaHasta")
+                        .Value(DateTime.Now)
+                        .Max(DateTime.Today)
+                        .Format("dd/MM/yyyy")
+                        .Events(e => e.Close("onChangeFechaHasta").Change("onChangeFechaHasta"))
+                        .HtmlAttributes(new { required = "required", validationmessage = "Seleccione una fecha"})
+                        )
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="row">
+        <div class="col-6">
+            <p>
+
+                @(Html.Kendo().Button()
+                .Name("btnBuscar")
+                .HtmlAttributes(new { type = "button" })
+                .Content("Buscar")
+                .Events(ev => ev.Click("btnBuscarOnClick")))
+                @(Html.Kendo().Button()
+                .Name("btnEliminar")
+                .HtmlAttributes(new { type = "button", @class = "k-primary pull-right" })
+                .Content("Eliminar")
+                .Events(ev => ev.Click("btnEliminarOnClick")))
+
+            </p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+
+            <div id="divGrillaRequerimientos">
+
+                @(Html.Kendo().Grid<Gedoc.WebApp.Models.TablaSesionModel>
+                        ()
+                        .Name("gridTablasSesion")
+                        .Columns(columns =>
+                        {
+                            columns.Select().Width(50);
+                            columns.Bound(c => c.FechaCreacion).Title("<center>Fecha de Creación</center>").Format(GeneralData.FORMATO_FECHA_LARGO_GRID).Width(200);
+                            columns.Bound(c => c.NombreTabla).Title("<center>Nombre de la tabla</center>").Width(200);
+                            columns.Bound(c => c.UnidadTecnica).Title("<center>Unidad técnica</center>").Width(200);
+                            columns.Bound(c => c.CreadoPor).Title("<center>Creado por</center>").Width(200);
+                        })
+                        .Pageable()
+                        .Sortable()
+                        .Scrollable()
+                        .Events(ev => ev.Change("gridOnChange"))
+                        .PersistSelection()
+                        .HtmlAttributes(new { style = "height:550px;" })
+                        .AutoBind(false)
+                        .DataSource(dataSource => dataSource
+                                .Ajax()
+                                .PageSize(20)
+                                .Model(model => model.Id(p => p.Id))
+                                .Read(read => read.Action("GetDataGrillaMantenedor", "MarcarVerEnTabla")
+                                .Data("extraDataGrilla"))
+                                .ServerOperation(false))
+                        )
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+
+    var oldPageSize = 0;
+    var tablasSeleccionadas = [];
+
+    $(document).ready(function () {
+        var grid = $("#gridTablasSesion").data("kendoGrid");
+        grid.thead.on("click", ".k-checkbox", MarcarTodosOnClick);
+    });
+
+    function gridOnChange(e) {
+        tablasSeleccionadas = this.selectedKeyNames();
+    }
+
+    function MarcarTodosOnClick(e) {
+        var grid = $("#gridTablasSesion").data("kendoGrid");
+
+        oldPageSize = grid.dataSource.pageSize();
+        grid.dataSource.pageSize(grid.dataSource.data().length);
+
+        if (grid.dataSource.data().length === grid.select().length) {
+            grid.clearSelection();
+        } else {
+            grid.select("tr");
+        };
+        grid.dataSource.pageSize(oldPageSize);
+    }
+
+    function btnBuscarOnClick(obj) {
+
+        if ($("#FechaDesde").kendoValidator().data("kendoValidator").validate()
+            && $("#FechaHasta").kendoValidator().data("kendoValidator").validate()
+        ) {
+            var grid = $('#gridTablasSesion').data('kendoGrid');
+            grid.dataSource.read();
+        } else {
+             Main.showAlert("Por favor, seleccione los datos obligatorios.");
+        }
+    }
+
+    function btnEliminarOnClick(e) {
+        var grid = $('#gridTablasSesion').data('kendoGrid');
+        $.ajax({
+            type: "POST",
+            url: '@Url.Action("EliminarSeleccionados", "MarcarVerEnTabla")',
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify({
+                ids: tablasSeleccionadas
+            }),
+            dataType: "json",
+            success: function (data) {
+                 Main.showAlert(data.Mensaje);
+                if (data.Codigo == -1) {
+                    console.error(data.Mensaje + '-' + data.Extra);
+                }
+                grid.dataSource.read();
+            },
+            error: function (data) {
+                 Main.showAlert('error al ejecutar la acción Eliminar');
+                grid.dataSource.read();
+            }
+        });
+    }
+
+    function extraDataGrilla() {
+        var dataExtra =
+        {
+            unidadTecnicaId: $("#UnidadTecnicaId").data('kendoComboBox').value(),
+            UsuarioCreadorId: $("#UsuarioId").data('kendoComboBox').value(),
+            FechaDesde: jdate($("#FechaDesde").val()),
+            FechaHasta: jdate($("#FechaHasta").val()),
+        };
+        return dataExtra;
+    }
+
+    function jdate(fecha) {
+        var arrayDate = fecha.split("/");
+        if (arrayDate.length == 3)
+            return new Date(arrayDate[2], arrayDate[1] - 1, arrayDate[0])
+        else
+            return null;
+    }
+
+    function onChangeFechaDesde() {
+        var endPicker = $("#FechaHasta").data("kendoDatePicker"),
+            startDate = this.value();
+
+        if (startDate) {
+            startDate = new Date(startDate);
+            startDate.setDate(startDate.getDate());
+            endPicker.min(startDate);
+        }
+    }
+
+    function onChangeFechaHasta() {
+        var startPicker = $("#FechaDesde").data("kendoDatePicker"),
+            endDate = this.value();
+
+        if (endDate) {
+            endDate = new Date(endDate);
+            endDate.setDate(endDate.getDate());
+            startPicker.max(endDate);
+        }
+    }
+
+</script>

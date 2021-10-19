@@ -1,0 +1,330 @@
+﻿@using Gedoc.Helpers
+@using Gedoc.Helpers.Enum
+@model Gedoc.WebApp.Models.BitacoraModel
+
+@{
+    ViewBag.Title = "Bitácora";
+    Layout = null; // "~/Views/Shared/_LayoutVacio.cshtml"; // "~/Views/Shared/_Layout.cshtml";
+    ResultadoOperacion accesoForm = ViewBag.AccesoForm ?? new ResultadoOperacion(1, "OK", null);
+    var filtroTipoB = (ViewBag.Accion ?? "").ToString() == "BIBUSQAV" ? "Historial" : "";
+}
+
+<script src="~/Scripts/form.js"></script>
+
+<script>
+
+    @if (accesoForm.Codigo < 0)
+    {
+        <text>
+    Main.showAlert("@Html.Raw(accesoForm.Mensaje)")
+        .then(function (result) {
+            Main.cierraModal(null, false, "winFormIngreso");
+        });
+        </text>
+    }
+
+    function changeTipoBitacora(e) {
+        if (!e.sender.dataItem()) {
+            return;
+        }
+        var habilitaFecha = e.sender.dataItem().Id != @((int)TipoBitacora.AcuerdoComision) &&
+            e.sender.dataItem().Id != @((int)TipoBitacora.AcuerdoSesion);
+        if (habilitaFecha) {
+            $(".date-picker-si").show();
+            $(".date-picker-no").hide();
+        } else {
+            $(".date-picker-si").hide();
+            $(".date-picker-no").show();
+        }
+        // $('#Fecha').data('kendoDatePicker').enable(habilitaFecha);
+    }
+
+
+    //# sourceURL=FormBitacora2
+</script>
+
+
+@Html.Partial("~/Views/Partial/TemplateTagMultiselect.cshtml", Model)
+
+
+<h4 class="head-datos-form">Bitácora</h4>
+<div class="div-main-form">
+
+    <form id="formBitacora" action="@Url.Action("Save")" class="form-datos">
+        @Html.AntiForgeryToken()
+        @Html.HiddenFor(a => a.Id)
+        @Html.HiddenFor(a => a.RequerimientoId)
+        @Html.HiddenFor(a => a.DocIngreso)
+
+        <div class="form-row">
+            <div class="col-md-3">
+                <label class="label-dato-form">
+                    Documento de ingreso
+                </label>
+            </div>
+            <div class="col-md-9">
+                <label id="lbDocumentoIngreso" style="color: red;">@Model.DocIngreso</label>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="col-md-3">
+                <label class="label-dato-form">
+                    Tipo de Bitácora<span class="marca-obligatorio" title="Este campo es obligatorio."> *</span>
+                </label>
+            </div>
+            <div class="col-md-4">
+                @(Html.Kendo().ComboBox()
+                    .Name("TipoBitacoraCod")
+                    .DataTextField("Titulo")
+                    .DataValueField("Id")
+                    .Filter("contains")
+                    .HtmlAttributes(new { required= "required", @class= "w-100" })
+                    .NoDataTemplate("No se encontraron datos.")
+                    .Messages(m => m.Clear("limpiar"))
+                    .Events(ev => ev.Change("changeTipoBitacora"))
+                    )
+                <span class="k-invalid-msg" data-for="TipoBitacoraCod"></span>
+            </div>
+            <div class="col-md-5 text-left">
+                <input type="button" id="btnUltComentario" class="k-button" onclick="ultimoComentario(event);" value="Último Comentario"></input>
+            </div>
+        </div>
+
+        <div class="form-row" id="rowFechaSelect">
+            <div class="col-md-3">
+                <label class="label-dato-form">
+                    Fecha<span class="marca-obligatorio" title="Este campo es obligatorio."> *</span>
+                </label>
+            </div>
+            <div class="col-md-4 date-picker-si">
+                @(Html.Kendo().DatePicker()
+                        .Name("Fecha")
+                        .HtmlAttributes(new { required = "required" })
+                        //.Max(DateTime.Today)
+                        .Culture("es-ES")
+                        .Format(GeneralData.FORMATO_FECHA_CORTO)
+                        .ParseFormats(new List<string>() { GeneralData.FORMATO_FECHA_CORTO }) )
+                <span class="k-invalid-msg" data-for="Fecha"></span>
+            </div>
+            <div class="col-md-4 date-picker-no">
+                <input id="FechaFromSelecc" name="FechaFromSelecc" type="text" class="k-textbox w-100" readonly="readonly" style="background-color: lightgray" required />
+
+                <span class="k-invalid-msg" data-for="FechaFromSelecc"></span>
+            </div>
+            <div class="col-md-5 text-left date-picker-no">
+                <input type="button" id="btnVerFecha" class="k-button" onclick="verFechas(event);" value="Ver fechas" />
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="col-md-3">
+                <label class="label-dato-form">
+                    Observaciones / Acuerdo / Comentarios<span class="marca-obligatorio" title="Este campo es obligatorio."> *</span>
+                </label>
+            </div>
+            <div class="col-md-9">
+                <textarea name="ObsAcuerdoComentario" rows="6" cols="20" id="ObsAcuerdoComentario" class="form-control texto-largo" data-spanleyenda="leyenda-pnObsAcuerdoComentario"
+                          data-maxlength="1000" style="width: 100% !important;" required>@Html.Raw(Model.ObsAcuerdoComentario)</textarea>
+
+                <span class="k-invalid-msg" data-for="ObsAcuerdoComentario"></span>
+                <span class="help-block-right" id="leyenda-pnObsAcuerdoComentario"> </span>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="col-md-3">
+                <label class="label-dato-form">
+                    Adjuntar Archivo
+                </label>
+            </div>
+            <div class="col-md-9">
+                @(Html.Kendo().Upload()
+                        .Name("Files")
+                        .Multiple(false)
+                        .HtmlAttributes(new { aria_label = "files" })
+                        .Messages(msg => msg.InvalidFileExtension("Tipo de archivo no permitido").InvalidMaxFileSize("Tamaño de archivo demasiado grande"))
+                        .Events(ev => ev.Select("function onselectFile(e) { setTimeout( function() { $(':focus').blur(); }, 200); }"))
+                        .Validation(validation => validation
+                            .AllowedExtensions(WebConfigValues.AdjuntosPermitidos)
+                            .MaxFileSize(50*1024*1024)
+                        ) )
+                @*TODO: poner esta leyenda de manera dinámica tomando los datos según configuración de tipo y tamaño de archivos permitidos*@
+                <span class="help-block" id="leyenda-file">@Gedoc.Helpers.GeneralData.ARCHIVOS_PERMITIDOS</span>
+            </div>
+        </div>
+
+
+        <div class="footer-modal">
+            <div class="form-row">
+                <div class="offset-md-3 col-md-2 text-center">
+                    <button type="button" id="btnGrabaBitacora" class="k-primary-blue k-button" onclick="grabaBitacora(event);">Guardar</button>
+                </div>
+                <div class="offset-md-2 col-md-2 text-center">
+                    <button type="button" id="btnCancelaBitacora" class="k-danger k-button" onclick="cancelaBitacora(event);">Cancelar</button>
+                </div>
+            </div>
+        </div>
+
+    </form>
+
+    </div>
+
+
+<script>
+    $(function () {
+
+        $(".date-picker-si").show();
+        $(".date-picker-no").hide();
+
+        configValidacionForm();
+
+        Form.setDateInputLang($("#Fecha"));
+
+        var ds = Main.getDataSourceKendoGenerico($("#TipoBitacoraCod"),
+            '@Html.Raw(Url.Action("MantenedorGenerico", "Json", new { idM = (int)Mantenedor.TipoBitacora, extra = filtroTipoB }))');
+        $("#TipoBitacoraCod").data("kendoComboBox").setDataSource(ds);
+
+        Form.inicializaForm();
+
+    });
+
+    function configValidacionForm() {
+        var container = $("#formBitacora");
+        kendo.init(container);
+        container.kendoValidator({
+            rules: {
+                fechaCorrecta: function (input) {
+                    if (input.is("[data-role=datepicker]")) {
+                        return input.data("kendoDatePicker").value();
+                    } else {
+                        return true;
+                    }
+                },
+                upload: function (input) {
+                    if (input[0].type == "file" && input.hasClass("upload-required")) {
+                        return input.closest(".k-upload").find(".k-file").length;
+                    }
+                    return true;
+                },
+                uploadValid: function (input) {
+                    if (input[0].type == "file" && input.closest('.k-upload').find('.k-file').length) {
+                        return input.closest(".k-upload").find(".k-file-invalid").length == 0;
+                    }
+                    return true;
+                }
+            },
+            messages: {
+                required: "Este campo es obligatorio",
+                fechaCorrecta: "Fecha incorrecta",
+                upload: "Este campo es obligatorio",
+                uploadValid: "Formato o tamaño de archivo no válido"
+            }
+        });
+    }
+
+    function grabaBitacora(e) {
+
+        Main.wait("Grabando...");
+
+        var currentTarget = $(e.currentTarget);
+        var form = $("#formBitacora");
+
+        var validator = form.data("kendoValidator");
+        validator.validateInput($("#FechaFromSelecc"));
+        if (!validator.validate()) {
+            Main.unwait();
+            Main.showError("Por favor, revise los datos de la página. Hay datos incompletos o erróneos.");
+            return false;
+        }
+
+        var data = new FormData($(form).get(0));
+        var url = $(form).attr("action");
+        $.ajax({
+            type: "POST",
+            url: url,
+            data: data,
+            dataType: "json",
+            processData: false, //For posting uploaded files we add this
+            contentType: false, //For posting uploaded files we add this
+        }).done(function (response) {
+            Main.unwait();
+            if (response.Codigo) {
+                if (response.Codigo > 0) {
+                    Main.showInfo(response.Mensaje).then(function (result) {
+                        Main.cierraModal(currentTarget, true, "winFormIngreso");
+                    });
+                } else {
+                    Main.showError(response.Mensaje, "Error");
+                }
+            } else {
+                Main.showAlert("Error inesperado al realizar la operación, por favor, vuelva a intentarlo",
+                    "Error");
+            }
+        }).fail(function (error) {
+            Main.unwait();
+            Main.showError("Ha ocurrido un error al realizar la operación, por favor, vuelva a intentarlo.",
+                "Error");
+        });
+    };
+
+    function cancelaBitacora(e) {
+        Main.cierraModal($(e.currentTarget), { resultado: false }, "winFormIngreso");
+    };
+
+    function verFechas(e) {
+        var tipoBit = $("#TipoBitacoraCod").data("kendoComboBox").value();
+        var result = Main.muestraVentanaModal("Fechas Disponibles para Tipo de Bitácora"
+            , '@Url.Action("FechasDisponibles", "Bitacora")?tipoBitacoraId=' + tipoBit
+            , 800
+            , 400
+            , false
+            , "winFechasDisp");
+        result.then(function (result) {
+            if (result) {
+                $("#FechaFromSelecc").val(result);
+                var validator = $("#formBitacora").data("kendoValidator");
+                validator.validateInput($("#FechaFromSelecc"));
+                var fechaK = $("#Fecha").data("kendoDatePicker");
+                if (fechaK) {
+                    fechaK.value(result);
+                }
+            }
+        });
+    }
+
+    function ultimoComentario(e) {
+        var tipoBitK = $("#TipoBitacoraCod").data("kendoComboBox");
+        var url = "@Url.Action("UltimoComentario")"; //"?tipoBitacoraId" + (tipoBitK ? tipoK.value() : "0");
+        $.ajax({
+            type: "POST",
+            url: url,
+            data: {
+                tipoBitacoraId: tipoBitK ? tipoBitK.value() : "0",
+                reqId: '@Model.RequerimientoId.GetValueOrDefault(0)'
+            }
+        }).done(function (response) {
+            Main.unwait();
+            if (response.Resultado.Codigo) {
+                if (response.Resultado.Codigo > 0) {
+                    if (!response.Data || !response.Data.ObsAcuerdoComentario) {
+                        Main.showAlert("No se ha encontrado un último comentario para el tipo de bitácora especificado");
+                    } else {
+                        $("#ObsAcuerdoComentario").val(response.Data.ObsAcuerdoComentario);
+                    }
+                } else {
+                    Main.showError(response.Mensaje, "Error");
+                }
+            } else {
+                Main.showAlert("Error inesperado al realizar la operación, por favor, vuelva a intentarlo",
+                    "Error");
+            }
+        }).fail(function (error) {
+            Main.unwait();
+            Main.showError("Ha ocurrido un error al realizar la operación, por favor, vuelva a intentarlo.",
+                "Error");
+        });
+    }
+
+    //# sourceURL=FormBitacora
+</script>

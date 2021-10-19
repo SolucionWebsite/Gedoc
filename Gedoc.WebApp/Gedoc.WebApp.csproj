@@ -1,0 +1,762 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\packages\EntityFramework.6.4.0\build\EntityFramework.props" Condition="Exists('..\packages\EntityFramework.6.4.0\build\EntityFramework.props')" />
+  <Import Project="..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props" Condition="Exists('..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props')" />
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>
+    </ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{1F07BA3A-69B8-4BAE-92DD-444DCC9640E3}</ProjectGuid>
+    <ProjectTypeGuids>{349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Gedoc.WebApp</RootNamespace>
+    <AssemblyName>Gedoc.WebApp</AssemblyName>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <MvcBuildViews>false</MvcBuildViews>
+    <UseIISExpress>true</UseIISExpress>
+    <Use64BitIISExpress />
+    <IISExpressSSLPort>44306</IISExpressSSLPort>
+    <IISExpressAnonymousAuthentication />
+    <IISExpressWindowsAuthentication />
+    <IISExpressUseClassicPipelineMode />
+    <UseGlobalApplicationHostFile />
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccProvider>SAK</SccProvider>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="AutoMapper, Version=9.0.0.0, Culture=neutral, PublicKeyToken=be96cd2c38ef1005, processorArchitecture=MSIL">
+      <HintPath>..\packages\AutoMapper.9.0.0\lib\net461\AutoMapper.dll</HintPath>
+    </Reference>
+    <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\EntityFramework.6.4.0\lib\net45\EntityFramework.dll</HintPath>
+    </Reference>
+    <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\EntityFramework.6.4.0\lib\net45\EntityFramework.SqlServer.dll</HintPath>
+    </Reference>
+    <Reference Include="EPPlus, Version=4.5.3.3, Culture=neutral, PublicKeyToken=ea159fdaa78159a1, processorArchitecture=MSIL">
+      <HintPath>..\packages\EPPlus.4.5.3.3\lib\net40\EPPlus.dll</HintPath>
+    </Reference>
+    <Reference Include="Kendo.Mvc, Version=2020.1.114.40, Culture=neutral, PublicKeyToken=121fae78165ba3d4, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\lib\KENDOUIMVC\2020.1.114.40\Mvc5\Kendo.Mvc.dll</HintPath>
+    </Reference>
+    <Reference Include="Kendo.Mvc.Export">
+      <HintPath>..\lib\KENDOUIMVC\2020.1.114.40\export\binaries\net40\Kendo.Mvc.Export.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.AspNet.Identity.Core, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.Identity.Core.2.2.3\lib\net45\Microsoft.AspNet.Identity.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.AspNet.Identity.EntityFramework, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.Identity.EntityFramework.2.2.3\lib\net45\Microsoft.AspNet.Identity.EntityFramework.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="PresentationCore" />
+    <Reference Include="SimpleInjector, Version=4.9.0.0, Culture=neutral, PublicKeyToken=984cb50dea722e99, processorArchitecture=MSIL">
+      <HintPath>..\packages\SimpleInjector.4.9.0\lib\net45\SimpleInjector.dll</HintPath>
+    </Reference>
+    <Reference Include="SimpleInjector.Integration.Web, Version=4.9.0.0, Culture=neutral, PublicKeyToken=984cb50dea722e99, processorArchitecture=MSIL">
+      <HintPath>..\packages\SimpleInjector.Integration.Web.4.9.0\lib\net40\SimpleInjector.Integration.Web.dll</HintPath>
+    </Reference>
+    <Reference Include="SimpleInjector.Integration.Web.Mvc, Version=4.9.0.0, Culture=neutral, PublicKeyToken=984cb50dea722e99, processorArchitecture=MSIL">
+      <HintPath>..\packages\SimpleInjector.Integration.Web.Mvc.4.9.0\lib\net40\SimpleInjector.Integration.Web.Mvc.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.Annotations, Version=4.2.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.ComponentModel.Annotations.4.7.0\lib\net461\System.ComponentModel.Annotations.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Data" />
+    <Reference Include="System.DirectoryServices" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Net.Http.Formatting, Version=5.2.7.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.WebApi.Client.5.2.7\lib\net45\System.Net.Http.Formatting.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Security" />
+    <Reference Include="System.ServiceModel" />
+    <Reference Include="System.Threading.Tasks" />
+    <Reference Include="System.Web.DynamicData" />
+    <Reference Include="System.Web.Entity" />
+    <Reference Include="System.Web.ApplicationServices" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Web.Http, Version=5.2.7.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.WebApi.Core.5.2.7\lib\net45\System.Web.Http.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.Http.WebHost, Version=5.2.7.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.WebApi.WebHost.5.2.7\lib\net45\System.Web.Http.WebHost.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Web.Extensions" />
+    <Reference Include="System.Web.Abstractions" />
+    <Reference Include="System.Web.Routing" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Web.Services" />
+    <Reference Include="System.EnterpriseServices" />
+    <Reference Include="Microsoft.Web.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <Private>True</Private>
+      <HintPath>..\packages\Microsoft.Web.Infrastructure.1.0.0.0\lib\net40\Microsoft.Web.Infrastructure.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Net.Http">
+    </Reference>
+    <Reference Include="System.Net.Http.WebRequest">
+    </Reference>
+    <Reference Include="System.Web.Helpers, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <Private>True</Private>
+      <HintPath>..\packages\Microsoft.AspNet.WebPages.3.2.7\lib\net45\System.Web.Helpers.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.Mvc, Version=5.2.7.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <Private>True</Private>
+      <HintPath>..\packages\Microsoft.AspNet.Mvc.5.2.7\lib\net45\System.Web.Mvc.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.Optimization">
+      <HintPath>..\packages\Microsoft.AspNet.Web.Optimization.1.1.3\lib\net40\System.Web.Optimization.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.Razor, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <Private>True</Private>
+      <HintPath>..\packages\Microsoft.AspNet.Razor.3.2.7\lib\net45\System.Web.Razor.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.WebPages, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <Private>True</Private>
+      <HintPath>..\packages\Microsoft.AspNet.WebPages.3.2.7\lib\net45\System.Web.WebPages.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.WebPages.Deployment, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <Private>True</Private>
+      <HintPath>..\packages\Microsoft.AspNet.WebPages.3.2.7\lib\net45\System.Web.WebPages.Deployment.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.WebPages.Razor, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <Private>True</Private>
+      <HintPath>..\packages\Microsoft.AspNet.WebPages.3.2.7\lib\net45\System.Web.WebPages.Razor.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\packages\Newtonsoft.Json.12.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="Telerik.Documents.SpreadsheetStreaming">
+      <HintPath>..\lib\KENDOUIMVC\2020.1.114.40\export\binaries\net40\Telerik.Documents.SpreadsheetStreaming.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Telerik.Web.Spreadsheet">
+      <HintPath>..\lib\KENDOUIMVC\2020.1.114.40\export\binaries\net40\Telerik.Web.Spreadsheet.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Telerik.Windows.Documents.Core">
+      <HintPath>..\lib\KENDOUIMVC\2020.1.114.40\export\binaries\net40\Telerik.Windows.Documents.Core.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Telerik.Windows.Documents.Fixed">
+      <HintPath>..\lib\KENDOUIMVC\2020.1.114.40\export\binaries\net40\Telerik.Windows.Documents.Fixed.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Telerik.Windows.Documents.Flow">
+      <HintPath>..\lib\KENDOUIMVC\2020.1.114.40\export\binaries\net40\Telerik.Windows.Documents.Flow.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Telerik.Windows.Documents.Flow.FormatProviders.Pdf">
+      <HintPath>..\lib\KENDOUIMVC\2020.1.114.40\export\binaries\net40\Telerik.Windows.Documents.Flow.FormatProviders.Pdf.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Telerik.Windows.Documents.Spreadsheet">
+      <HintPath>..\lib\KENDOUIMVC\2020.1.114.40\export\binaries\net40\Telerik.Windows.Documents.Spreadsheet.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Telerik.Windows.Documents.Spreadsheet.FormatProviders.OpenXml">
+      <HintPath>..\lib\KENDOUIMVC\2020.1.114.40\export\binaries\net40\Telerik.Windows.Documents.Spreadsheet.FormatProviders.OpenXml.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Telerik.Windows.Documents.Spreadsheet.FormatProviders.Pdf">
+      <HintPath>..\lib\KENDOUIMVC\2020.1.114.40\export\binaries\net40\Telerik.Windows.Documents.Spreadsheet.FormatProviders.Pdf.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Telerik.Windows.Zip">
+      <HintPath>..\lib\KENDOUIMVC\2020.1.114.40\export\binaries\net40\Telerik.Windows.Zip.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Telerik.Windows.Zip.Extensions">
+      <HintPath>..\lib\KENDOUIMVC\2020.1.114.40\export\binaries\net40\Telerik.Windows.Zip.Extensions.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="WebGrease">
+      <Private>True</Private>
+      <HintPath>..\packages\WebGrease.1.6.0\lib\WebGrease.dll</HintPath>
+    </Reference>
+    <Reference Include="Antlr3.Runtime">
+      <Private>True</Private>
+      <HintPath>..\packages\Antlr.3.5.0.2\lib\Antlr3.Runtime.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.CodeDom.Providers.DotNetCompilerPlatform">
+      <HintPath>..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\lib\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="App_Start\AppInitializer.cs" />
+    <Compile Include="App_Start\BundleConfig.cs" />
+    <Compile Include="App_Start\FilterConfig.cs" />
+    <Compile Include="App_Start\RouteConfig.cs" />
+    <Compile Include="App_Start\WebApiConfig.cs" />
+    <Compile Include="Connected Services\ServiceReferenceEtlReporte\Reference.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Compile>
+    <Compile Include="Connected Services\WssRegMonSrvReference\Reference.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Compile>
+    <Compile Include="Controllers\AdjuntoOficioController.cs" />
+    <Compile Include="Controllers\ArchivarRequerimientoController.cs" />
+    <Compile Include="Controllers\BaseController.cs" />
+    <Compile Include="Controllers\AdjuntoController.cs" />
+    <Compile Include="Controllers\BitacoraController.cs" />
+    <Compile Include="Controllers\CasoController.cs" />
+    <Compile Include="Controllers\DespachoInicController.cs" />
+    <Compile Include="Controllers\DespachoController.cs" />
+    <Compile Include="Controllers\ErrorController.cs" />
+    <Compile Include="Controllers\BusquedaAvanzadaController.cs" />
+    <Compile Include="Controllers\HomeController.cs" />
+    <Compile Include="Controllers\JsonController.cs" />
+    <Compile Include="Controllers\ListaController.cs" />
+    <Compile Include="Controllers\MenuController.cs" />
+    <Compile Include="Controllers\OficioController.cs" />
+    <Compile Include="Controllers\PapeleraController.cs" />
+    <Compile Include="Controllers\ProcesosMasivosController.cs" />
+    <Compile Include="Controllers\RemitenteController.cs" />
+    <Compile Include="Controllers\ReporteController.cs" />
+    <Compile Include="Controllers\RequerimientoController.cs" />
+    <Compile Include="Controllers\RolController.cs" />
+    <Compile Include="Controllers\UsuarioController.cs" />
+    <Compile Include="Controllers\MarcarVerEnTablaController.cs" />
+    <Compile Include="Controllers\VistaController.cs" />
+    <Compile Include="Global.asax.cs">
+      <DependentUpon>Global.asax</DependentUpon>
+    </Compile>
+    <Compile Include="Helpers\DependencyInjectionHelper.cs" />
+    <Compile Include="Helpers\EtlReporteHelper.cs" />
+    <Compile Include="Helpers\ExcelExportEPPlus.cs" />
+    <Compile Include="Helpers\IgnoreAccessFilter.cs" />
+    <Compile Include="Helpers\IgnoreLoginFilter.cs" />
+    <Compile Include="Helpers\JsonpResult.cs" />
+    <Compile Include="Helpers\KendoHelper.cs" />
+    <Compile Include="Helpers\Maps\AutoMapperInitializer.cs" />
+    <Compile Include="Helpers\Maps\BaseMap.cs" />
+    <Compile Include="Helpers\Maps\GenericMap.cs" />
+    <Compile Include="Helpers\Maps\Interface\IGenericMap.cs" />
+    <Compile Include="Helpers\Maps\Interface\IMantenedorMap.cs" />
+    <Compile Include="Helpers\Maps\JsonNetResult.cs" />
+    <Compile Include="Helpers\Maps\MantenedorMap.cs" />
+    <Compile Include="Helpers\Maps\MantenedorMapProfile.cs" />
+    <Compile Include="Helpers\Maps\DespachoMapProfile.cs" />
+    <Compile Include="Helpers\Maps\RequerimientoMapProfile.cs" />
+    <Compile Include="Helpers\RegmonHelper.cs" />
+    <Compile Include="Helpers\SessionHelper.cs" />
+    <Compile Include="Models\MenuModel.cs" />
+    <Compile Include="Models\NotificacionEmailModel.cs" />
+    <Compile Include="Models\AdjuntoModel.cs" />
+    <Compile Include="Models\ArchivarRequerimientoModel.cs" />
+    <Compile Include="Models\BitacoraModel.cs" />
+    <Compile Include="Models\CalendarioBitacoraModel.cs" />
+    <Compile Include="Models\CasoModel.cs" />
+    <Compile Include="Models\DespachoModel.cs" />
+    <Compile Include="Models\DespachoIniciativaModel.cs" />
+    <Compile Include="Models\GrupoAccionesModel.cs" />
+    <Compile Include="Models\ItemListaModel.cs" />
+    <Compile Include="Models\ListaModel.cs" />
+    <Compile Include="Models\ListaValorModel.cs" />
+    <Compile Include="Models\LoginModel.cs" />
+    <Compile Include="Models\MarcarVerEnTablaModel.cs" />
+    <Compile Include="Controllers\NotificacionEmailController.cs" />
+    <Compile Include="Models\OficioModel.cs" />
+    <Compile Include="Models\PapeleraModel.cs" />
+    <Compile Include="Models\PlantillaOficioModel.cs" />
+    <Compile Include="Models\ProcesoMasivoModel.cs" />
+    <Compile Include="Models\RemitenteModel.cs" />
+    <Compile Include="Models\ReporteModel.cs" />
+    <Compile Include="Models\BusquedaAvanzadaModel.cs" />
+    <Compile Include="Models\RequerimientoModel.cs" />
+    <Compile Include="Models\ResetPasswordModel.cs" />
+    <Compile Include="Models\TipoTramiteModel.cs" />
+    <Compile Include="Models\UnidadTecnicaModel.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Connected Services\ServiceReferenceEtlReporte\Arrays.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Connected Services\ServiceReferenceEtlReporte\Gedoc.Etl.Winsrv.Entidades.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <Content Include="Connected Services\ServiceReferenceEtlReporte\Gedoc.WebApp.ServiceReferenceEtlReporte.LogEtl.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <None Include="Connected Services\ServiceReferenceEtlReporte\service.wsdl" />
+    <None Include="Connected Services\ServiceReferenceEtlReporte\service.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Connected Services\ServiceReferenceEtlReporte\service1.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Connected Services\WssRegMonSrvReference\configuration91.svcinfo" />
+    <None Include="Connected Services\WssRegMonSrvReference\configuration.svcinfo" />
+    <None Include="Connected Services\ServiceReferenceEtlReporte\configuration91.svcinfo" />
+    <None Include="Connected Services\ServiceReferenceEtlReporte\configuration.svcinfo" />
+    <None Include="Connected Services\ServiceReferenceEtlReporte\Reference.svcmap">
+      <Generator>WCF Proxy Generator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
+    <Content Include="Connected Services\WssRegMonSrvReference\Gedoc.WebApp.WssRegMonSrvReference.ConsultarResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <Content Include="Connected Services\WssRegMonSrvReference\Gedoc.WebApp.WssRegMonSrvReference.ListarResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <Content Include="Connected Services\WssRegMonSrvReference\Gedoc.WebApp.WssRegMonSrvReference.MonumentoDto.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <None Include="Connected Services\WssRegMonSrvReference\Reference.svcmap">
+      <Generator>WCF Proxy Generator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
+    <Content Include="Content\bootstrap-theme.css" />
+    <Content Include="Content\bootstrap-theme.min.css" />
+    <Content Include="Content\bootstrap.css" />
+    <Content Include="Content\bootstrap.min.css" />
+    <Content Include="Content\pdfCommonStyles.css" />
+    <Content Include="Content\hiQPdfStyles.css" />
+    <Content Include="Content\editorStyles-plantilla.css" />
+    <Content Include="Content\images\favicon.ico" />
+    <Content Include="Content\images\icono-abrir.png" />
+    <Content Include="Content\images\Icono-Adjuntos.png" />
+    <Content Include="Content\images\Icono-Asignar.png" />
+    <Content Include="Content\images\Icono-AsignarP.png" />
+    <Content Include="Content\images\Icono-Bitacora.png" />
+    <Content Include="Content\images\icono-Cerrar.png" />
+    <Content Include="Content\images\Icono-Descargar.png" />
+    <Content Include="Content\images\Icono-Despacho.png" />
+    <Content Include="Content\images\Icono-Editar.png" />
+    <Content Include="Content\images\Icono-EditaUT.png" />
+    <Content Include="Content\images\Icono-Eliminar.png" />
+    <Content Include="Content\images\Icono-Historico.png" />
+    <Content Include="Content\images\Icono-IngresoCentral.png" />
+    <Content Include="Content\images\Icono-Nuevo.png" />
+    <Content Include="Content\images\Icono-Priorizar.png" />
+    <Content Include="Content\images\Icono-Reasignar.png" />
+    <Content Include="Content\images\Icono-ReAsignarP.png" />
+    <Content Include="Content\images\Icono-Search.png" />
+    <Content Include="Content\images\LogoCMN.png" />
+    <Content Include="Content\images\papelera.png" />
+    <Content Include="Content\images\Semaforo-Amarillo.png" />
+    <Content Include="Content\images\Semaforo-Neutro.png" />
+    <Content Include="Content\images\Semaforo-Rojo.png" />
+    <Content Include="Content\images\Semaforo-Verde.png" />
+    <Content Include="Content\images\semaforo.png" />
+    <Content Include="Content\kendo\2020.1.114\Bootstrap\editor.png" />
+    <Content Include="Content\kendo\2020.1.114\Bootstrap\imagebrowser.png" />
+    <Content Include="Content\kendo\2020.1.114\Bootstrap\indeterminate.gif" />
+    <Content Include="Content\kendo\2020.1.114\Bootstrap\loading-image.gif" />
+    <Content Include="Content\kendo\2020.1.114\Bootstrap\loading.gif" />
+    <Content Include="Content\kendo\2020.1.114\Bootstrap\loading_2x.gif" />
+    <Content Include="Content\kendo\2020.1.114\Bootstrap\markers.png" />
+    <Content Include="Content\kendo\2020.1.114\Bootstrap\markers_2x.png" />
+    <Content Include="Content\kendo\2020.1.114\Bootstrap\slider-h.gif" />
+    <Content Include="Content\kendo\2020.1.114\Bootstrap\slider-v.gif" />
+    <Content Include="Content\kendo\2020.1.114\Bootstrap\sprite.png" />
+    <Content Include="Content\kendo\2020.1.114\Bootstrap\sprite_2x.png" />
+    <Content Include="Content\kendo\2020.1.114\Bootstrap\sprite_kpi.png" />
+    <Content Include="Content\kendo\2020.1.114\Bootstrap\sprite_kpi_2x.png" />
+    <Content Include="Content\kendo\2020.1.114\Default\editor.png" />
+    <Content Include="Content\kendo\2020.1.114\Default\imagebrowser.png" />
+    <Content Include="Content\kendo\2020.1.114\Default\indeterminate.gif" />
+    <Content Include="Content\kendo\2020.1.114\Default\loading-image.gif" />
+    <Content Include="Content\kendo\2020.1.114\Default\loading.gif" />
+    <Content Include="Content\kendo\2020.1.114\Default\loading_2x.gif" />
+    <Content Include="Content\kendo\2020.1.114\Default\markers.png" />
+    <Content Include="Content\kendo\2020.1.114\Default\markers_2x.png" />
+    <Content Include="Content\kendo\2020.1.114\Default\slider-h.gif" />
+    <Content Include="Content\kendo\2020.1.114\Default\slider-v.gif" />
+    <Content Include="Content\kendo\2020.1.114\Default\sprite.png" />
+    <Content Include="Content\kendo\2020.1.114\Default\sprite_2x.png" />
+    <Content Include="Content\kendo\2020.1.114\Default\sprite_kpi.png" />
+    <Content Include="Content\kendo\2020.1.114\Default\sprite_kpi_2x.png" />
+    <Content Include="Content\kendo\2020.1.114\fonts\DejaVu\LICENSE.txt" />
+    <Content Include="Content\kendo\2020.1.114\fonts\glyphs\KendoUIGlyphs.svg" />
+    <Content Include="Content\kendo\2020.1.114\fonts\glyphs\WebComponentsIcons.svg" />
+    <Content Include="Content\kendo\2020.1.114\images\back.png" />
+    <Content Include="Content\kendo\2020.1.114\images\kendoui.svg" />
+    <Content Include="Content\kendo\2020.1.114\images\wp8_icons.png" />
+    <Content Include="Content\kendo\2020.1.114\images\wp8_inverseicons.png" />
+    <Content Include="Content\kendo\2020.1.114\kendo.bootstrap-v4.min.css" />
+    <Content Include="Content\kendo\2020.1.114\kendo.bootstrap.min.css" />
+    <Content Include="Content\kendo\2020.1.114\kendo.common-bootstrap.min.css" />
+    <Content Include="Content\kendo\2020.1.114\kendo.common.min.css" />
+    <Content Include="Content\kendo\2020.1.114\textures\brushed-metal.png" />
+    <Content Include="Content\kendo\2020.1.114\textures\dots1.png" />
+    <Content Include="Content\kendo\2020.1.114\textures\dots10.png" />
+    <Content Include="Content\kendo\2020.1.114\textures\dots11.png" />
+    <Content Include="Content\kendo\2020.1.114\textures\dots12.png" />
+    <Content Include="Content\kendo\2020.1.114\textures\dots13.png" />
+    <Content Include="Content\kendo\2020.1.114\textures\dots2.png" />
+    <Content Include="Content\kendo\2020.1.114\textures\dots3.png" />
+    <Content Include="Content\kendo\2020.1.114\textures\dots4.png" />
+    <Content Include="Content\kendo\2020.1.114\textures\dots5.png" />
+    <Content Include="Content\kendo\2020.1.114\textures\dots6.png" />
+    <Content Include="Content\kendo\2020.1.114\textures\dots7.png" />
+    <Content Include="Content\kendo\2020.1.114\textures\dots8.png" />
+    <Content Include="Content\kendo\2020.1.114\textures\dots9.png" />
+    <Content Include="Content\kendo\2020.1.114\textures\glass-lighter.png" />
+    <Content Include="Content\kendo\2020.1.114\textures\glass.png" />
+    <Content Include="Content\kendo\2020.1.114\textures\highlight.png" />
+    <Content Include="Content\kendo\2020.1.114\textures\hsv-gradient.png" />
+    <Content Include="Content\kendo\2020.1.114\textures\hue.png" />
+    <Content Include="Content\kendo\2020.1.114\textures\image-default.png" />
+    <Content Include="Content\kendo\2020.1.114\textures\leather1.png" />
+    <Content Include="Content\kendo\2020.1.114\textures\leather2.png" />
+    <Content Include="Content\kendo\2020.1.114\textures\noise.png" />
+    <Content Include="Content\kendo\2020.1.114\textures\stripe1.png" />
+    <Content Include="Content\kendo\2020.1.114\textures\stripe2.png" />
+    <Content Include="Content\kendo\2020.1.114\textures\stripe3.png" />
+    <Content Include="Content\kendo\2020.1.114\textures\stripe4.png" />
+    <Content Include="Content\kendo\2020.1.114\textures\stripe5.png" />
+    <Content Include="Content\kendo\2020.1.114\textures\stripe6.png" />
+    <Content Include="Content\kendo\2020.1.114\textures\transparency-reversed.png" />
+    <Content Include="Content\kendo\2020.1.114\textures\transparency.png" />
+    <Content Include="Content\kendo\2020.1.114\textures\transtexture.png" />
+    <Content Include="Content\editorStyles.css" />
+    <Content Include="favicon.ico" />
+    <Content Include="Global.asax" />
+    <Content Include="Content\Site.css" />
+    <Content Include="libs\loading-overlay\loadingoverlay.min.js" />
+    <Content Include="libs\moment\moment-with-locales.min.js" />
+    <Content Include="Scripts\accionesbandeja.js" />
+    <Content Include="Scripts\form.js" />
+    <Content Include="Scripts\jquery-rut\jquery.rut.js" />
+    <Content Include="Scripts\jquery-rut\jquery.rut.min.js" />
+    <Content Include="Scripts\kendo.modernizr.custom.js" />
+    <Content Include="Content\kendo\2020.1.114\fonts\DejaVu\DejaVuSans-Bold.ttf" />
+    <Content Include="Content\kendo\2020.1.114\fonts\DejaVu\DejaVuSans-BoldOblique.ttf" />
+    <Content Include="Content\kendo\2020.1.114\fonts\DejaVu\DejaVuSans-ExtraLight.ttf" />
+    <Content Include="Content\kendo\2020.1.114\fonts\DejaVu\DejaVuSans-Oblique.ttf" />
+    <Content Include="Content\kendo\2020.1.114\fonts\DejaVu\DejaVuSans.ttf" />
+    <Content Include="Content\kendo\2020.1.114\fonts\DejaVu\DejaVuSansMono-Bold.ttf" />
+    <Content Include="Content\kendo\2020.1.114\fonts\DejaVu\DejaVuSansMono-BoldOblique.ttf" />
+    <Content Include="Content\kendo\2020.1.114\fonts\DejaVu\DejaVuSansMono-Oblique.ttf" />
+    <Content Include="Content\kendo\2020.1.114\fonts\DejaVu\DejaVuSansMono.ttf" />
+    <Content Include="Content\kendo\2020.1.114\fonts\DejaVu\DejaVuSerif-Bold.ttf" />
+    <Content Include="Content\kendo\2020.1.114\fonts\DejaVu\DejaVuSerif-BoldItalic.ttf" />
+    <Content Include="Content\kendo\2020.1.114\fonts\DejaVu\DejaVuSerif-Italic.ttf" />
+    <Content Include="Content\kendo\2020.1.114\fonts\DejaVu\DejaVuSerif.ttf" />
+    <Content Include="Content\kendo\2020.1.114\fonts\glyphs\KendoUIGlyphs.eot" />
+    <Content Include="Content\kendo\2020.1.114\fonts\glyphs\KendoUIGlyphs.ttf" />
+    <Content Include="Content\kendo\2020.1.114\fonts\glyphs\KendoUIGlyphs.woff" />
+    <Content Include="Content\kendo\2020.1.114\fonts\glyphs\WebComponentsIcons.eot" />
+    <Content Include="Content\kendo\2020.1.114\fonts\glyphs\WebComponentsIcons.ttf" />
+    <Content Include="Content\kendo\2020.1.114\fonts\glyphs\WebComponentsIcons.woff" />
+    <Content Include="Content\kendo\2020.1.114\images\kendoui.ttf" />
+    <Content Include="Content\kendo\2020.1.114\images\kendoui.woff" />
+    <Content Include="Content\kendo\2020.1.114\kendo.bootstrap-v4.min.css.map" />
+    <Content Include="Content\kendo\2020.1.114\kendo.bootstrap.min.css.map" />
+    <Content Include="Content\kendo\2020.1.114\kendo.common-bootstrap.min.css.map" />
+    <Content Include="Content\kendo\2020.1.114\kendo.common.min.css.map" />
+    <Content Include="Content\bootstrap-theme.css.map" />
+    <Content Include="Content\bootstrap-theme.min.css.map" />
+    <Content Include="Scripts\kendo\2020.1.114\angular.min.js" />
+    <Content Include="Scripts\kendo\2020.1.114\cultures\kendo.culture.es-CL.min.js" />
+    <Content Include="Scripts\kendo\2020.1.114\cultures\kendo.culture.es-ES.min.js" />
+    <Content Include="Scripts\kendo\2020.1.114\cultures\kendo.culture.es.min.js" />
+    <Content Include="Scripts\kendo\2020.1.114\jquery.min.js" />
+    <Content Include="Scripts\kendo\2020.1.114\jszip.min.js" />
+    <Content Include="Scripts\kendo\2020.1.114\cultures\kendo.culture.es-CL.min.js.map" />
+    <Content Include="Scripts\kendo\2020.1.114\cultures\kendo.culture.es-ES.min.js.map" />
+    <Content Include="Scripts\kendo\2020.1.114\cultures\kendo.culture.es.min.js.map" />
+    <None Include="Connected Services\WssRegMonSrvReference\monumentoservice.wsdl" />
+    <None Include="Properties\PublishProfiles\GedocMvc - FTP.pubxml" />
+    <None Include="Properties\PublishProfiles\GedocMvc - ReadOnly - FTP.pubxml" />
+    <None Include="Properties\PublishProfiles\GedocMvc - Web Deploy [CS].pubxml" />
+    <None Include="Properties\PublishProfiles\GedocMvc - Web Deploy.pubxml" />
+    <None Include="Scripts\kendo\2020.1.114\kendo.all-vsdoc.js" />
+    <None Include="Scripts\kendo\2020.1.114\kendo.all.min.intellisense.js" />
+    <Content Include="Scripts\kendo\2020.1.114\kendo.all.min.js" />
+    <Content Include="Scripts\kendo\2020.1.114\kendo.aspnetmvc.min.js" />
+    <Content Include="Scripts\kendo\2020.1.114\messages\kendo.messages.es-CL.min.js" />
+    <Content Include="Scripts\kendo\2020.1.114\messages\kendo.messages.es-ES.min.js" />
+    <Content Include="Scripts\kendo\2020.1.114\pako_deflate.min.js" />
+    <Content Include="Scripts\main.js" />
+    <Content Include="Scripts\bootstrap.js" />
+    <Content Include="Scripts\bootstrap.min.js" />
+    <None Include="Scripts\jquery-3.4.1.intellisense.js" />
+    <Content Include="Scripts\jquery-3.4.1.js" />
+    <Content Include="Scripts\jquery-3.4.1.min.js" />
+    <Content Include="Scripts\jquery-3.4.1.slim.js" />
+    <Content Include="Scripts\jquery-3.4.1.slim.min.js" />
+    <None Include="Scripts\jquery.validate-vsdoc.js" />
+    <Content Include="Scripts\jquery.validate.js" />
+    <Content Include="Scripts\jquery.validate.min.js" />
+    <Content Include="Scripts\jquery.validate.unobtrusive.js" />
+    <Content Include="Scripts\jquery.validate.unobtrusive.min.js" />
+    <Content Include="Scripts\modernizr-2.8.3.js" />
+    <Content Include="Web.config" />
+    <Content Include="Web.Debug.config">
+      <DependentUpon>Web.config</DependentUpon>
+    </Content>
+    <Content Include="Web.Release.config">
+      <DependentUpon>Web.config</DependentUpon>
+    </Content>
+    <Content Include="Views\Web.config" />
+    <Content Include="Views\_ViewStart.cshtml" />
+    <Content Include="Views\Shared\_Layout.cshtml" />
+    <Content Include="Views\Home\About.cshtml" />
+    <Content Include="Views\Usuario\Index.cshtml" />
+    <Content Include="Views\Home\Index.cshtml" />
+    <Content Include="Views\Error\ErrorAnonimo.cshtml" />
+    <Content Include="Views\Error\NotFound.cshtml" />
+    <Content Include="Views\Shared\_LayoutVacio.cshtml" />
+    <Content Include="Views\Error\Error.cshtml" />
+    <Content Include="Views\Shared\Error.cshtml" />
+    <Content Include="Views\Error\Unauthorized.cshtml" />
+    <Content Include="Views\Requerimiento\Ficha.cshtml" />
+    <Content Include="Views\Requerimiento\FichaResumen.cshtml" />
+    <Content Include="Views\Home\BandejaEntrada.cshtml" />
+    <Content Include="Views\Requerimiento\FormIngreso.cshtml" />
+    <Content Include="Views\Requerimiento\Partial\DatosDocumentoIngreso.cshtml" />
+    <Content Include="Views\Requerimiento\Partial\DatosAdjuntosIngreso.cshtml" />
+    <Content Include="Views\Requerimiento\Partial\DatosTransparenciaIngreso.cshtml" />
+    <Content Include="Views\Requerimiento\Partial\DatosRemitenteIngreso.cshtml" />
+    <Content Include="Views\Partial\TemplateTagMultiselect.cshtml" />
+    <Content Include="Views\Remitente\FormRemitente.cshtml" />
+    <Content Include="Views\Shared\EditorTemplates\Boolean.cshtml" />
+    <Content Include="Views\Shared\EditorTemplates\Currency.cshtml" />
+    <Content Include="Views\Shared\EditorTemplates\Date.cshtml" />
+    <Content Include="Views\Shared\EditorTemplates\DateTime.cshtml" />
+    <Content Include="Views\Shared\EditorTemplates\Email.cshtml" />
+    <Content Include="Views\Shared\EditorTemplates\EmailAddress.cshtml" />
+    <Content Include="Views\Shared\EditorTemplates\GridForeignKey.cshtml" />
+    <Content Include="Views\Shared\EditorTemplates\Integer.cshtml" />
+    <Content Include="Views\Shared\EditorTemplates\Number.cshtml" />
+    <Content Include="Views\Shared\EditorTemplates\Password.cshtml" />
+    <Content Include="Views\Shared\EditorTemplates\String.cshtml" />
+    <Content Include="Views\Shared\EditorTemplates\Time.cshtml" />
+    <Content Include="Views\Shared\EditorTemplates\Url.cshtml" />
+    <Content Include="Views\Modals\BusquedaBandeja.cshtml" />
+    <Content Include="Views\Home\BandejaEntradaDespInic.cshtml" />
+    <Content Include="Views\Requerimiento\Partial\DatosProyectoIngreso.cshtml" />
+    <Content Include="Views\Requerimiento\Partial\DatosMonNacIngreso.cshtml" />
+    <Content Include="Views\Requerimiento\Partial\DatosGeneralIngreso.cshtml" />
+    <Content Include="Views\Requerimiento\Partial\DatosAsignacionIngreso.cshtml" />
+    <Content Include="Views\Requerimiento\Partial\DatosPriorizacionIngreso.cshtml" />
+    <Content Include="Views\Requerimiento\Partial\DatosCierreIngreso.cshtml" />
+    <Content Include="Views\Requerimiento\Partial\DatosReasignacionProfUt.cshtml" />
+    <Content Include="Views\Requerimiento\Partial\DatosAsignacionProfUt.cshtml" />
+    <Content Include="Views\Requerimiento\Partial\DatosSolicitudReasignacion.cshtml" />
+    <Content Include="Views\Requerimiento\Partial\DatosOtrosCampos.cshtml" />
+    <Content Include="Views\Requerimiento\Partial\DatosGeneralHistorico.cshtml" />
+    <Content Include="Views\Despacho\FormDespacho.cshtml" />
+    <Content Include="Views\Despacho\Partial\DatosDestinatario.cshtml" />
+    <Content Include="Views\Despacho\Partial\DatosDocumento.cshtml" />
+    <Content Include="Views\Despacho\Partial\DatosDespacho.cshtml" />
+    <Content Include="Views\Despacho\Partial\DatosAdjunto.cshtml" />
+    <Content Include="Views\Despacho\Partial\DatosProyecto.cshtml" />
+    <Content Include="Views\Despacho\Partial\DatosMonumentoNac.cshtml" />
+    <Content Include="Views\Despacho\Partial\DatosGeneral.cshtml" />
+    <Content Include="Views\Rol\Index.cshtml" />
+    <Content Include="Views\Despacho\FormDespachoCierre.cshtml" />
+    <Content Include="Views\Despacho\GrillaDespachos.cshtml" />
+    <Content Include="Views\DespachoInic\FormDespacho.cshtml" />
+    <Content Include="Views\DespachoInic\FormDespachoCierre.cshtml" />
+    <Content Include="Views\DespachoInic\Partial\DatosAdjunto.cshtml" />
+    <Content Include="Views\DespachoInic\Partial\DatosDespacho.cshtml" />
+    <Content Include="Views\DespachoInic\Partial\DatosDestinatario.cshtml" />
+    <Content Include="Views\DespachoInic\Partial\DatosDocumento.cshtml" />
+    <Content Include="Views\DespachoInic\Partial\DatosGeneral.cshtml" />
+    <Content Include="Views\DespachoInic\Partial\DatosMonumentoNac.cshtml" />
+    <Content Include="Views\DespachoInic\Partial\DatosProyecto.cshtml" />
+    <Content Include="Views\Bitacora\GrillaBitacoras.cshtml" />
+    <Content Include="Views\Bitacora\FormBitacora.cshtml" />
+    <Content Include="Views\Adjunto\GrillaAdjunto.cshtml" />
+    <Content Include="Views\Adjunto\FormAdjunto.cshtml" />
+    <Content Include="Views\Lista\FormLista.cshtml" />
+    <Content Include="Scripts\kendo\2020.1.114\jquery.min.map" />
+    <Content Include="Scripts\kendo\2020.1.114\kendo.all.min.js.map" />
+    <Content Include="Scripts\kendo\2020.1.114\kendo.aspnetmvc.min.js.map" />
+    <Content Include="Scripts\kendo\2020.1.114\messages\kendo.messages.es-CL.min.js.map" />
+    <Content Include="Scripts\kendo\2020.1.114\messages\kendo.messages.es-ES.min.js.map" />
+    <Content Include="Views\Menu\Index.cshtml" />
+    <Content Include="Views\Rol\RolesUsuario.cshtml" />
+    <Content Include="Views\Rol\MenuRoles.cshtml" />
+    <Content Include="Views\Home\Login.cshtml" />
+    <Content Include="Views\Reporte\EjecutarReporte.cshtml" />
+    <Content Include="Views\Reporte\Index.cshtml" />
+    <Content Include="Views\Vista\Index.cshtml" />
+    <Content Include="Views\Vista\VistaDestinatario.cshtml" />
+    <Content Include="Views\Vista\VistaEtiqueta.cshtml" />
+    <Content Include="Views\Vista\VistaGenero.cshtml" />
+    <Content Include="Views\Vista\VistaRemitente.cshtml" />
+    <Content Include="Views\Shared\_LayoutVacio2.cshtml" />
+    <Content Include="Views\Lista\IndexLista.cshtml" />
+    <Content Include="Views\Home\BuscadorRegmon.cshtml" />
+    <Content Include="Views\Rol\AccionesRol.cshtml" />
+    <Content Include="Views\Adjunto\EliminarAdjunto.cshtml" />
+    <Content Include="Views\Papelera\Index.cshtml" />
+    <Content Include="Views\Bitacora\FechasDisponibles.cshtml" />
+    <Content Include="Views\Requerimiento\CierreMultiple.cshtml" />
+    <Content Include="Views\MarcarVerEnTabla\Index.cshtml" />
+    <Content Include="Views\Caso\Index.cshtml" />
+    <Content Include="Views\Caso\AgregarIngreso.cshtml" />
+    <Content Include="Views\Caso\ReqIngresos.cshtml" />
+    <Content Include="Views\Requerimiento\FichaPdf.cshtml" />
+    <Content Include="Views\BusquedaAvanzada\Index.cshtml" />
+    <Content Include="Views\Requerimiento\ActualizaMonumento.cshtml" />
+    <Content Include="Views\ArchivarRequerimiento\Index.cshtml" />
+    <Content Include="Views\BusquedaAvanzada\Resultado.cshtml" />
+    <Content Include="Views\BusquedaAvanzada\Partial\IngresosTab.cshtml" />
+    <Content Include="Views\BusquedaAvanzada\Partial\DespachosTab.cshtml" />
+    <Content Include="Views\BusquedaAvanzada\Partial\BitacorasTab.cshtml" />
+    <Content Include="Views\BusquedaAvanzada\Partial\DespachosIniciativasTab.cshtml" />
+    <Content Include="Views\Bitacora\FormBitacoraDespInic.cshtml" />
+    <Content Include="Views\Bitacora\GrillaBitacorasDespInic.cshtml" />
+    <Content Include="Views\Error\SessionExpired.cshtml" />
+    <Content Include="Views\ProcesosMasivos\Index.cshtml" />
+    <Content Include="Views\NotificacionEmail\Index.cshtml" />
+    <Content Include="Views\NotificacionEmail\FormNotificacion.cshtml" />
+    <Content Include="Views\Remitente\Index.cshtml" />
+    <Content Include="Views\Bitacora\Calendario.cshtml" />
+    <Content Include="Views\Bitacora\FormCalendario.cshtml" />
+    <Content Include="Views\Lista\IndexUnidadTecnica.cshtml" />
+    <Content Include="Views\Lista\FormUnidadTecnica.cshtml" />
+    <Content Include="Views\Lista\FormIntegrantesUnidadTecnica.cshtml" />
+    <Content Include="Views\Shared\EditorTemplates\UsuariosCombobox.cshtml" />
+    <Content Include="Views\Usuario\SolicitanteUrgencia.cshtml" />
+    <Content Include="Views\Usuario\FormSolicitanteUrgencia.cshtml" />
+    <Content Include="Views\MarcarVerEnTabla\Mantenedor.cshtml" />
+    <Content Include="Views\Requerimiento\Partial\DatosForzarPrioridad.cshtml" />
+    <Content Include="Views\Shared\EditorTemplates\IntegerPositivo.cshtml" />
+    <Content Include="Views\Shared\EditorTemplates\MenuRaizComboBox.cshtml" />
+    <Content Include="Views\Oficio\IndexPlantillaOficio.cshtml" />
+    <Content Include="Views\Oficio\FormPlantillaOficio.cshtml" />
+    <Content Include="Views\Home\Partial\PestannaPriorizados.cshtml" />
+    <Content Include="Views\Home\Partial\PestannaOficios.cshtml" />
+    <Content Include="Views\Home\Partial\PestannaBandejaEntrada.cshtml" />
+    <Content Include="Views\Oficio\FormSeleccionarPlantillaOficio.cshtml" />
+    <Content Include="Views\Oficio\FormOficio.cshtml" />
+    <Content Include="Views\Oficio\FormOficioPdf.cshtml" />
+    <Content Include="Views\Oficio\FormOficioEdicionFirmado.cshtml" />
+    <Content Include="Views\Oficio\GrillaOficioObservaciones.cshtml" />
+    <Content Include="Views\Oficio\IndexReservaCorrelativo.cshtml" />
+    <Content Include="Views\Lista\IndexTipoTramite.cshtml" />
+    <Content Include="Views\Lista\FormTipoTramite.cshtml" />
+    <Content Include="Views\Lista\FormListaValor.cshtml" />
+    <Content Include="Views\Requerimiento\Partial\DatosReasignacionIngreso.cshtml" />
+    <Content Include="Views\Shared\EditorTemplates\UsuarioEditPopup.cshtml" />
+    <Content Include="Views\AdjuntoOficio\EliminarAdjunto.cshtml" />
+    <Content Include="Views\AdjuntoOficio\FormAdjunto.cshtml" />
+    <Content Include="Views\AdjuntoOficio\GrillaAdjunto.cshtml" />
+    <Content Include="Views\Requerimiento\FormCierreMultiple.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="App_Data\" />
+    <Folder Include="Views\VerEnTabla\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Content\bootstrap.min.css.map" />
+    <Content Include="Content\bootstrap.css.map" />
+    <None Include="packages.config" />
+    <Content Include="Scripts\jquery-3.4.1.slim.min.map" />
+    <Content Include="Scripts\jquery-3.4.1.min.map" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Gedoc.Helpers\Gedoc.Helpers.csproj">
+      <Project>{fe77fdb2-c678-4b7a-a409-7da3f1846ee3}</Project>
+      <Name>Gedoc.Helpers</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Gedoc.Repositorio\Gedoc.Repositorio.csproj">
+      <Project>{8ebec630-05cc-4f63-ad66-847b44c025ad}</Project>
+      <Name>Gedoc.Repositorio</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Gedoc.Service\Gedoc.Service.csproj">
+      <Project>{683c856a-b72c-4a7b-a311-043456b97184}</Project>
+      <Name>Gedoc.Service</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadata Include="Connected Services\" />
+  </ItemGroup>
+  <ItemGroup>
+    <WebReferences Include="Web References\" />
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadataStorage Include="Connected Services\ServiceReferenceEtlReporte\" />
+    <WCFMetadataStorage Include="Connected Services\WssRegMonSrvReference\" />
+  </ItemGroup>
+  <PropertyGroup>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+  </PropertyGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(VSToolsPath)\WebApplications\Microsoft.WebApplication.targets" Condition="'$(VSToolsPath)' != ''" />
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" Condition="false" />
+  <Target Name="MvcBuildViews" AfterTargets="AfterBuild" Condition="'$(MvcBuildViews)'=='true'">
+    <AspNetCompiler VirtualPath="temp" PhysicalPath="$(WebProjectOutputDir)" />
+  </Target>
+  <ProjectExtensions>
+    <VisualStudio>
+      <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">
+        <WebProjectProperties>
+          <UseIIS>True</UseIIS>
+          <AutoAssignPort>True</AutoAssignPort>
+          <DevelopmentServerPort>56093</DevelopmentServerPort>
+          <DevelopmentServerVPath>/</DevelopmentServerVPath>
+          <IISUrl>http://localhost:56093/</IISUrl>
+          <NTLMAuthentication>False</NTLMAuthentication>
+          <UseCustomServer>False</UseCustomServer>
+          <CustomServerUrl>
+          </CustomServerUrl>
+          <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
+        </WebProjectProperties>
+      </FlavorProperties>
+      <UserProperties UseCdnSupport="False" />
+    </VisualStudio>
+  </ProjectExtensions>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>Este proyecto hace referencia a los paquetes NuGet que faltan en este equipo. Use la restauración de paquetes NuGet para descargarlos. Para obtener más información, consulte http://go.microsoft.com/fwlink/?LinkID=322105. El archivo que falta es {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props'))" />
+    <Error Condition="!Exists('..\packages\EntityFramework.6.4.0\build\EntityFramework.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\EntityFramework.6.4.0\build\EntityFramework.props'))" />
+    <Error Condition="!Exists('..\packages\EntityFramework.6.4.0\build\EntityFramework.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\EntityFramework.6.4.0\build\EntityFramework.targets'))" />
+  </Target>
+  <Import Project="..\packages\EntityFramework.6.4.0\build\EntityFramework.targets" Condition="Exists('..\packages\EntityFramework.6.4.0\build\EntityFramework.targets')" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target> -->
+</Project>

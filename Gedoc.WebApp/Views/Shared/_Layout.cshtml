@@ -1,0 +1,203 @@
+﻿@using System.Collections
+@using Gedoc.Helpers.Enum
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <base href='@Url.Content("~/")'>
+    <title>@(ViewBag.Title ?? "Gestor Documental CMN")</title>
+    <link rel="shortcut icon" href="~/Content/images/favicon.ico" type="image/vnd.microsoft.icon">
+
+    @*Referencias JasvaScript*@
+    <script src="@Url.Content("~/Scripts/kendo/2020.1.114/jquery.min.js")"></script>
+    <script src="@Url.Content("~/Scripts/kendo/2020.1.114/jszip.min.js")"></script>
+    <script src="@Url.Content("~/Scripts/kendo/2020.1.114/kendo.all.min.js")"></script>
+    <script src="@Url.Content("~/Scripts/kendo/2020.1.114/kendo.aspnetmvc.min.js")"></script>
+    <script src="@Url.Content("~/Scripts/bootstrap.min.js")"></script>
+    <script src="@Url.Content("~/Scripts/kendo/2020.1.114/cultures/kendo.culture.es-ES.min.js")"></script>
+    <script src="@Url.Content("~/Scripts/kendo/2020.1.114/messages/kendo.messages.es-ES.min.js")"></script>
+    <script src="@Url.Content("~/libs/moment/moment-with-locales.min.js")"></script>
+    <script src="@Url.Content("~/libs/loading-overlay/loadingoverlay.min.js")"></script>
+    <script src="@Url.Content("~/Scripts/main.js")"></script>
+
+    @RenderSection("scripts", required: false)
+
+    @*Referencias CSS*@
+    @*<link href="@Url.Content("~/libs/fontawesome5-pro/css/all.min.css")" rel="stylesheet" />*@
+    <link href="@Url.Content("~/Content/kendo/2020.1.114/kendo.bootstrap-v4.min.css")" rel="stylesheet" type="text/css" />
+    <link href="@Url.Content("~/Content/bootstrap.min.css")" rel="stylesheet" type="text/css" />
+    <link href="@Url.Content("~/Content/Site.css")" rel="stylesheet" type="text/css" />
+
+    <style>
+        #mainNavBar {
+            padding: 0;
+            border-bottom: 2px solid lightgray !important;
+        }
+
+        #mainLogo {
+            width: 300px;
+        }
+
+        .ut-user, .roles-user {
+            margin: 0;
+        }
+    </style>
+    @RenderSection("styles", required: false)
+    <script src="@Url.Content("~/Scripts/kendo.modernizr.custom.js")"></script>
+</head>
+<body>
+    <script>
+        kendo.culture("es-ES");
+
+        function BusquedaAvanzada() {
+            var result = Main.muestraVentanaModal("Búsqueda Avanzada",
+                '@Url.Action("Index", "BusquedaAvanzada", new { bandejaId = ViewBag.IdBandeja })',
+                "770px",
+                "",
+                false,
+                "BusquedaAvanzadaModal",
+                true);
+            result.then(function(result) {
+                if (result) {
+                    //$("#gridBandeja").data("kendoGrid").dataSource.read();
+                }
+            });
+
+            setTimeout(function() {
+                // Modificación del estilo del título de la ventana modal de la b´squeda avanzada
+                if ($("#window_BusquedaAvanzadaModal_wnd_title").length) {
+                    $("#window_BusquedaAvanzadaModal_wnd_title").css("font-size", "xx-large");
+                }
+            }, 300);
+        }
+
+    </script>
+    <div id="divNotificacion" class="container-fluid"></div>
+
+    <nav class="navbar navbar-expand-lg navbar-light bg-light p-0" id="mainNavBar">
+        <a class="navbar-brand" href="#">
+            <img src="~/Content/images/LogoCMN.png" id="mainLogo" alt="Inicio" />
+        </a>
+
+        <button class="navbar-toggler my-2" type="button" data-toggle="collapse" data-target="#navbarCollapse">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse flex-column align-items-start ml-lg-2 ml-0" id="navbarCollapse">
+
+            <div class="navbar-nav w-100">
+
+                <div class="navbar-nav flex-grow-1">
+                    @*<h5 class="w-100 text-center mt-2" style="color: red;">Gestor Documental CMN</h5>*@
+                </div>
+
+                <div class="navbar-nav ml-auto">
+                    <div class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="dropDownUsuario" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="k-icon k-i-user"></i> @Session["NombreUsuario"]<span class="sr-only">(current)</span>
+                        </a>
+
+                        @*Menú del usuario*@
+                        <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropDownUsuario">
+
+                            <h6 class="dropdown-header">Roles del usuario</h6>
+                            <div class="dropdown-item alert alert-warning">
+                                @if (Session["MisRoles"] != null)
+                                {
+                                    foreach (var rol in (IEnumerable<string>)Session["MisRoles"])
+                                    {
+                                        <p class="font-weight-light roles-user">@rol</p>
+                                    }
+                                }
+                            </div>
+
+                            <h6 class="dropdown-header">UT asociadas al usuario</h6>
+                            <div class="dropdown-item alert alert-warning">
+                                @if (Session["MisUnidadesTecn"] != null)
+                                {
+                                    foreach (var rol in (IEnumerable<string>)Session["MisUnidadesTecn"])
+                                    {
+                                        <p class="font-weight-light roles-user">@rol</p>
+                                    }
+                                }
+                            </div>
+
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="@Url.Action("Logout", "Home")">Cerrar sesión</a>
+                        </div>
+                    </div>
+
+
+                </div>
+            </div>
+
+            @(Html.Kendo().Menu()
+            .Name("Menu")
+            .HtmlAttributes(new {@class="pb-0"})
+            .DataTextField("Name")
+            .DataUrlField("Url")
+            .DataSource(dataSource => dataSource
+                .Model(model => model.Children("Hijos") )
+                .Read(read => read
+                    .Action("GetMenus", "Menu")
+                )
+            )
+            )
+
+        </div>
+    </nav>
+
+    <div class="container-fluid body-content">
+        @RenderBody()
+    </div>
+
+    @RenderSection("script_execute", required: false)
+
+
+    @if (!(ViewBag.EsLoginPage ?? false))
+    { // Si es la página de Login se evita generar el código siguiente
+        <script>
+            // Para mantener la sesión de usuario siempre activa. Se hace un POST por Ajax cada cierto tiempo para mantener la sesión.
+            // Ref. https://stackoverflow.com/a/14195869
+            var keepSessionAlive = false;
+            var neverExpire = true; // En true nunca expira la sesión. En false se controla el vencimiento de sesión de acuerdo al movimiento del mouse y teclado por parte del usuario,
+            // si no se detecta interacción del usuario por el timepo definido en timeCheck entonces no se hace la llamada Ajax y vencerá la sesión de acuerdo a lo configurado
+
+            function SetupSessionUpdater() {
+                if (!neverExpire) {
+                    var container = $("#body");
+                    container.mousemove(function () { keepSessionAlive = true; });
+                    container.keydown(function () { keepSessionAlive = true; });
+                }
+                CheckToKeepSessionAlive();
+            }
+
+            function CheckToKeepSessionAlive() {
+                var timeCheck = 5; // Minutos. TODO: hacerlo configurable
+                setTimeout("KeepSessionAlive()", timeCheck*60*1000);
+            }
+
+            function KeepSessionAlive() {
+                var esLoginPage = @Json.Encode(ViewBag.EsLoginPage ?? false);
+                if (!esLoginPage && (keepSessionAlive || neverExpire)) {
+                    var url = '@Url.Action("KeepSessionAlive", "Json")';
+                    $.ajax({
+                        type: "POST",
+                        url: url,
+                        success: function () { keepSessionAlive = false; console.info("Sesión activa.");}
+                    });
+                }
+                CheckToKeepSessionAlive();
+            }
+
+            $(function() {
+                SetupSessionUpdater();
+            });
+        </script>
+    }
+
+</body>
+</html>

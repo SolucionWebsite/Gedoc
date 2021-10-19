@@ -1,0 +1,92 @@
+﻿@using Gedoc.Helpers
+
+@{
+    Layout = null;
+    var urlRegmon = WebConfigValues.RegmonUrl; // .Replace("&amp;", "&");
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width"/>
+    <title>BuscadorRegmon</title>
+    
+    <style>
+        .iframe-container {
+            overflow: hidden;
+            padding-top: 56.25%;
+            position: relative;
+        }
+
+        .iframe-container iframe {
+            border: 0;
+            height: 100%;
+            left: 0;
+            position: absolute;
+            top: 0;
+            width: 100%;
+        }
+    </style>
+
+    <script src="@Url.Content("~/Scripts/kendo/2020.1.114/jquery.min.js")"></script>
+</head>
+<body>
+
+@*<iframe id="iBuscadorMonumento"></iframe>*@ @*width="1400px" height="1000px"></iframe>*@
+<div class="iframe-container">
+    <iframe id="iBuscadorMonumento" allowfullscreen></iframe>
+</div>
+
+<script type="text/javascript">
+
+    $(function() {
+        var $iframe = $('#iBuscadorMonumento');
+
+        var urlRegmon = '@Html.Raw(urlRegmon)';
+
+        if ($iframe.length) {
+            $iframe.attr('src', urlRegmon);
+        }
+
+        $iframe.prop("frameborder", 0);
+
+        if (window.addEventListener) {
+            window.addEventListener("message", onMessage, false);
+        } else if (window.attachEvent) {
+            window.attachEvent("onmessage", onMessage, false);
+        }
+    });
+
+    function onMessage(event) {
+        var urlRegmon = '@Html.Raw(urlRegmon)';
+        if (urlRegmon.indexOf(event.origin) != 0) return;
+
+        var data = event.data;
+
+        if (typeof (window[data.func]) == "function") {
+            window[data.func].call(parent.document, data.message);
+        }
+    }
+
+    function getCodigo(id) {
+        parent.mnRegmonSeleccionado(id);
+
+    }
+
+    function resizeIFrameToFitContent(iFrame) {
+        iFrame.width  = iFrame.contentWindow.document.body.scrollWidth;
+        iFrame.height = iFrame.contentWindow.document.body.scrollHeight;
+    }
+
+    window.addEventListener('DOMContentLoaded', function(e) {
+
+        var iFrame = document.getElementById( 'iBuscadorMonumento' );
+        resizeIFrameToFitContent( iFrame );
+
+    } );
+
+
+</script>
+</body>
+</html>

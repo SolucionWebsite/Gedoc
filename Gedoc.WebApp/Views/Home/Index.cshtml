@@ -1,0 +1,136 @@
+﻿@using Gedoc.WebApp.Models
+@using Kendo.Mvc.UI;
+@using Kendo.Mvc.Extensions;
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "Gestor Documental CMN";
+}
+
+<style>
+    .k-grid {
+        font-size: 0.8em;
+    }
+</style>
+
+@section scripts{
+    <script>
+
+        $(function() {
+            $("#panelDatosIni").kendoPanelBar({
+                expandMode: "Multiple"
+            });
+        });
+
+        function getTemplateDescargaOficio(numOficio, idDespacho) {
+            var onclick = "@Url.Action("GetArchivo", "Despacho")" + "?idDespacho=" + idDespacho;
+            return "<a href='" + onclick + "' target='_blank' class='enlace-grilla'>" + numOficio + "</a>";
+
+        }
+    </script>
+}
+
+
+<ul id="panelDatosIni">
+    <li class="k-state-active">
+        <span class="k-link">
+            <b>Últimos Requerimientos</b>
+        </span>
+        <div class="p-3">
+            @(Html.Kendo().DataSource<RequerimientoModel>()
+                .Name("dsUltimosReq")
+                .Ajax(dataSource => dataSource
+                    .Read(read =>
+                    {
+                        read.Action("UltimosIngresos", "Home");
+                        read.Type(HttpVerbs.Post);
+                    })
+                    .ServerOperation(false)
+                )
+                )
+
+            @(Html.Kendo().Grid<RequerimientoModel>()
+                .Name("gridUltIngresos")
+                .EnableCustomBinding(true)
+                .Columns(columns =>
+                {
+                    columns.Bound(c => c.Id)
+                        .Width("100px")
+                        .Title("<center>Ver</center>")
+                        .Sortable(false)
+                        .ClientTemplate("#= Main.getTemplateFicha(data.DocumentoIngreso, data.Id) #" + "<br>" +
+                                        "#= Main.getTemplateResumen(data.DocumentoIngreso, data.Id) #");
+                    columns.Bound(c => c.DocumentoIngreso)
+                        .Width(150)
+                        .Title("<center>Documento<br>Ingreso <span class='k-icon k-i-kpi' style='color: lightgray;'></span></center>");
+                    columns.Bound(c => c.FechaIngreso)
+                        .Width(150)
+                        .Title("<center>Fecha de<br>Ingreso <span class='k-icon k-i-kpi' style='color: lightgray;'></span></center>").Format("{0:dd/MM/yyyy HH:mm}");
+                    columns.Bound(c => c.RemitenteNombre)
+                        .Width(180)
+                        .Title("<center>Remitente <span class='k-icon k-i-kpi' style='color: lightgray;'></span></center>");
+                    columns.Bound(c => c.RemitenteInstitucion)
+                        .Width(180)
+                        .Title("<center>Institución Remitente <span class='k-icon k-i-kpi' style='color: lightgray;'></span></center>");
+                    columns.Bound(c => c.Materia)
+                        .Width("100%")
+                        .Title("<center>Materia <span class='k-icon k-i-kpi' style='color: lightgray;'></span></center>");
+                })
+                .Sortable()
+                .DataSource("dsUltimosReq")
+            )
+        </div>
+    </li>
+    <li class="k-state-active">
+        <span class="k-link">
+            <b>Últimos Despachos</b>
+        </span>
+
+        <div class="p-3">
+            <span class="help-block mb-2">Se despliegan solo solicitudes de despacho, no incluye despachos iniciativas CMN</span>
+            <div id="gridUltDespachos">
+                @(Html.Kendo().DataSource<DespachoModel>()
+                    .Name("dsUltimosDesp")
+                    .Ajax(dataSource => dataSource
+                        .Read(read =>
+                        {
+                            read.Action("UltimosDespachos", "Home");
+                            read.Type(HttpVerbs.Post);
+                        })
+                        .ServerOperation(false)
+                    )
+                    )
+
+                @(Html.Kendo().Grid<DespachoModel>()
+                    .Name("gridUltDespachos")
+                    .EnableCustomBinding(true)
+                    .Columns(columns =>
+                    {
+                        columns.Bound(c => c.Id)
+                            .Width("100px")
+                            .Title("<center>Número del Oficio <span class='k-icon k-i-kpi' style='color: lightgray;'></span></center>")
+                            .ClientTemplate("#= getTemplateDescargaOficio(data.NumeroDespacho, data.Id) #");
+                        // columns.Bound(c => c.NumeroDespacho).Width(150).Title("<center>Documento<br>Ingreso</center>");
+                        columns.Bound(c => c.FechaEmisionOficio)
+                            .Width(150)
+                            .Title("<center>Fecha de<br>Oficio <span class='k-icon k-i-kpi' style='color: lightgray;'></span></center>")
+                            .Format("{0:dd/MM/yyyy HH:mm}");
+                        columns.Bound(c => c.RemitenteNombre)
+                            .Width(180)
+                            .Title("<center>Destinatario <span class='k-icon k-i-kpi' style='color: lightgray;'></span></center>");
+                        columns.Bound(c => c.RemitenteInstitucion)
+                            .Width(180)
+                            .Title("<center>Institución <span class='k-icon k-i-kpi' style='color: lightgray;'></span></center>");
+                        columns.Bound(c => c.Materia)
+                            .Title("<center>Materia <span class='k-icon k-i-kpi' style='color: lightgray;'></span></center>");
+                        columns.Bound(c => c.EstadoDespachoTitulo)
+                            .Title("<center>Estado <span class='k-icon k-i-kpi' style='color: lightgray;'></span></center>")
+                            .Width(180);
+                    })
+                    .Sortable()
+                    .DataSource("dsUltimosDesp")
+                    )
+            </div>
+        </div>
+    </li>
+</ul>

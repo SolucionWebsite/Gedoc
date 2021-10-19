@@ -1,0 +1,25 @@
+﻿@model string
+@{
+    ViewBag.Title = "Error";
+    Layout = "~/Views/Shared/_LayoutVacio.cshtml";
+    var urlSolicitada = Request.QueryString["aspxerrorpath"] ?? "";
+
+}
+
+<div class="row">
+    <div class="alert alert-danger col-md-10 offset-md-1 mt-5">
+        <div style="text-align: center;">
+            <i class="k-icon k-icon-32 k-i-user" aria-hidden="true"></i>
+            <strong>¡Sesión expirada!</strong>
+        </div>
+        <br />
+        La sesión ha expirado debido a inactividad, por favor, inicie sesión nuevamente.
+    </div>
+</div>
+<div class="text-center">
+    <button class="btn btn-primary" type="button" onclick="window.location.href = '@Url.Action("Login", "Home")';">Ir a Inicio de sesión</button>
+</div>
+
+<br />
+<br />
+<br />

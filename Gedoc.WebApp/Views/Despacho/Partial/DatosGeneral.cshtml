@@ -1,0 +1,82 @@
+﻿@using Gedoc.Helpers.Enum
+@using Gedoc.WebApp.Helpers
+@using Newtonsoft.Json
+@model Gedoc.WebApp.Models.DespachoModel
+
+@{
+    Layout = null;
+}
+
+<h4 class="head-datos-form">General</h4>
+<div class="container-fluid">
+
+
+    <div class="form-row" style="white-space: nowrap;">
+        <div class="col-md-3">
+            <label class="label-dato-form">
+                Proyecto o actividad
+            </label>
+        </div>
+        <div class="col-md-9">
+            <textarea name="ProyectoActividad" rows="6" cols="20" id="tbProyectoActividad" class="form-control texto-largo" 
+                              data-spanleyenda="leyenda-pnProyectoActividad"
+                              data-maxlength="255" style="width: 100% !important;">@Html.Raw(Model.ProyectoActividad)</textarea>
+
+            <span class="help-block-right" style="float: right;" id="leyenda-pnProyectoActividad"> </span>
+            <span class="help-block" id="leyenda-ProyectoActividad">Es para ampliar la materia si es necesario, describiendo el proyecto, precisando la solicitud que se hace. </span>
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="col-md-3">
+            <label class="label-dato-form">
+                Documento de ingreso
+            </label>
+        </div>
+        <div class="col-md-9">
+            <select id="Requerimiento" name="Requerimiento" multiple></select>
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="col-md-3" style="white-space: nowrap">
+            <label class="label-dato-form">
+                Enviar notificación<span class="marca-obligatorio" title="Este campo es obligatorio."> *</span>
+            </label>
+        </div>
+        <div class="col-md-9">
+            @(Html.Kendo().RadioButtonFor(m => m.EnviarNotificacion).Label("Sí").Value(true))
+            @(Html.Kendo().RadioButtonFor(m => m.EnviarNotificacion).HtmlAttributes(new { @class = "ml-3" }).Label("No").Value(false))
+
+            <br/>
+            <span class="help-block" id="leyenda-pnEnviarNotificacion">Enviar notificación de despacho a Destinatario y Destinatarios en copia. </span>
+        </div>
+    </div>
+
+</div>
+
+
+<script>
+
+    function inicializaPanelGeneralDesp() {
+
+        if ($("#Requerimiento").length) {
+            $("#Requerimiento").kendoMultiSelect(
+                Main.getMultiSelectConfigVirtual($("#Requerimiento")
+                    , '@Url.Action("RequerimientoResumenPaging", "Json")'
+                    , '@Url.Action("RequerimientoResumenByIds", "Json")'
+                    , undefined, undefined
+                    , undefined //@Html.Raw(JsonConvert.SerializeObject(Model.Requerimiento))
+                    , undefined, false
+                )
+            );
+            $("#Requerimiento").data("kendoMultiSelect").dataSource.filter({});
+
+            $("#Requerimiento").data("kendoMultiSelect").value(@Html.Raw(JsonConvert.SerializeObject(Model.Requerimiento)));
+        }
+
+    }
+
+    //# sourceURL=PanelGeneralDesp
+</script>
+

@@ -1,0 +1,190 @@
+﻿
+@{
+    ViewBag.Title = "Mantenedor de Casos";
+}
+
+<h4 class="header-level1">@ViewBag.Title</h4>
+
+<div class="div-main">
+    @(Html.Kendo().Grid<Gedoc.WebApp.Models.CasoModel>
+    ()
+    .Name("grid")
+    .Columns(columns =>
+    {
+        columns.Bound(c => c.Id).Title("ID").Width(90).Filterable(false);
+        columns.Bound(c => c.Titulo).Title("Nombre").Filterable(ftb => ftb.Multi(true).Search(true)).Width(450);
+        columns.Bound(c => c.CantidadReq).Title("Cantidad ingresos").Width(160).Filterable(false)
+        .ClientTemplate(
+        "<a class=\"enlace-grilla\" href=\"javascript:;\" onclick=\"verIngresos(#: Id #,'#: Titulo #')\">#: CantidadReq #</a>");
+        columns.Bound(c => c.FechaCreacion).Title("Creado").Format("{0: dd/MM/yyyy hh:mm}").Width(160);
+        columns.Bound(c => c.UsuarioCreacionNombresApellidos).Title("Creado por").Width(160).Filterable(ftb => ftb.Multi(true).Search(true));
+        columns.Bound(c => c.FechaModificacion).Title("Modifcado").Format("{0: dd/MM/yyyy hh:mm}").Width(160);
+        columns.Bound(c => c.UsuarioModificacionNombresApellidos).Title("Modificado por").Width(160).Filterable(ftb => ftb.Multi(true).Search(true));
+        columns.Bound(c => c.Activo).Width(110).Title("Estado").ClientTemplate(
+        "# if (Activo == true) { #" +
+        "<input type='checkbox' checked disabled />" +
+        "# } else { #" +
+        "<input type='checkbox' disabled />" +
+        "# } #"
+        );
+        columns.Command(command =>
+        {
+            command.Edit();
+            //command.Custom("Ingresos").Click("agregarIngresosCustom").IconClass("k-icon k-i-plus");
+            command.Custom("Eliminar").HtmlAttributes(new { title = "Eliminar" }).Click("eliminarCasoCustom").IconClass("k-icon k-i-trash");
+        }).Title("Acciones").Width(250);
+    })
+    .Resizable(resize => resize.Columns(true))
+    //.HtmlAttributes(new { style = "height: 600px;" })
+    .ToolBar(toolbar =>
+    {
+        toolbar.Create().Text("Agregar Caso");
+        toolbar.Search();
+    })
+    .Editable(editable => editable.Mode(GridEditMode.InLine))
+    .Selectable(selectable =>
+    {
+        selectable.Mode(GridSelectionMode.Single);
+        selectable.Type(GridSelectionType.Row);
+    })
+    .Pageable()
+    .Filterable()
+        .Scrollable(scr => scr.Height("auto"))
+    .Sortable()
+    .DataSource(dataSource => dataSource
+    .Ajax()
+    .ServerOperation(false)
+    .Model(model =>
+    {
+        model.Id(p => p.Id);
+        model.Field(p => p.Id).Editable(false);
+        model.Field(p => p.UsuarioCreacionNombresApellidos).Editable(false);
+        model.Field(p => p.UsuarioModificacionNombresApellidos).Editable(false);
+        model.Field(p => p.FechaCreacion).Editable(false);
+        model.Field(p => p.FechaModificacion).Editable(false);
+        model.Field(p => p.CantidadReq).Editable(false).DefaultValue(0);
+    })
+    .Read(read => read.Action("Caso_Read", "Caso"))
+    .Create(create => create.Action("Caso_Create", "Caso"))
+    .Update(update => update.Action("Caso_Update", "Caso"))
+        .Events(ev => ev.RequestEnd("gridRequestEnd"))
+    )
+    )
+</div>
+<div id="dialog"></div>
+<script>
+
+    $(document).ready(function () {
+        $(".k-textbox.k-grid-search input").attr("placeholder", "Buscar...");
+    });
+
+    function agregarIngresosCustom(e) {
+        e.preventDefault();
+
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        var urlRoles = '@Url.Action("AgregarIngreso", "Caso")';
+
+        $("#dialog").remove();
+        if (!$("#dialog").length) {
+            $(document.body).append('<div id="dialog"></div>');
+        }
+
+        var dialog = $("#dialog");
+        dialog.kendoWindow({
+            title: 'Agregar Ingresos al Caso: ' + dataItem.Titulo,
+            modal: true,
+            height: 700,
+            width: 1200,
+            iframe: true,
+            content: urlRoles + "?IdCaso=" + dataItem.Id,
+            open: function (e) {
+                //kendo.ui.progress(e.sender.element, true);
+            },
+            close: function(e) {
+                var grid = $("#grid").data("kendoGrid");
+                grid.dataSource.read();
+                this.content("");
+                //this.destroy();
+            }
+        });
+        var K_dialog = dialog.data("kendoWindow");
+        K_dialog.maximize();
+        K_dialog.open();
+    }
+
+    function verIngresos(id, caso) {
+        var urlReqIngresos = '@Url.Action("ReqIngresos", "Caso")';
+
+        $("#dialog").remove();
+        if (!$("#dialog").length) {
+            $(document.body).append('<div id="dialog"></div>');
+        }
+
+        $("#dialog").kendoWindow({
+            title: 'Editar caso: ' + caso,
+            modal: true,
+            height: 700,
+            width: 1200,
+            iframe: true,
+            content: urlReqIngresos + "?IdCaso=" + id,
+            close: function(e) {
+                var grid = $("#grid").data("kendoGrid");
+                grid.dataSource.read();
+                this.content("");
+            }
+        });
+        var dialog = $("#dialog").data("kendoWindow");
+        dialog.maximize();
+        dialog.open();
+    }
+
+    function eliminarCasoCustom(e) {
+        e.preventDefault();
+
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        var grid = $("#grid").data("kendoGrid");
+
+        Main.showConfirm("¿Desea eliminar el caso?", "Eliminar", true)
+            .then(function (isOk) {
+                if (!isOk) return false;
+                Main.wait("Eliminando caso...");
+                $.ajax({
+                    type: "POST",
+                    url: '@Url.Action("EliminarCaso", "Caso")',
+                    contentType: "application/json; charset=utf-8",
+                    data: JSON.stringify({ idCaso: dataItem.Id }),
+                    dataType: "json",
+                    success: function (data) {
+                        Main.unwait();
+                        if (data) {
+                            Main.showMensaje(data.Mensaje, data.Codigo > 0);
+                        } else {
+                            Main.showError('Ha ocurrido un inesperado al eliminar');
+                        }
+                        grid.dataSource.read();
+                    },
+                    error: function (data) {
+                        Main.unwait();
+                         Main.showError('Ha ocurrido un inesperado al eliminar');
+                        grid.dataSource.read();
+                    }
+                });
+            });
+    }
+
+    function gridRequestEnd(e) {
+        if (e.type == "create") {
+            if (e.Erros) {
+                Main.showError("Ha ocurrido un error al crear el caso.");
+            } else {
+                Main.showInfo("Se ha creado con éxito el caso");
+            }
+        } else if (e.type == 'update') {
+            if (e.Erros) {
+                Main.showError("Ha ocurrido un error al actualizar el caso.");
+            } else {
+                Main.showInfo("Se ha actualizado con éxito el caso");
+            }
+        }
+    }
+</script>

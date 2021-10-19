@@ -1,0 +1,280 @@
+﻿@using Gedoc.Helpers.Dto
+@using Gedoc.Helpers.Enum
+@using Gedoc.Helpers
+@model Gedoc.WebApp.Models.RequerimientoModel
+
+@{
+    Layout = null;
+    List<PrioridadDto> matrizPriorizacion = ViewBag.MatrizPriorizacion;
+    Dictionary<CampoIngreso, AspectoCampo> accesoCampos = ViewBag.AccesoCampos;
+    FlujoIngreso form = ViewBag.Form;
+}
+
+<script>
+
+    function cambiaPrioridad(e) {
+        if ($("#PrioridadCod").length && $("#SolicitanteUrgenciaId").length) {
+            var item = $("#PrioridadCod").data("kendoComboBox").dataItem();
+            if (!item) return;
+            // Se habilita el campo Solicitante de URgencia si la prioridad es Urgente, si no se deshabilita
+            var esUrgente = item.Titulo.toLowerCase() == "urgente";
+            $("#SolicitanteUrgenciaId").data("kendoComboBox").enable(esUrgente);
+            if (!esUrgente) {
+                $("#SolicitanteUrgenciaId").data("kendoComboBox").value(null);
+            }
+        }
+    }
+
+</script>
+
+
+<h4 class="head-datos-form">Priorización</h4>
+<div class="container-fluid main-priorizacion">
+
+
+    @if (accesoCampos[CampoIngreso.Prio_TablaPlazos] != AspectoCampo.Oculto)
+    {
+        <div class="form-row">
+            <div class="col-md-3">
+                <label class="label-dato-form">
+                    Plazo (días)
+                </label>
+            </div>
+            @if (accesoCampos[CampoIngreso.Prio_TablaPlazos] == AspectoCampo.SoloLectura)
+            {
+                <div class="col-md-9">
+                    <label id="lblPlazoPriorizacion">@Model.Plazo</label>
+                </div>
+            }
+            else
+            {
+                <div class="col-md-9">
+                    <span style="font-size: 0.9em;">Este valor se completa en forma automática en base a la prioridad del requerimiento:</span>
+
+                    <table cellspacing="0" style="border: 1px solid; font-size: 0.8em;">
+                        <tr>
+                            <td class="tb-prioridad-cabecera-izq">Prioridad del requerimiento</td>
+                            <td class="tb-prioridad-cabecera-der">Plazo (días)</td>
+                        </tr>
+                        @{
+                            var rayar = false;
+                            foreach (var prior in matrizPriorizacion)
+                            {
+                                var claseIzq = "tb-prioridad-detalle-izq";
+                                var claseDer = "tb-prioridad-detalle-der";
+                                if (rayar)
+                                {
+                                    claseIzq = "tb-prioridad-detalle-rayado-izq";
+                                    claseDer = "tb-prioridad-detalle-rayado-der";
+                                }
+                                rayar = !rayar;
+                                <text>
+                                    <tr>
+                                        <td class="@claseIzq">@prior.Titulo</td>
+                                        <td class="@claseDer">@prior.Plazo</td>
+                                    </tr>
+                                </text>
+                            }
+                        }
+                    </table>
+                </div>
+            }
+
+
+
+        </div>
+    }
+
+    @if (accesoCampos[CampoIngreso.Prio_Prioridad] != AspectoCampo.Oculto)
+    {
+        <div class="form-row">
+            <div class="col-md-3">
+                <label class="label-dato-form no-wrap">
+                    Prioridad del requerimiento
+                    @if (accesoCampos[CampoIngreso.Prio_Prioridad] != AspectoCampo.SoloLectura)
+                    {
+                        <span class="marca-obligatorio" title="Este campo es obligatorio.">*</span>
+                    }
+                </label>
+            </div>
+            <div class="col-md-9">
+                @if (accesoCampos[CampoIngreso.Prio_Prioridad] == AspectoCampo.SoloLectura)
+                {
+                    <label id="lbPrioridad">@Model.PrioridadTitulo </label>
+                }
+                else
+                {
+                    @(Html.Kendo().ComboBox()
+                        .Name("PrioridadCod")
+                        .DataTextField("Titulo")
+                        .DataValueField("Id")
+                        .Filter("contains")
+                        .HtmlAttributes(new {required = "required", @class = "w-100"})
+                        .Events(e => e.Change("cambiaPrioridad"))
+                        .Events(e => e.DataBound("function (e) { setTimeout(function () { cambiaPrioridad(e) }, 500); }"))
+                        //.NoDataTemplate("No se encontraron datos.")
+                        .Messages(m => m.Clear("limpiar").NoData("No se encontraron datos."))
+                        )
+                    <span class="k-invalid-msg" data-for="PrioridadCod"></span>
+                    <br />
+                    <span class="help-block">Se ingresarán los datos de prioridad, plazo y/o solicitante de la urgencia.</span>
+                }
+
+            </div>
+        </div>
+    }
+
+    @if (accesoCampos[CampoIngreso.Prio_Solurgencia] != AspectoCampo.Oculto)
+    {
+        <div class="form-row">
+            <div class="col-md-3">
+                <label class="label-dato-form">
+                    Solicitante de urgencia
+                    @if (accesoCampos[CampoIngreso.Prio_Solurgencia] != AspectoCampo.SoloLectura)
+                    {
+                        <span class="marca-obligatorio" title="Este campo es obligatorio."> *</span>
+                    }
+                </label>
+            </div>
+            <div class="col-md-9">
+                @if (accesoCampos[CampoIngreso.Prio_Solurgencia] == AspectoCampo.SoloLectura)
+                {
+                    <label id="lbSolUrg">@Model.SolicitanteUrgenciaNombre </label>
+                }
+                else
+                {
+                    @(Html.Kendo().ComboBox()
+                        .Name("SolicitanteUrgenciaId")
+                        .DataTextField("Titulo")
+                        .DataValueField("Id")
+                        .Filter("contains")
+                        .HtmlAttributes(new {required = "required", @class = "w-100"})
+                        .Enable(false)
+                        .NoDataTemplate("No se encontraron datos.")
+                        .Messages(m => m.Clear("limpiar"))
+                        )
+                    <span class="k-invalid-msg" data-for="SolicitanteUrgenciaId"></span>
+                    <br />
+                }
+            </div>
+        </div>
+    }
+
+    @if (accesoCampos[CampoIngreso.Prio_FechaAsigUt] != AspectoCampo.Oculto)
+    {
+        <div class="form-row">
+            <div class="col-md-3">
+                <label class="label-dato-form">
+                    Fecha asignado a UT
+                </label>
+            </div>
+            <div class="col-md-4">
+                <label id="lbFechaIngreso">@(Model.AsignacionUt.HasValue ? Model.AsignacionUt.Value.ToString(GeneralData.FORMATO_FECHA_CORTO) : "")</label>
+            </div>
+        </div>
+    }
+</div>
+
+<div class="container-fluid">
+
+    @if (accesoCampos[CampoIngreso.Prio_EnviarPrio] != AspectoCampo.Oculto)
+    {
+        <div class="form-row envia-prior">
+            <div class="col-md-3" style="white-space: nowrap">
+                <label class="label-dato-form">
+                    Enviar a priorización<span class="marca-obligatorio" title="Este campo es obligatorio."> *</span>
+                </label>
+            </div>
+            <div class="col-md-9">
+                @(Html.Kendo().RadioButtonFor(m => m.EnviarPriorizacion).Label("Sí").Value(true))
+                @(Html.Kendo().RadioButtonFor(m => m.EnviarPriorizacion).HtmlAttributes(new {@class = "ml-3"}).Label("No").Value(false))
+
+                <br />
+                <span class="help-block">Se ingresarán los datos de prioridad, plazo y/o solicitantede la urgencia.</span>
+            </div>
+        </div>
+    }
+
+    @if (accesoCampos[CampoIngreso.Prio_EnviarUtTemp] != AspectoCampo.Oculto)
+    {
+        <div class="form-row envia-uttemp">
+            <div class="col-md-3">
+                <label class="label-dato-form">
+                    Enviar a Asignación Temporal
+                </label>
+            </div>
+            <div class="col-md-2">
+                @(Html.Kendo().RadioButtonFor(m => m.EnviarAsignacionTemp).Label("Sí").Value(true))
+                @(Html.Kendo().RadioButtonFor(m => m.EnviarAsignacionTemp).HtmlAttributes(new {@class = "ml-3"}).Label("No").Value(false))
+
+            </div>
+        </div>
+    }
+
+    @if (accesoCampos[CampoIngreso.Prio_EnviarUt] != AspectoCampo.Oculto)
+    {
+        <div class="form-row">
+            <div class="col-md-3" style="white-space: nowrap">
+                <label class="label-dato-form">
+                    Enviar a UT<span class="marca-obligatorio" title="Este campo es obligatorio."> *</span>
+                </label>
+            </div>
+            <div class="col-md-9">
+                <div>
+                    @(Html.Kendo().RadioButtonFor(m => m.EnviarUt).Label("Sí").Value(true))
+                    @(Html.Kendo().RadioButtonFor(m => m.EnviarUt).HtmlAttributes(new {@class = "ml-3"}).Label("No").Value(false))
+
+                </div>
+                <div>
+                    <span class="help-block">El requerimiento será recepcionado por el encargado de la UT, quien asignará un responsable, identificará el MN y referenciará el CEDOC. </span>
+                </div>
+            </div>
+        </div>
+    }
+
+</div>
+
+
+<script>
+
+    function inicializaPanelPriorizacion() {
+
+        @if (form == FlujoIngreso.AsignacionUt)
+        {
+             @:habilitaAsignTemp(@Json.Encode(Model.UtTemporalId.GetValueOrDefault(0) > 0));
+        }
+
+        var ds;
+
+        if ($("#PrioridadCod").length) {
+            ds = Main.getDataSourceKendoGenerico($("#PrioridadCod"),
+                '@Url.Action("MantenedorGenerico", "Json")?idM=@((int) Mantenedor.Prioridad)');
+            $("#PrioridadCod").data("kendoComboBox").setDataSource(ds);
+        }
+
+        if ($("#SolicitanteUrgenciaId").length) {
+            ds = Main.getDataSourceKendoGenerico($("#SolicitanteUrgenciaId"),
+                '@Url.Action("MantenedorGenerico", "Json")?idM=@((int) Mantenedor.SolicitanteUrg)');
+            $("#SolicitanteUrgenciaId").data("kendoComboBox").setDataSource(ds);
+        }
+
+
+    }
+
+    function habilitaAsignTemp(habilitar) {
+        $(".main-priorizacion").toggle(habilitar);
+        $(".envia-uttemp").toggle(habilitar);
+        $(".envia-prior").toggle(!habilitar);
+        var prioK = $("#PrioridadCod").data("kendoComboBox");
+        if (prioK) {
+            prioK.enable(habilitar);
+        }
+        var solUrgK = $("#SolicitanteUrgenciaId").data("kendoComboBox");
+        if (solUrgK) {
+            solUrgK.enable(habilitar && ((prioK.dataItem() || false) && prioK.dataItem().Titulo.toLowerCase() == "urgente") );
+        }
+
+    }
+
+    //# sourceURL=PanelPriorizacionIngreso
+</script>

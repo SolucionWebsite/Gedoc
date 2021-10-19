@@ -1,0 +1,287 @@
+﻿@using Gedoc.Helpers
+@using Gedoc.Helpers.Dto
+@using Gedoc.WebApp.Models
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = ViewBag.TituloBandeja;
+    List<AccionPermitidaBandejaDto> accionesEstadoEtapa = ViewBag.Acciones;
+    List<AccionBandejaDto> accionesOtras = ViewBag.AccionesOtras;
+}
+
+<style>
+    .k-grid { font-size: 0.8em; }
+</style>
+
+<script src="~/Scripts/accionesbandeja.js"></script>
+<script src="~/Scripts/form.js"></script>
+
+@section scripts{
+    <script>
+
+        $(function() {
+            $(".textDiasBandeja").text("@ViewBag.DiasBandeja días");
+
+            // Búsqueda en la grilla
+            $("#textoBusqGrid").on("search",
+                function (e) {
+                    var grid = $("#gridBandeja").data("kendoGrid");
+                    if (grid && grid.dataSource) {
+                        grid.dataSource.filter({});
+                    }
+                });
+
+        });
+
+        function buildAccionesRegistro(estadoId, despachoId, numeroDespacho) {
+            var acciones = @Html.Raw(Json.Encode(accionesEstadoEtapa));
+
+            var accionesHtml = [];
+            for (var i = 0; i < acciones.length; i++) {
+                var accionesIngreso = acciones[i].Acciones;
+                //TODO: ordenar las acciones según su orden definido en la tabla en bd
+                for (var j = 0; j < accionesIngreso.length; j++) {
+                    var datosAccion = getDatosAccion(accionesIngreso[j]);
+                    // Se crea el control html con la acción encontrada
+                    var acc = "";
+                    if (datosAccion.TipoAccion == 'G') {
+                        if (datosAccion.IdAccion == "DO") {
+                            // Descargar oficio
+                            var enlace = "@Url.Action("GetArchivo", "DespachoInic")" + "?idDespacho=" + despachoId;
+                            acc = '<a href="' + enlace + '" target="_blank"><img width="20" height="20" src="Content/images/' +
+                                datosAccion.Icono +
+                                '" title="' +
+                                datosAccion.Hint +
+                                '" /></a>';
+                        } else {
+                            acc = '<a href="#" onclick="ejecutaAccion(' +
+                                despachoId +
+                                ', \'' + datosAccion.IdAccion + '\'' +
+                                ', \'' + datosAccion.Titulo + ' - ' + numeroDespacho + '\', \'' +
+                                numeroDespacho + '\'); return false;"><img width="20" height="20" src="Content/images/' +
+                                datosAccion.Icono +
+                                '" title="' +
+                                datosAccion.Hint +
+                                '" /></a>';
+                        }
+                        accionesHtml.push(acc);
+                    }
+                }
+                break;
+            }
+
+            return accionesHtml.join(' '); // .replace('"', '\\"');
+        }
+
+        function ejecutaAccion(idDespacho, idAccion, titulo, numeroDespacho) {
+            if(idAccion == "DI") { // Nuevo Despacho Iniciativas
+                Acciones.ejecutaAccionNuevaVentana('Nuevo Despacho Iniciativa CMN',
+                    '@Url.Action("AccionDespacho", "DespachoInic")' + '?idAccion=' + idAccion + '&idDespacho=0',
+                    null,
+                    "100vp" );
+            } else if(idAccion == "CD") { // Cerrar Despacho Iniciativas
+                Acciones.ejecutaAccionNuevaVentana(titulo,
+                    '@Url.Action("CierreDespacho", "DespachoInic")' + '?idDespacho=' + idDespacho,
+                    null,
+                    "100vp"  );
+            } else if (idAccion == "DDI") { // Eliminar Despacho Iniciativas
+                deleteDespachoIniciativa(idDespacho);
+            } else if (idAccion == "BD") { // GRILLA BITACORAS DE DESPACHO INICIATIVASç
+                Acciones.ejecutaAccionNuevaVentana('Bitácora - ' + numeroDespacho,
+                    '@Url.Action("BitacorasDespachoForm", "Bitacora")' +
+                    '?idAccion=' + idAccion + '&idBitacora=0&idDesp=' + idDespacho + '&idBandeja=@ViewBag.IdBandeja' ,
+                    null,
+                    "",
+                    idAccion,
+                    false);
+            } else
+            {
+                Acciones.ejecutaAccionNuevaVentana(titulo,
+                    '@Url.Action("AccionDespacho", "DespachoInic")' + '?idAccion=' + idAccion + '&idDespacho=' + idDespacho,
+                    null,
+                    "100vp");
+            }
+        }
+
+        function deleteDespachoIniciativa(idDespacho) {
+
+            Main.showConfirm("¿Desea eliminar el Despacho Iniciativa?", "Eliminar", true)
+                .then(function (isOk) {
+                    if (!isOk) return false;
+                    kendo.ui.progress($("#gridBandeja"), true);
+                    $.ajax({
+                        type: "POST",
+                        url: '@Url.Action("EliminarDespInic", "Home")',
+                        contentType: "application/json; charset=utf-8",
+                        data: JSON.stringify({
+                            id: idDespacho
+                        }),
+                        dataType: "json",
+                        success: function (data) {
+                            kendo.ui.progress($("#gridBandeja"), false);
+                             Main.showAlert(data.Mensaje);
+                            refrescaGrid();
+                        },
+                        error: function (data) {
+                            kendo.ui.progress($("#gridBandeja"), false);
+                             Main.showAlert("Error al eliminar");
+                            refrescaGrid();
+                        }
+                    });
+            });
+        }
+
+        function refrescaGrid() {
+            var gridK = $("#gridBandeja").data("kendoGrid");
+            if (gridK) {
+                gridK.dataSource.read();
+            }
+        }
+
+        function getDatosAccion(accionId) {
+            var datosAcciones = @Html.Raw(Json.Encode(ViewBag.DatosAcciones));
+
+            for (var i = 0; i < datosAcciones.length; i++) {
+                if (datosAcciones[i].Id == accionId) {
+                    return datosAcciones[i];
+                }
+            }
+            return { "Icono": "", "Hint": "" }
+        }
+
+        function extraDataGrilla() {
+            return {
+                Dato: '@ViewBag.IdBandeja',
+                FilterText: $('#textoBusqGrid').val()
+            };
+        }
+
+        function onDataBoundGrid(e) {
+        }
+
+    </script>
+}
+
+
+<div class="container-fluid">
+    <div class="row mb-2">
+        <div class="col-md-8">
+            <div class="row">
+                <h5>
+                    <span class="badge badge-info">@ViewBag.TituloBandeja</span>
+                </h5>
+            </div>
+
+            <div class="row">
+                @if (accionesOtras.Any(a => a.IdAccion == "NR"))
+                {
+                    <h5>
+                        <a href="#" class="badge badge-light mr-3 enlace-accion" onclick="nuevoIngreso();return false;">
+                            <span class="k-icon k-i-plus-outline"></span>
+                            Nuevo Requerimiento
+                        </a>
+                    </h5>
+                }
+                else
+                {
+                    <div style="width: 200px;"></div>
+                }
+
+                @if (accionesOtras.Any(a => a.IdAccion == "RH"))
+                {
+                    <h5>
+                        <a href="#" class="badge badge-light mr-3 enlace-accion" onclick="nuevoIngresoHist();return false;">
+                            <span class="k-icon k-i-plus-outline"></span>
+                            Nuevo Requerimiento Histórico
+                        </a>
+                    </h5>
+                }
+                else
+                {
+                    <div style="width: 250px;"></div>
+                }
+
+                @if (accionesOtras.Any(a => a.IdAccion == "DI"))
+                {
+                    <h5>
+                        <a href="#" class="badge badge-light mr-3 enlace-accion" onclick="ejecutaAccion(0, 'DI', '@accionesOtras.FirstOrDefault(a => a.IdAccion == "DI").Titulo');return false;">
+                            <span class="k-icon k-i-plus-outline"></span>
+                            Nuevo Despacho Iniciativas CMN
+                        </a>
+                    </h5>
+                }
+            </div>
+        </div>
+
+    </div>
+</div>
+
+
+<div id="divBandeja">
+    @(Html.Kendo().DataSource<DespachoIniciativaDto>()
+        .Name("dataSourceGrid")
+        .Ajax(dataSource => dataSource
+            .Read(read =>
+            {
+                read.Action("DatosBandejaEntradaDespInic", "Home")
+                    .Type(HttpVerbs.Post)
+                    .Data("extraDataGrilla");
+            })
+            .Events(ev =>
+            {
+                //ev.RequestStart("function() { Main.enEspera($('#gridBandeja'), true) }")
+                ev.RequestEnd("function(e) {  Main.enEspera($('#gridBandeja'), false); Main.notificaResultado(e); }");
+            })
+            .PageSize(10)
+        )
+        // .Custom(c => c.Schema(s => s.Model(m => m.Field("FechaEmisionOficio", typeof(DateTime) ))) )
+        )
+    
+    @(Html.Kendo().Grid<DespachoIniciativaDto>()
+        .Name("gridBandeja")
+        .ToolBar(t => t.Template(@<text>
+                                     <div class="col-md-6 offset-md-6 text-right">
+                                         <label class="" for="textoBusqGrid">Buscar:</label>
+                                         <input type="search" id="textoBusqGrid" class="k-textbox" style="width: 150px">
+                                         <div class="" style="line-height: normal; font-size: 0.9em;"><b>Importante:</b> en esta bandeja se despliegan los ingresos de los últimos <span id="mesesBandeja1" class="textDiasBandeja">6 meses</span> asociados a tu perfil, si necesita buscar en la bandeja, utiliza el casillero <b>Buscar</b>. Si el ingreso es anterior a <span id="mesesBandeja2" class="textDiasBandeja">6 meses</span> debe utilizar <b>Búsqueda en Bandeja de Entrada</b>. Para registros en general, es decir no asociados a tu perfil debes utilizar <b>Búsqueda Avanzada</b>. </div>
+
+                                     </div>
+                                  </text>))
+        .EnableCustomBinding(true)
+        .DataSource("dataSourceGrid")
+        .Scrollable(scr => scr.Height("auto"))
+        .Pageable(p => p.AlwaysVisible(true).PageSizes(new int[3] {10, 50, 100}).Enabled(true)
+            .Messages(m => m.ItemsPerPage("registros por página")))
+        .Sortable()
+        .Navigatable()
+        .Events(e => e.DataBound("onDataBoundGrid"))
+         .Columns(columns =>
+        {
+            columns.Bound(c => c.NumeroDespacho)
+                .Width(130)
+                .Title("<center>Número de Despacho <span class='k-icon k-i-kpi' style='color: lightgray;'></center>");
+            columns.Bound(c => c.FechaEmisionOficio)
+                .Width(100)
+                .Title("<center>Fecha de Oficio <span class='k-icon k-i-kpi' style='color: lightgray;'></center>")
+                //.ClientTemplate("#= kendo.toString(kendo.parseDate(FechaEmisionOficio, 'yyyy-MM-dd'), 'MM/dd/yyyy') #");
+                .Format(GeneralData.FORMATO_FECHA_CORTO_GRID);
+            columns.Bound(c => c.RemitenteNombre)
+                .Width(130)
+                .Title("<center>Destinatario <span class='k-icon k-i-kpi' style='color: lightgray;'></center>");
+            columns.Bound(c => c.EstadoDespachoTitulo)
+                .Width(180)
+                .Title("<center>Estado Despacho <span class='k-icon k-i-kpi' style='color: lightgray;'></center>");
+            columns.Bound(c => c.Materia)
+                .Title("<center>Materia <span class='k-icon k-i-kpi' style='color: lightgray;'></center>")
+                .Width(250)
+                .ClientTemplate("<span title='#:data.Materia#'> #=Main.acortaTexto(data.Materia, 100)#" + "</span>");
+            columns.Bound(c => c.Id)
+                .Title("<center>Acciones</center>")
+                .Width(100)
+                .ClientTemplate("#= buildAccionesRegistro(data.EstadoId, data.Id, data.NumeroDespacho)#")
+                .Sortable(false);
+        })
+        )
+
+
+</div>

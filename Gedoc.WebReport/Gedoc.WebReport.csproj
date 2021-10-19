@@ -1,0 +1,449 @@
+﻿<Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\packages\EntityFramework.6.4.0\build\EntityFramework.props" Condition="Exists('..\packages\EntityFramework.6.4.0\build\EntityFramework.props')" />
+  <Import Project="..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.0\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props" Condition="Exists('..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.0\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props')" />
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>
+    </ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{C789AC7F-2C49-4BF0-8E9E-D3689000C578}</ProjectGuid>
+    <ProjectTypeGuids>{349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Gedoc.WebReport</RootNamespace>
+    <AssemblyName>Gedoc.WebReport</AssemblyName>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <UseIISExpress>true</UseIISExpress>
+    <Use64BitIISExpress />
+    <IISExpressSSLPort>44325</IISExpressSSLPort>
+    <IISExpressAnonymousAuthentication />
+    <IISExpressWindowsAuthentication />
+    <IISExpressUseClassicPipelineMode />
+    <UseGlobalApplicationHostFile />
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccProvider>SAK</SccProvider>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\EntityFramework.6.4.0\lib\net45\EntityFramework.dll</HintPath>
+    </Reference>
+    <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\EntityFramework.6.4.0\lib\net45\EntityFramework.SqlServer.dll</HintPath>
+    </Reference>
+    <Reference Include="log4net, Version=2.0.8.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
+      <HintPath>..\packages\log4net.2.0.8\lib\net45-full\log4net.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Microsoft.ReportViewer.Common, Version=11.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.ReportViewer.11.0.3366.16\lib\Microsoft.ReportViewer.Common.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.ReportViewer.DataVisualization, Version=11.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.ReportViewer.11.0.3366.16\lib\Microsoft.ReportViewer.DataVisualization.DLL</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.ReportViewer.Design, Version=11.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.ReportViewer.11.0.3366.16\lib\Microsoft.ReportViewer.Design.DLL</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.ReportViewer.ProcessingObjectModel, Version=11.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.ReportViewer.11.0.3366.16\lib\Microsoft.ReportViewer.ProcessingObjectModel.DLL</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.ReportViewer.WebDesign, Version=11.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.ReportViewer.11.0.3366.16\lib\Microsoft.ReportViewer.WebDesign.DLL</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.ReportViewer.WebForms, Version=11.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.ReportViewer.11.0.3366.16\lib\Microsoft.ReportViewer.WebForms.DLL</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.ReportViewer.WinForms, Version=11.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.ReportViewer.11.0.3366.16\lib\Microsoft.ReportViewer.WinForms.DLL</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.SqlServer.Types, Version=11.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.SqlServer.Types.11.0.1\lib\net20\Microsoft.SqlServer.Types.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.11.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Net.Http.Formatting, Version=5.2.7.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.WebApi.Client.5.2.7\lib\net45\System.Net.Http.Formatting.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.ServiceModel" />
+    <Reference Include="System.Web.DynamicData" />
+    <Reference Include="System.Web.Entity" />
+    <Reference Include="System.Web.ApplicationServices" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Web.Extensions" />
+    <Reference Include="System.Web.Http, Version=5.2.7.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.WebApi.Core.5.2.7\lib\net45\System.Web.Http.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.Http.WebHost, Version=5.2.7.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.WebApi.WebHost.5.2.7\lib\net45\System.Web.Http.WebHost.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Web.Services" />
+    <Reference Include="System.EnterpriseServices" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.CodeDom.Providers.DotNetCompilerPlatform">
+      <HintPath>..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.0\lib\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="..\packages\Microsoft.SqlServer.Types.11.0.1\nativeBinaries\x64\msvcr100.dll">
+      <Link>SqlServerTypes\x64\msvcr100.dll</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\packages\Microsoft.SqlServer.Types.11.0.1\nativeBinaries\x64\SqlServerSpatial110.dll">
+      <Link>SqlServerTypes\x64\SqlServerSpatial110.dll</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\packages\Microsoft.SqlServer.Types.11.0.1\nativeBinaries\x86\msvcr100.dll">
+      <Link>SqlServerTypes\x86\msvcr100.dll</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\packages\Microsoft.SqlServer.Types.11.0.1\nativeBinaries\x86\SqlServerSpatial110.dll">
+      <Link>SqlServerTypes\x86\SqlServerSpatial110.dll</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Connected Services\WSGedoc\Gedoc.WebReport.WSGedoc.DatosSearch.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <Content Include="Connected Services\WSGedoc\Gedoc.WebReport.WSGedoc.DespachoBL.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <Content Include="Connected Services\WSGedoc\Gedoc.WebReport.WSGedoc.RequerimientoBL.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <Content Include="Connected Services\WSGedoc\Gedoc.WebReport.WSGedoc.ResumenGrupo.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <Content Include="Connected Services\WSGedoc\Gedoc.WebReport.WSGedoc.SessionBL.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <None Include="Connected Services\WSGedoc\configuration91.svcinfo" />
+    <None Include="Connected Services\WSGedoc\configuration.svcinfo" />
+    <Content Include="Connected Services\WSGedoc\Gedoc.WebReport.WSGedoc.LogTransacciones.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <None Include="Connected Services\WSGedoc\Reference.svcmap">
+      <Generator>WCF Proxy Generator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
+    <None Include="Connected Services\WSGedoc\WsDespachos1.disco" />
+    <Content Include="Content\bootstrap-theme.css" />
+    <Content Include="Content\bootstrap-theme.min.css" />
+    <Content Include="Content\bootstrap.css" />
+    <Content Include="Content\bootstrap.min.css" />
+    <Content Include="Content\images\favicon.ico" />
+    <Content Include="Content\images\Icono-Adjuntos.png" />
+    <Content Include="Content\images\Icono-Asignar.png" />
+    <Content Include="Content\images\Icono-AsignarP.png" />
+    <Content Include="Content\images\Icono-Bitacora.png" />
+    <Content Include="Content\images\icono-Cerrar.png" />
+    <Content Include="Content\images\Icono-Descargar.png" />
+    <Content Include="Content\images\Icono-Despacho.png" />
+    <Content Include="Content\images\Icono-Editar.png" />
+    <Content Include="Content\images\Icono-EditaUT.png" />
+    <Content Include="Content\images\Icono-Historico.png" />
+    <Content Include="Content\images\Icono-IngresoCentral.png" />
+    <Content Include="Content\images\Icono-Nuevo.png" />
+    <Content Include="Content\images\Icono-Priorizar.png" />
+    <Content Include="Content\images\Icono-Reasignar.png" />
+    <Content Include="Content\images\Icono-ReAsignarP.png" />
+    <Content Include="Content\images\Icono-Search.png" />
+    <Content Include="Content\images\LogoCMN.png" />
+    <Content Include="Content\images\papelera.png" />
+    <Content Include="Content\images\Semaforo-Amarillo.png" />
+    <Content Include="Content\images\Semaforo-Neutro.png" />
+    <Content Include="Content\images\Semaforo-Rojo.png" />
+    <Content Include="Content\images\Semaforo-Verde.png" />
+    <Content Include="Content\images\semaforo.png" />
+    <Content Include="Content\kendo\2020.1.114\Bootstrap\editor.png" />
+    <Content Include="Content\kendo\2020.1.114\Bootstrap\imagebrowser.png" />
+    <Content Include="Content\kendo\2020.1.114\Bootstrap\indeterminate.gif" />
+    <Content Include="Content\kendo\2020.1.114\Bootstrap\loading-image.gif" />
+    <Content Include="Content\kendo\2020.1.114\Bootstrap\loading.gif" />
+    <Content Include="Content\kendo\2020.1.114\Bootstrap\loading_2x.gif" />
+    <Content Include="Content\kendo\2020.1.114\Bootstrap\markers.png" />
+    <Content Include="Content\kendo\2020.1.114\Bootstrap\markers_2x.png" />
+    <Content Include="Content\kendo\2020.1.114\Bootstrap\slider-h.gif" />
+    <Content Include="Content\kendo\2020.1.114\Bootstrap\slider-v.gif" />
+    <Content Include="Content\kendo\2020.1.114\Bootstrap\sprite.png" />
+    <Content Include="Content\kendo\2020.1.114\Bootstrap\sprite_2x.png" />
+    <Content Include="Content\kendo\2020.1.114\Bootstrap\sprite_kpi.png" />
+    <Content Include="Content\kendo\2020.1.114\Bootstrap\sprite_kpi_2x.png" />
+    <Content Include="Content\kendo\2020.1.114\Default\editor.png" />
+    <Content Include="Content\kendo\2020.1.114\Default\imagebrowser.png" />
+    <Content Include="Content\kendo\2020.1.114\Default\indeterminate.gif" />
+    <Content Include="Content\kendo\2020.1.114\Default\loading-image.gif" />
+    <Content Include="Content\kendo\2020.1.114\Default\loading.gif" />
+    <Content Include="Content\kendo\2020.1.114\Default\loading_2x.gif" />
+    <Content Include="Content\kendo\2020.1.114\Default\markers.png" />
+    <Content Include="Content\kendo\2020.1.114\Default\markers_2x.png" />
+    <Content Include="Content\kendo\2020.1.114\Default\slider-h.gif" />
+    <Content Include="Content\kendo\2020.1.114\Default\slider-v.gif" />
+    <Content Include="Content\kendo\2020.1.114\Default\sprite.png" />
+    <Content Include="Content\kendo\2020.1.114\Default\sprite_2x.png" />
+    <Content Include="Content\kendo\2020.1.114\Default\sprite_kpi.png" />
+    <Content Include="Content\kendo\2020.1.114\Default\sprite_kpi_2x.png" />
+    <Content Include="Content\kendo\2020.1.114\fonts\DejaVu\LICENSE.txt" />
+    <Content Include="Content\kendo\2020.1.114\fonts\glyphs\KendoUIGlyphs.svg" />
+    <Content Include="Content\kendo\2020.1.114\fonts\glyphs\WebComponentsIcons.svg" />
+    <Content Include="Content\kendo\2020.1.114\images\back.png" />
+    <Content Include="Content\kendo\2020.1.114\images\kendoui.svg" />
+    <Content Include="Content\kendo\2020.1.114\images\wp8_icons.png" />
+    <Content Include="Content\kendo\2020.1.114\images\wp8_inverseicons.png" />
+    <Content Include="Content\kendo\2020.1.114\kendo.bootstrap-v4.min.css" />
+    <Content Include="Content\kendo\2020.1.114\kendo.bootstrap.min.css" />
+    <Content Include="Content\kendo\2020.1.114\kendo.common-bootstrap.min.css" />
+    <Content Include="Content\kendo\2020.1.114\kendo.common.min.css" />
+    <Content Include="Content\Site.css" />
+    <Content Include="Global.asax" />
+    <Content Include="css\jquery.datatable.min.css" />
+    <Content Include="Content\bootstrap-theme.css.map" />
+    <Content Include="Content\bootstrap-theme.min.css.map" />
+    <Content Include="Content\bootstrap.css.map" />
+    <Content Include="Content\bootstrap.min.css.map" />
+    <Content Include="Content\kendo\2020.1.114\fonts\DejaVu\DejaVuSans-Bold.ttf" />
+    <Content Include="Content\kendo\2020.1.114\fonts\DejaVu\DejaVuSans-BoldOblique.ttf" />
+    <Content Include="Content\kendo\2020.1.114\fonts\DejaVu\DejaVuSans-ExtraLight.ttf" />
+    <Content Include="Content\kendo\2020.1.114\fonts\DejaVu\DejaVuSans-Oblique.ttf" />
+    <Content Include="Content\kendo\2020.1.114\fonts\DejaVu\DejaVuSans.ttf" />
+    <Content Include="Content\kendo\2020.1.114\fonts\DejaVu\DejaVuSansMono-Bold.ttf" />
+    <Content Include="Content\kendo\2020.1.114\fonts\DejaVu\DejaVuSansMono-BoldOblique.ttf" />
+    <Content Include="Content\kendo\2020.1.114\fonts\DejaVu\DejaVuSansMono-Oblique.ttf" />
+    <Content Include="Content\kendo\2020.1.114\fonts\DejaVu\DejaVuSansMono.ttf" />
+    <Content Include="Content\kendo\2020.1.114\fonts\DejaVu\DejaVuSerif-Bold.ttf" />
+    <Content Include="Content\kendo\2020.1.114\fonts\DejaVu\DejaVuSerif-BoldItalic.ttf" />
+    <Content Include="Content\kendo\2020.1.114\fonts\DejaVu\DejaVuSerif-Italic.ttf" />
+    <Content Include="Content\kendo\2020.1.114\fonts\DejaVu\DejaVuSerif.ttf" />
+    <Content Include="Content\kendo\2020.1.114\fonts\glyphs\KendoUIGlyphs.eot" />
+    <Content Include="Content\kendo\2020.1.114\fonts\glyphs\KendoUIGlyphs.ttf" />
+    <Content Include="Content\kendo\2020.1.114\fonts\glyphs\KendoUIGlyphs.woff" />
+    <Content Include="Content\kendo\2020.1.114\fonts\glyphs\WebComponentsIcons.eot" />
+    <Content Include="Content\kendo\2020.1.114\fonts\glyphs\WebComponentsIcons.ttf" />
+    <Content Include="Content\kendo\2020.1.114\fonts\glyphs\WebComponentsIcons.woff" />
+    <Content Include="Content\kendo\2020.1.114\images\kendoui.ttf" />
+    <Content Include="Content\kendo\2020.1.114\images\kendoui.woff" />
+    <Content Include="Content\kendo\2020.1.114\kendo.bootstrap-v4.min.css.map" />
+    <Content Include="Content\kendo\2020.1.114\kendo.bootstrap.min.css.map" />
+    <Content Include="Content\kendo\2020.1.114\kendo.common-bootstrap.min.css.map" />
+    <Content Include="Content\kendo\2020.1.114\kendo.common.min.css.map" />
+    <Content Include="libs\loading-overlay\loadingoverlay.min.js" />
+    <Content Include="libs\moment\moment-with-locales.min.js" />
+    <Content Include="scripts\bootbox.min.js" />
+    <Content Include="scripts\bootstrap.js" />
+    <Content Include="scripts\bootstrap.min.js" />
+    <None Include="Connected Services\WSGedoc\WsDespachos1.wsdl" />
+    <None Include="scripts\jquery-3.4.1.intellisense.js" />
+    <Content Include="scripts\jquery-3.4.1.js" />
+    <Content Include="scripts\jquery-3.4.1.min.js" />
+    <Content Include="scripts\jquery-3.4.1.slim.js" />
+    <Content Include="scripts\jquery-3.4.1.slim.min.js" />
+    <Content Include="scripts\jquery-rut\jquery.rut.js" />
+    <Content Include="scripts\jquery-rut\jquery.rut.min.js" />
+    <Content Include="scripts\jquery.magicsearch.min.js" />
+    <Content Include="scripts\jquery-3.4.1.min.map" />
+    <Content Include="scripts\jquery-3.4.1.slim.min.map" />
+    <None Include="scripts\jquery.validate-vsdoc.js" />
+    <Content Include="scripts\jquery.validate.js" />
+    <Content Include="scripts\jquery.validate.min.js" />
+    <Content Include="scripts\jquery.validate.unobtrusive.js" />
+    <Content Include="scripts\jquery.validate.unobtrusive.min.js" />
+    <Content Include="scripts\kendo.modernizr.custom.js" />
+    <Content Include="scripts\kendo\2020.1.114\cultures\kendo.culture.es-CL.min.js" />
+    <Content Include="scripts\kendo\2020.1.114\cultures\kendo.culture.es-ES.min.js" />
+    <Content Include="scripts\kendo\2020.1.114\cultures\kendo.culture.es.min.js" />
+    <Content Include="scripts\kendo\2020.1.114\jquery.min.js" />
+    <Content Include="scripts\kendo\2020.1.114\jszip.min.js" />
+    <Content Include="scripts\bootstrap.min.js.map" />
+    <None Include="Properties\PublishProfiles\FolderProfile.pubxml" />
+    <Content Include="scripts\kendo\2020.1.114\cultures\kendo.culture.es-CL.min.js.map" />
+    <Content Include="scripts\kendo\2020.1.114\cultures\kendo.culture.es-ES.min.js.map" />
+    <Content Include="scripts\kendo\2020.1.114\cultures\kendo.culture.es.min.js.map" />
+    <None Include="scripts\kendo\2020.1.114\kendo.all-vsdoc.js" />
+    <None Include="scripts\kendo\2020.1.114\kendo.all.min.intellisense.js" />
+    <Content Include="scripts\kendo\2020.1.114\kendo.all.min.js" />
+    <Content Include="scripts\kendo\2020.1.114\kendo.aspnetmvc.min.js" />
+    <Content Include="scripts\kendo\2020.1.114\messages\kendo.messages.es-CL.min.js" />
+    <Content Include="scripts\kendo\2020.1.114\messages\kendo.messages.es-CL.min.js.map" />
+    <Content Include="scripts\kendo\2020.1.114\messages\kendo.messages.es-ES.min.js" />
+    <Content Include="scripts\kendo\2020.1.114\messages\kendo.messages.es-ES.min.js.map" />
+    <Content Include="scripts\kendo\2020.1.114\pako_deflate.min.js" />
+    <Content Include="scripts\Main.js" />
+    <Content Include="scripts\modernizr-2.8.3.js" />
+    <Content Include="scripts\moment-with-locales.js" />
+    <Content Include="SqlServerTypes\readme.htm" />
+    <Content Include="VerAuditoria.aspx" />
+    <Content Include="VistaReporte.aspx" />
+    <Content Include="VistaReporteProcMasivos.aspx" />
+    <Content Include="VistaReporteTramites.aspx" />
+    <Content Include="Web.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="App_Start\WebApiConfig.cs" />
+    <Compile Include="Connected Services\WSGedoc\Reference.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Compile>
+    <Compile Include="Controllers\GenericoController.cs" />
+    <Compile Include="Dtos\Reporte.cs" />
+    <Compile Include="Dtos\ResultadoOperacion.cs" />
+    <Compile Include="Enums\ListasGenericas.cs" />
+    <Compile Include="Global.asax.cs">
+      <DependentUpon>Global.asax</DependentUpon>
+    </Compile>
+    <Compile Include="Logging\ActionLogger.cs" />
+    <Compile Include="Logging\Logger.cs" />
+    <Compile Include="Models\GenericoModel.cs" />
+    <Compile Include="Models\LogTransaccionModel.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Controllers\ReporteController.cs" />
+    <Compile Include="App_Code\ReportViewer_ES.cs" />
+    <Compile Include="SqlServerTypes\Loader.cs" />
+    <Compile Include="VerAuditoria.aspx.cs">
+      <DependentUpon>VerAuditoria.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="VerAuditoria.aspx.designer.cs">
+      <DependentUpon>VerAuditoria.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="VistaReporte.aspx.cs">
+      <DependentUpon>VistaReporte.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="VistaReporte.aspx.designer.cs">
+      <DependentUpon>VistaReporte.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="VistaReporteProcMasivos.aspx.cs">
+      <DependentUpon>VistaReporteProcMasivos.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="VistaReporteProcMasivos.aspx.designer.cs">
+      <DependentUpon>VistaReporteProcMasivos.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="VistaReporteTramites.aspx.cs">
+      <DependentUpon>VistaReporteTramites.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="VistaReporteTramites.aspx.designer.cs">
+      <DependentUpon>VistaReporteTramites.aspx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+    <Content Include="RDL\Reporte_Despachos.rdl" />
+    <Content Include="RDL\Reporte_Despachos_IniciativasCMN.rdl" />
+    <Content Include="RDL\Reporte_Graficos_Estadisticas.rdl" />
+    <Content Include="RDL\Reporte_Log_Transacciones.rdl" />
+    <Content Include="RDL\Reporte_ProcesosMasivos.rdl" />
+    <Content Include="RDL\Reporte_Requerimientos.rdl" />
+    <Content Include="RDL\Reporte_Requerimientos_DocumentosContablesDiario.rdl" />
+    <Content Include="RDL\Reporte_Requerimientos_EnCopia.rdl" />
+    <Content Include="RDL\Reporte_Requerimientos_EntregasDiarias.rdl" />
+    <Content Include="RDL\Reporte_Requerimientos_Etiquetas.rdl" />
+    <Content Include="RDL\Reporte_Requerimientos_GrupoAuditoria.rdl" />
+    <Content Include="RDL\Reporte_Requerimientos_TimbrajedePlanos.rdl" />
+    <Content Include="RDL\Reporte_Tabla_de_Comision.rdl" />
+    <Content Include="RDL\Reporte_TramitesyCasos.rdl" />
+    <Content Include="scripts\kendo\2020.1.114\jquery.min.map" />
+    <Content Include="scripts\kendo\2020.1.114\kendo.all.min.js.map" />
+    <Content Include="scripts\kendo\2020.1.114\kendo.aspnetmvc.min.js.map" />
+    <None Include="Web.Debug.config">
+      <DependentUpon>Web.config</DependentUpon>
+    </None>
+    <None Include="Web.Release.config">
+      <DependentUpon>Web.config</DependentUpon>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Gedoc.Helpers\Gedoc.Helpers.csproj">
+      <Project>{FE77FDB2-C678-4B7A-A409-7DA3F1846EE3}</Project>
+      <Name>Gedoc.Helpers</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Gedoc.Repositorio\Gedoc.Repositorio.csproj">
+      <Project>{8ebec630-05cc-4f63-ad66-847b44c025ad}</Project>
+      <Name>Gedoc.Repositorio</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadata Include="Connected Services\" />
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadataStorage Include="Connected Services\WSGedoc\" />
+  </ItemGroup>
+  <ItemGroup />
+  <PropertyGroup>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+  </PropertyGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(VSToolsPath)\WebApplications\Microsoft.WebApplication.targets" Condition="'$(VSToolsPath)' != ''" />
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" Condition="false" />
+  <ProjectExtensions>
+    <VisualStudio>
+      <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">
+        <WebProjectProperties>
+          <UseIIS>True</UseIIS>
+          <AutoAssignPort>True</AutoAssignPort>
+          <DevelopmentServerPort>14830</DevelopmentServerPort>
+          <DevelopmentServerVPath>/</DevelopmentServerVPath>
+          <IISUrl>http://127.0.0.1/Gedoc.WebReport</IISUrl>
+          <NTLMAuthentication>False</NTLMAuthentication>
+          <UseCustomServer>False</UseCustomServer>
+          <CustomServerUrl>
+          </CustomServerUrl>
+          <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
+        </WebProjectProperties>
+      </FlavorProperties>
+    </VisualStudio>
+  </ProjectExtensions>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>Este proyecto hace referencia a los paquetes NuGet que faltan en este equipo. Use la restauración de paquetes NuGet para descargarlos. Para obtener más información, consulte http://go.microsoft.com/fwlink/?LinkID=322105. El archivo que falta es {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.0\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.0\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props'))" />
+    <Error Condition="!Exists('..\packages\EntityFramework.6.4.0\build\EntityFramework.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\EntityFramework.6.4.0\build\EntityFramework.props'))" />
+    <Error Condition="!Exists('..\packages\EntityFramework.6.4.0\build\EntityFramework.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\EntityFramework.6.4.0\build\EntityFramework.targets'))" />
+  </Target>
+  <Import Project="..\packages\EntityFramework.6.4.0\build\EntityFramework.targets" Condition="Exists('..\packages\EntityFramework.6.4.0\build\EntityFramework.targets')" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

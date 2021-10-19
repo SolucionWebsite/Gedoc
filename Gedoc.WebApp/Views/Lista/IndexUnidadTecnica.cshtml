@@ -1,0 +1,174 @@
+﻿@using Gedoc.Helpers
+@using Gedoc.Helpers.Dto
+@using Gedoc.Helpers.Enum
+@using Gedoc.WebApp.Models
+
+@{
+    ViewBag.Title = "Mantenedor de Unidad Técnica";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<script src="~/Scripts/accionesbandeja.js"></script>
+
+<style>
+    /*Sin esto no se muestra en el pager del grid  el combo de cantidad de registros a mostrar ni
+    el texto de "Elementos mostrados X de T" a pesar de q aparentemente esta bien configurado para q se muestre*/
+    #gridUnidadTecn .k-pager-sizes.k-label,
+    #gridUnidadTecn .k-pager-info.k-label {
+        display: flex !important;
+    }
+
+    #gridUnidadTecn {
+        font-size: 0.8em;
+    }
+</style>
+
+<script>
+
+</script>
+
+<h4 class="header-level1">@ViewBag.Title</h4>
+
+<div class="div-main">
+
+
+    @(Html.Kendo().DataSource<UnidadTecnicaDto>()
+            .Name("dataSourceGridUnidadTecn")
+            .Ajax(dataSource => dataSource
+                .Read(read =>
+                {
+                    read.Action("GetUnidadTecnicaAll", "Lista")
+                        .Type(HttpVerbs.Post);
+                })
+                .ServerOperation(false)
+                .PageSize(10)
+            )
+            )
+    @(Html.Kendo().Grid<UnidadTecnicaDto>()
+            .Name("gridUnidadTecn")
+            .HtmlAttributes(new { @class = "w-100 k-grid-alternate" })
+            .DataSource("dataSourceGridUnidadTecn")
+            .Scrollable(scr => scr.Height("auto"))
+            .Pageable(p => p.AlwaysVisible(true).PageSizes(new int[3] { 10, 50, 100 }).Enabled(true).Info(true)
+                .Messages(m => m.ItemsPerPage("registros por página")))
+            .Sortable()
+            .Navigatable()
+            .ToolBar(toolbar =>
+            {
+                toolbar.Search();
+                toolbar.Custom()
+                    .HtmlAttributes ( new { onclick= "nuevoUnidadTecn(); return false;" } )
+                    .Name("NuevoUnidadTecn")
+                        .Text("Nuevo registro")
+                        .IconClass("k-icon k-i-plus-outline")
+                        .Url("#")
+                        ;
+            })
+            .Columns(columns =>
+            {
+                columns.Bound(c => c.Titulo)
+                    .Title("<center>Unidad Técnica<span class='k-icon k-i-kpi' style='color: lightgray;'></span></center>");
+                columns.Bound(c => c.ResponsableNombresApellidos)
+                    //.Width(100)
+                    .Title("<center>Responsable UT<span class='k-icon k-i-kpi' style='color: lightgray;'></span></center>");
+                columns.Bound(c => c.SubroganteNombresApellidos)
+                    //.Width(100)
+                    .Title("<center>Subrogante<span class='k-icon k-i-kpi' style='color: lightgray;'></span></center>");
+                columns.Bound(c => c.EmailResponsable)
+                    .Width(200)
+                    .Title("<center>Correo Responsable UT</center>");
+                columns.Bound(c => c.Id)
+                    .Width(200)
+                    .Title("<center>Acción</center>")
+                    .Sortable(false)
+                    .ClientTemplate("#= buildAccionesUnidadTecn(data.Id, data.Titulo) #");
+
+            })
+            )
+
+
+</div>
+
+<script>
+    $(function () {
+        $(".k-grid-search input").prop("placeholder", "Buscar...");
+        $(".k-grid-search input").prop("title", "Buscar...");
+    });
+
+    function refrescaGridUnidadTecn() {
+        var gridK = $("#gridUnidadTecn").data("kendoGrid");
+        if (gridK) {
+            gridK.dataSource.read();
+        }
+    }
+
+    function buildAccionesUnidadTecn(idUt, titulo) {
+        var enlace = "";
+        var btn = "<button class='k-button mr-1' onclick='integrantesUnidadTecn(\"" + idUt + "\", \"" + titulo +
+            "\")' title='Integrantes' type='button' data-role='button' role='button'><span class='k-icon k-i-myspace'></span></button>";
+        enlace += btn;
+        btn = "<button class='k-button mr-1' onclick='editarUnidadTecn(\"" + idUt +
+            "\")' title='Editar' type='button' data-role='button' role='button'><span class='k-icon k-i-edit'></span></button>";
+        enlace += btn;
+        btn = "<button class='k-button' id='btnDelUt" + idUt +
+            "' onclick='eliminarUnidadTecn(\"" + idUt + "\", \"" + titulo +
+            "\")' title='Eliminar' type='button' data-role='button' role='button'><span class='k-icon k-i-trash'></span></button>";
+        enlace += btn;
+
+        enlace = '<div style="display: inline-flex;">' + enlace + '</div>';
+        return enlace;
+    }
+
+    function nuevoUnidadTecn() {
+        Acciones.ejecutaAccionNuevaVentana("Nueva Unidad Técnica",
+            '@Url.Action("FormUnidadTecnica")' + '?utId=0'
+            , 600, '', "BITA", refrescaGridUnidadTecn);
+    }
+
+    function editarUnidadTecn(idUt) {
+        Acciones.ejecutaAccionNuevaVentana("Editar Unidad Técnica",
+            '@Url.Action("FormUnidadTecnica")' + '?utId=' + idUt
+            , 600, '', "BITA", refrescaGridUnidadTecn);
+    }
+
+    function integrantesUnidadTecn(idUt, titulo) {
+        Acciones.ejecutaAccionNuevaVentana("Integrantes Unidad Técnica " + titulo,
+            '@Url.Action("FormIntegrantesUnidadTecnica")' + '?utId=' + idUt
+            , 800, '100vp', "BITA", refrescaGridUnidadTecn);
+    }
+
+    function eliminarUnidadTecn(idUt, titulo) {
+        var btnEliminar = "#btnDelUt" + idUt;
+        Main.showConfirm("Se va a eliminar la unidad técnica " + titulo + ", ¿desea continuar?", "Eliminar registro", true)
+            .then(function (esOk) {
+                if (esOk) {
+                    Main.wait("", btnEliminar);
+                    var url = "@Url.Action("EliminaUnidadTecnica")?utId=" + idUt;
+                    $.ajax({
+                        type: "POST",
+                        url: url
+                        //dataType: "json",
+                    }).done(function(response) {
+                        Main.unwait(btnEliminar);
+                        if (response.Codigo) {
+                            refrescaGridUnidadTecn();
+                            if (response.Codigo > 0) {
+                                Main.showInfo(response.Mensaje, "Registro eliminado");
+                            } else {
+                                Main.showError(response.Mensaje, "Error");
+                            }
+                        } else {
+                            Main.showError("Error inesperado al realizar la operación, por favor, vuelva a intentarlo",
+                                "Error");
+                        }
+                    }).fail(function(error) {
+                        Main.unwait(btnEliminar);
+                        Main.showError("Ha ocurrido un error al realizar la operación, por favor, vuelva a intentarlo.",
+                            "Error");
+                    });
+                }
+            });
+    }
+
+
+
+</script>

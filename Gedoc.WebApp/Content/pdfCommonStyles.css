@@ -1,0 +1,63 @@
+﻿body {
+    font-size: 11pt;
+    font-family: Verdana, Geneva, sans-serif;
+}
+
+/*espacio entre líneas en textos para editor de plantilla y editor de borrador de oficio (se excluyen los textos del encabezado y del pie de página*/
+p, span,
+body.bodyPdf p, body.bodyPdf span /* el generador de Pdf no es compatible con el selector :not() definido más arriba, por eso se agregan estos selectores*/ {
+    line-height: 200% !important;
+}
+
+/* Estilos de pie y encabezado de página. 
+    Estos estilos son para la plantilla de oficio, no para la impresión pdf. Para q un estilo definido aquí se refleje
+    en el encabezado o pie de página del pdf es necesario definir ese estilo para el selector .encabezado-impresion o .pie-impresion en el
+    fichero hiQPdfStyles.css.
+*/
+div.pie-pdf p, div.pie-pdf span {
+    line-height: inherit !important;
+}
+
+div.pie-pdf p {
+    margin-top: -3px !important;
+    margin-bottom: 0px !important;
+}
+
+/*Tipo y tamaño del letra param los números en las listas numeradas*/
+ol {
+    font-family: Verdana, Geneva, sans-serif;
+    font-size: 11pt;
+}
+
+/*borde en celdas de las tablas*/
+table {
+    border-spacing: 0px !important;
+}
+
+table td {
+    border: 1px solid black !important;
+}
+
+p {
+    margin-bottom: 0px;
+    margin-top: auto;
+}
+
+ol, ul {
+    margin-top: auto;
+}
+
+/* Para lista con raya */
+ul.dashed {
+    list-style-type: none;
+}
+
+ul.dashed > li {
+    text-indent: -22px;
+}
+
+ul.dashed > li:before {
+    content: "-";
+    text-indent: -5px;
+    margin-right: 15px;
+}

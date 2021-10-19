@@ -1,0 +1,122 @@
+﻿
+
+@{
+    ViewBag.Title = "Reportes Disponibles";
+}
+
+    <style>
+        .estadosrv {
+            font-size: 0.8em;
+        }
+
+        #grid {
+            font-size: 0.8em;
+        }
+
+            #grid td {
+                padding: 6px;
+            }
+    </style>
+
+    <h4 class="header-level1">@ViewBag.Title</h4>
+
+    <div id="pnReportes" class="div-main">
+
+        <!-- Cabecera de página y botones de carga de datos -->
+        <div class="row" style="margin-top: 15px;">
+
+            <div class="col-md-2">
+                <button id="btnCargaEtl" type="button" class="btn  btn-outline-dark btn-sm" style="width: 200px" onclick="cargaDatosEtl()">
+                    <i class="k-icon k-i-gear" aria-hidden="true" style="width: 25px"></i> Procesar datos
+                </button>
+
+            </div>
+
+            <div class="col-md-10">
+                <button id="btnEstadoEtl" type="button" class="btn  btn-outline-dark btn-sm" style="width: 200px" onclick="actualizaEstadoEtl()">
+                    <i class="k-icon k-i-reload" aria-hidden="true" style="width: 25px"></i>Refrescar estado
+                </button>
+                <span class="estadosrv">Estado actual del servicio de carga de datos: </span> <span id="estadoSrv" class="estadosrv"></span>
+            </div>
+
+        </div>
+
+        <div class="row">
+
+            <div class="col-md-12">
+                <span class="mb-3 mt-2 help-block">Debido a la cantidad de información en el sistema, se debe utilizar trazos de tiempo inferiores a los 5 meses en los filtros. En caso de solicitar sólo un día se recomienda dejar marcados dos, por ejemplo Fecha desde 14/05/2018 al 15/05/2018</span>
+
+            </div>
+        </div>
+    </div>
+
+
+    @(Html.Kendo().Grid<Gedoc.Repositorio.Model.Reporte>()
+    .Name("grid")
+    .Columns(columns =>
+    {
+        columns.Bound(c => c.Nombre)
+            .ClientTemplate("<a href='' onclick='EjecutarReporte(#=Id#); return false;' style='color:blue' >#=Nombre#</a>")
+            .Width(400);
+        columns.Bound(c => c.Descripcion);
+        //columns.Bound(c => c.NombreReporte);
+    })
+    .Selectable(selectable =>
+    {
+        selectable.Mode(GridSelectionMode.Single);
+        selectable.Type(GridSelectionType.Row);
+    })
+    .Scrollable(scr => scr.Height("auto"))
+    .DataSource(dataSource => dataSource
+        .Ajax()
+        .Read(read => read.Action("Reporte_Read", "Reporte"))
+    )
+    )
+
+    <script type="text/javascript">
+
+    $(function() {
+        // $("#estadoSrv").text("Última carga: 26-03-2020 23:02. En espera de próxima carga de datos.");
+        actualizaEstadoEtl();
+    });
+
+    function EjecutarReporte(id) {
+        location.href = '@Url.Action("EjecutarReporte", "Reporte")' + '?Id=' + id.toString();
+    }
+
+    function cargaDatosEtl() {
+        Main.wait("", "#btnCargaEtl");
+        $("#estadoSrv").html("Ejecutando carga de datos.");
+        var url = "@Url.Action("ProcesaEtl", new { opcion = 0 })";
+        $.ajax({
+            type: "GET",
+            cache: false,
+            url: url,
+            contentType: "application/json; charset=utf-8"
+        }).done(function (resultquery) {
+            Main.unwait("#btnCargaEtl");
+            actualizaEstadoEtl();
+            Main.showInfo("Carga de datos ejecutada.", null);
+        }).fail(function (xhr, result, status) {
+            Main.unwait("#btnCargaEtl");
+            Main.showAlert('Advertencia: ' + xhr.statusText + ' ' + xhr.responseText + ' ' + xhr.status);
+        });
+    }
+
+    function actualizaEstadoEtl() {
+        Main.wait("", "#btnEstadoEtl");
+        var url = "@Url.Action("ProcesaEtl", new { opcion = 1 })";
+        $.ajax({
+            type: "GET",
+            cache: false,
+            url: url,
+            contentType: "application/json; charset=utf-8"
+        }).done(function (resultquery) {
+            Main.unwait("#btnEstadoEtl");
+            $("#estadoSrv").html(resultquery);
+        }).fail(function (xhr, result, status) {
+            Main.unwait("#btnEstadoEtl");
+            Main.showAlert('Advertencia: ' + xhr.statusText + ' ' + xhr.responseText + ' ' + xhr.status);
+        });
+    }
+    </script>

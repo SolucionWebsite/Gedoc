@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+ <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <edmx:Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+    <!-- Diagram content (shape and connector positions) -->
+    <edmx:Diagrams>
+      <Diagram DiagramId="38cc87b40d8345758f0cb2094cea4143" Name="Diagram1" ZoomLevel="32">
+        <AssociationConnector Association="GedocDbModel.Requerimiento_fk_SolUrg1" />
+        <EntityTypeShape EntityType="GedocDbModel.AccionBandeja" Width="1.5" PointX="5.25" PointY="55" />
+        <EntityTypeShape EntityType="GedocDbModel.AccionesPermitidasBandejas" Width="1.5" PointX="7.5" PointY="42.625" />
+        <EntityTypeShape EntityType="GedocDbModel.Adjunto" Width="1.5" PointX="12" PointY="14.25" />
+        <EntityTypeShape EntityType="GedocDbModel.BandejaEntrada" Width="1.5" PointX="5.25" PointY="58.375" />
+        <EntityTypeShape EntityType="GedocDbModel.Bitacora" Width="1.5" PointX="9.75" PointY="10.375" />
+        <EntityTypeShape EntityType="GedocDbModel.Caracter" Width="1.5" PointX="5.25" PointY="43" />
+        <EntityTypeShape EntityType="GedocDbModel.Caso" Width="1.5" PointX="5.25" PointY="48.5" />
+        <EntityTypeShape EntityType="GedocDbModel.Despacho" Width="1.5" PointX="3" PointY="8.75" />
+        <EntityTypeShape EntityType="GedocDbModel.DespachoIniciativa" Width="1.5" PointX="3" PointY="1.125" />
+        <EntityTypeShape EntityType="GedocDbModel.EstadoDespacho" Width="1.5" PointX="0.75" PointY="6.5" />
+        <EntityTypeShape EntityType="GedocDbModel.EstadoRegistro" Width="1.5" PointX="9.75" PointY="1.5" />
+        <EntityTypeShape EntityType="GedocDbModel.EstadoRequerimiento" Width="1.5" PointX="5.25" PointY="45.625" />
+        <EntityTypeShape EntityType="GedocDbModel.EtapaRequerimiento" Width="1.5" PointX="5.25" PointY="40.125" />
+        <EntityTypeShape EntityType="GedocDbModel.Menu" Width="1.5" PointX="0.75" PointY="26.5" />
+        <EntityTypeShape EntityType="GedocDbModel.MonumentoNacional" Width="1.5" PointX="5.25" PointY="35.625" />
+        <EntityTypeShape EntityType="GedocDbModel.MotivoCierre" Width="1.5" PointX="5.25" PointY="18.375" />
+        <EntityTypeShape EntityType="GedocDbModel.Remitente" Width="1.5" PointX="5.25" PointY="10.375" />
+        <EntityTypeShape EntityType="GedocDbModel.Rol" Width="1.5" PointX="3" PointY="26.875" />
+        <EntityTypeShape EntityType="GedocDbModel.TipoTramite" Width="1.5" PointX="5.25" PointY="30.875" />
+        <EntityTypeShape EntityType="GedocDbModel.UnidadTecnica" Width="1.5" PointX="3" PointY="30.375" />
+        <EntityTypeShape EntityType="GedocDbModel.Usuario" Width="1.5" PointX="5.25" PointY="26.125" />
+        <EntityTypeShape EntityType="GedocDbModel.vw_AccionesBandeja" Width="1.5" PointX="11.75" PointY="4.75" />
+        <EntityTypeShape EntityType="GedocDbModel.vw_BandejaEntradaDespachoInic" Width="1.5" PointX="11.75" PointY="10.75" />
+        <EntityTypeShape EntityType="GedocDbModel.vw_Usuario" Width="1.5" PointX="9.75" PointY="17.75" />
+        <AssociationConnector Association="GedocDbModel.AccionesPermitidasBandejas_FK_Acc" />
+        <AssociationConnector Association="GedocDbModel.AccionesPermitidasBandejas_FK_Band" />
+        <AssociationConnector Association="GedocDbModel.AccionesPermitidasBandejas_FK_Est" />
+        <AssociationConnector Association="GedocDbModel.AccionesPermitidasBandejas_FK_Eta" />
+        <AssociationConnector Association="GedocDbModel.Despacho_fk_Dest" />
+        <AssociationConnector Association="GedocDbModel.Despacho_fk_Est" />
+        <AssociationConnector Association="GedocDbModel.TipoTramite_fk_Est" />
+        <AssociationConnector Association="GedocDbModel.TipoTramite_fk_Eta" />
+        <AssociationConnector Association="GedocDbModel.TipoTramite_fk_Ut" />
+        <AssociationConnector Association="GedocDbModel.UnidadTecnica_fk_Resp" />
+        <AssociationConnector Association="GedocDbModel.UnidadTecnica_fk_Subr" />
+        <AssociationConnector Association="GedocDbModel.DespachosDestinatariosCopia" />
+        <AssociationConnector Association="GedocDbModel.MenuRol" />
+        <AssociationConnector Association="GedocDbModel.UsuariosRoles" />
+        <AssociationConnector Association="GedocDbModel.UsuariosUnidadTecnica" />
+        <EntityTypeShape EntityType="GedocDbModel.Reporte" Width="1.5" PointX="17.375" PointY="18.75" />
+        <EntityTypeShape EntityType="GedocDbModel.Requerimiento" Width="2.125" PointX="12.5" PointY="20.625" />
+        <AssociationConnector Association="GedocDbModel.Bitacora_fk_Req" />
+        <AssociationConnector Association="GedocDbModel.Requerimiento_fk_Car" />
+        <AssociationConnector Association="GedocDbModel.Requerimiento_fk_Caso" />
+        <AssociationConnector Association="GedocDbModel.Requerimiento_fk_Estado" />
+        <AssociationConnector Association="GedocDbModel.Requerimiento_fk_Etapa" />
+        <AssociationConnector Association="GedocDbModel.Requerimiento_fk_Mn" />
+        <AssociationConnector Association="GedocDbModel.Requerimiento_fk_MotCi" />
+        <AssociationConnector Association="GedocDbModel.Requerimiento_fk_Remit" />
+        <AssociationConnector Association="GedocDbModel.FK_Requerimiento_Usuario" />
+        <AssociationConnector Association="GedocDbModel.Requerimiento_fk_TipoTr" />
+        <AssociationConnector Association="GedocDbModel.Requerimiento_fk_UtAnt" />
+        <AssociationConnector Association="GedocDbModel.Requerimiento_fk_UtApo" />
+        <AssociationConnector Association="GedocDbModel.Requerimiento_fk_UtAsi" />
+        <AssociationConnector Association="GedocDbModel.Requerimiento_fk_UtCon" />
+        <AssociationConnector Association="GedocDbModel.Requerimiento_fk_UtTemp" />
+        <AssociationConnector Association="GedocDbModel.Requerimiento_fk_UtTrans" />
+        <AssociationConnector Association="GedocDbModel.RequerimientosDespachos" />
+        <EntityTypeShape EntityType="GedocDbModel.Correlativo" Width="1.5" PointX="5.375" PointY="0.75" />
+        <EntityTypeShape EntityType="GedocDbModel.LogSistema" Width="1.5" PointX="5.375" PointY="3.75" />
+        <AssociationConnector Association="GedocDbModel.RequerimientosUtCopia" />
+        <AssociationConnector Association="GedocDbModel.GrupoAcciones" />
+        <AssociationConnector Association="GedocDbModel.DespachosInicDestinatariosCopia" />
+        <AssociationConnector Association="GedocDbModel.DespachoIniciativa_fk_Dest" />
+        <AssociationConnector Association="GedocDbModel.DespachoIniciativa_fk_Est" />
+        <AssociationConnector Association="GedocDbModel.DespachoIniciativa_fk_caso" />
+        <AssociationConnector Association="GedocDbModel.DespachoIniciativa_fk_Mn" />
+        <AssociationConnector Association="GedocDbModel.FK_Requerimiento_UsuarioCreacionId" />
+        <AssociationConnector Association="GedocDbModel.FK_Requerimiento_UsuarioEliminacionId" />
+        <AssociationConnector Association="GedocDbModel.FK_Adjunto_UsuarioEliminacionId" />
+        <AssociationConnector Association="GedocDbModel.FK_Bitacora_UsuarioCreacionId" />
+        <AssociationConnector Association="GedocDbModel.FK_Bitacora_UsuarioEliminacionId" />
+        <AssociationConnector Association="GedocDbModel.FK_Despacho_UsuarioCreacionId" />
+        <AssociationConnector Association="GedocDbModel.FK_Despacho_UsuarioEliminacionId" />
+        <AssociationConnector Association="GedocDbModel.FK_Despachoo_UsuarioCreacionId" />
+        <AssociationConnector Association="GedocDbModel.FK_DespachoIniciativa_UsuarioCreacionId" />
+        <AssociationConnector Association="GedocDbModel.FK_DespachoIniciativa_UsuarioEliminacionId" />
+        <AssociationConnector Association="GedocDbModel.RequerimientosCaso" />
+        <AssociationConnector Association="GedocDbModel.FK_Adjunto_UsuarioCreacionId" />
+        <EntityTypeShape EntityType="GedocDbModel.SesionTabla" Width="1.5" PointX="7.5" PointY="29.375" />
+        <EntityTypeShape EntityType="GedocDbModel.SesionTablaDetalle" Width="1.5" PointX="15.375" PointY="30.875" />
+        <AssociationConnector Association="GedocDbModel.FK_Caso_Usuario" />
+        <AssociationConnector Association="GedocDbModel.FK_SesionTablaDetalle_Requerimiento" />
+        <AssociationConnector Association="GedocDbModel.FK_SesionTabla_UnidadTecnica" />
+        <AssociationConnector Association="GedocDbModel.FK_SesionTabla_Usuario" />
+        <AssociationConnector Association="GedocDbModel.FK_SesionTablaDetalle_SesionTabla" />
+        <AssociationConnector Association="GedocDbModel.FK_Menu_Menu" />
+        <EntityTypeShape EntityType="GedocDbModel.vw_BandejaEntrada" Width="1.5" PointX="21.375" PointY="0.75" />
+        <AssociationConnector Association="GedocDbModel.FK_Caso_UsuarioModif" />
+        <EntityTypeShape EntityType="GedocDbModel.vw_FichaIngreso" Width="1.5" PointX="19.375" PointY="12.75" />
+        <AssociationConnector Association="GedocDbModel.EstadoEtapa" />
+        <EntityTypeShape EntityType="GedocDbModel.LogSistemaTexto" Width="1.5" PointX="7.375" PointY="4.75" />
+        <EntityTypeShape EntityType="GedocDbModel.NotificacionEmail" Width="1.5" PointX="0.75" PointY="20.75" />
+        <AssociationConnector Association="GedocDbModel.FK_Requerimiento_ProfUt" />
+        <AssociationConnector Association="GedocDbModel.FK_Despacho_ReqPrinc" />
+        <AssociationConnector Association="GedocDbModel.FK_DespachoIniciativa_ProfUt" />
+        <EntityTypeShape EntityType="GedocDbModel.LogWssIntegracion" Width="1.5" PointX="7.375" PointY="21.75" />
+        <AssociationConnector Association="GedocDbModel.FK_Remitente_Usuario" />
+        <AssociationConnector Association="GedocDbModel.FK_Remitente_Usuario1" />
+        <AssociationConnector Association="GedocDbModel.FK_DespachoIniciativa_UnidTecn" />
+        <EntityTypeShape EntityType="GedocDbModel.sysdiagrams" Width="1.5" PointX="21.375" PointY="9.75" />
+        <EntityTypeShape EntityType="GedocDbModel.NotificacionEmailRegistro" Width="1.5" PointX="3" PointY="20.875" />
+        <AssociationConnector Association="GedocDbModel.FK_NotificacionEmailRegistro_NotificacionEmail" />
+        <EntityTypeShape EntityType="GedocDbModel.PlantillaOficio" Width="1.5" PointX="7.5" PointY="25" />
+        <AssociationConnector Association="GedocDbModel.FK_PlantillaOficio_TipoTr" />
+        <EntityTypeShape EntityType="GedocDbModel.CampoPlantilla" Width="1.5" PointX="21.375" PointY="12.75" />
+        <EntityTypeShape EntityType="GedocDbModel.EstadoOficio" Width="1.5" PointX="7.5" PointY="33.25" />
+        <EntityTypeShape EntityType="GedocDbModel.EtapaOficio" Width="1.5" PointX="7.5" PointY="18.75" />
+        <EntityTypeShape EntityType="GedocDbModel.Oficio" Width="1.5" PointX="9.75" PointY="24.25" />
+        <AssociationConnector Association="GedocDbModel.FK_Oficio_Estado" />
+        <AssociationConnector Association="GedocDbModel.FK_Oficio_Etapa" />
+        <AssociationConnector Association="GedocDbModel.FK_Oficio_Plantilla" />
+        <AssociationConnector Association="GedocDbModel.RequerimientosOficios" />
+        <AssociationConnector Association="GedocDbModel.FK_Oficio_UsuarioCrea" />
+        <AssociationConnector Association="GedocDbModel.FK_Oficio_UsuarioElim" />
+        <AssociationConnector Association="GedocDbModel.FK_Oficio_UsuarioMod" />
+        <AssociationConnector Association="GedocDbModel.FK_PlantillaOficio_UsuarioCrea" />
+        <AssociationConnector Association="GedocDbModel.FK_PlantillaOficio_UsuarioElim" />
+        <AssociationConnector Association="GedocDbModel.FK_PlantillaOficio_UsuarioMod" />
+        <EntityTypeShape EntityType="GedocDbModel.OficioObservacion" Width="1.5" PointX="16" PointY="25.375" />
+        <AssociationConnector Association="GedocDbModel.FK_OficioObservacion_Estado" />
+        <AssociationConnector Association="GedocDbModel.FK_OficioObservacion_Etapa" />
+        <AssociationConnector Association="GedocDbModel.FK_OficioObservacion_Oficio" />
+        <AssociationConnector Association="GedocDbModel.FK_OficioObservacion_Usuario" />
+        <EntityTypeShape EntityType="GedocDbModel.AccionesPermitidasBandejaOficio" Width="1.5" PointX="9.75" PointY="40.625" />
+        <AssociationConnector Association="GedocDbModel.FK_AccionesPermitidasBandejaOficio_Acc" />
+        <AssociationConnector Association="GedocDbModel.FK_AccionesPermitidasBandejaOficio_Band" />
+        <AssociationConnector Association="GedocDbModel.FK_AccionesPermitidasBandejaOficio_Est" />
+        <AssociationConnector Association="GedocDbModel.FK_AccionesPermitidasBandejaOficio_Eta" />
+        <AssociationConnector Association="GedocDbModel.FK_Oficio_UnidadTecnica" />
+        <EntityTypeShape EntityType="GedocDbModel.ReservaCorrelativo" Width="1.5" PointX="15.375" PointY="21.75" />
+        <AssociationConnector Association="GedocDbModel.FK_ReservaCorrelativo_UsuarioCreacion" />
+        <EntityTypeShape EntityType="GedocDbModel.Lista" Width="1.5" PointX="12" PointY="1.125" />
+        <EntityTypeShape EntityType="GedocDbModel.ListaValor" Width="1.5" PointX="14.25" PointY="0.875" />
+        <AssociationConnector Association="GedocDbModel.FK_Lista_EstadoRegistro" />
+        <AssociationConnector Association="GedocDbModel.FK_ListaValor_EstadoRegistro" />
+        <AssociationConnector Association="GedocDbModel.FK_Lista_Lista" />
+        <AssociationConnector Association="GedocDbModel.FK_ListaValor_Lista" />
+        <AssociationConnector Association="GedocDbModel.Requerimiento_fk_CanTram" />
+        <AssociationConnector Association="GedocDbModel.FK_Despacho_MedioDesp" />
+        <AssociationConnector Association="GedocDbModel.FK_Despacho_ProvDesp" />
+        <AssociationConnector Association="GedocDbModel.FK_DespachoIniciativa_MedioDesp" />
+        <AssociationConnector Association="GedocDbModel.FK_DespachoIniciativa_ProvDesp" />
+        <AssociationConnector Association="GedocDbModel.FK_Requerimiento_FormaLlegada" />
+        <AssociationConnector Association="GedocDbModel.DespachosInicEtiquetas" />
+        <AssociationConnector Association="GedocDbModel.RequerimientosEtiquetas" />
+        <AssociationConnector Association="GedocDbModel.MonumentoNacionalCategorias" />
+        <AssociationConnector Association="GedocDbModel.FK_Bitacora_TipoBita" />
+        <AssociationConnector Association="GedocDbModel.FK_Despacho_MedioVerif" />
+        <AssociationConnector Association="GedocDbModel.FK_DespachoInic_MedioVerif" />
+        <AssociationConnector Association="GedocDbModel.FK_Requerimiento_Prioridad" />
+        <AssociationConnector Association="GedocDbModel.FK_Requerimiento_TipoDoc" />
+        <AssociationConnector Association="GedocDbModel.FK_TipoTramite_Prioridad" />
+        <AssociationConnector Association="GedocDbModel.AdjuntosTiposAdjunto" />
+        <AssociationConnector Association="GedocDbModel.DespachosInicSoportes" />
+        <AssociationConnector Association="GedocDbModel.DespachosInicTiposAdjunto" />
+        <AssociationConnector Association="GedocDbModel.DespachosSoportes" />
+        <AssociationConnector Association="GedocDbModel.DespachosTiposAdjunto" />
+        <AssociationConnector Association="GedocDbModel.RequerimientosSoportes" />
+        <AssociationConnector Association="GedocDbModel.RequerimientosTiposAdjunto" />
+        <EntityTypeShape EntityType="GedocDbModel.CalendarioBitacora" Width="1.5" PointX="16.5" PointY="34.375" />
+        <AssociationConnector Association="GedocDbModel.FK_CalendarioBitacora_TipoBita" />
+        <AssociationConnector Association="GedocDbModel.FK_Adjunto_Reuerimiento" />
+        <AssociationConnector Association="GedocDbModel.MonumentosNacionalComunas" />
+        <AssociationConnector Association="GedocDbModel.MonumentosNacionalProvincias" />
+        <AssociationConnector Association="GedocDbModel.MonumentosNacionalRegiones" />
+        <EntityTypeShape EntityType="GedocDbModel.vw_EtiquetasReq" Width="1.5" PointX="16.375" PointY="0.75" />
+        <EntityTypeShape EntityType="GedocDbModel.vw_GeneroReq" Width="1.5" PointX="16.375" PointY="8.75" />
+        <EntityTypeShape EntityType="GedocDbModel.vw_RemitentesReq" Width="1.5" PointX="18.375" PointY="0.75" />
+        <EntityTypeShape EntityType="GedocDbModel.vw_GeneroReqNivel2" Width="1.5" PointX="16.375" PointY="12.75" />
+        <EntityTypeShape EntityType="GedocDbModel.vw_GeneroReqNivel1" Width="1.5" PointX="16.375" PointY="15.75" />
+        <EntityTypeShape EntityType="GedocDbModel.AdjuntoOficio" Width="1.5" PointX="16" PointY="37.75" />
+        <AssociationConnector Association="GedocDbModel.FK_AdjuntoOficio_Oficio" />
+        <AssociationConnector Association="GedocDbModel.FK_AdjuntoOficio_UsuarioCreacionId" />
+        <AssociationConnector Association="GedocDbModel.FK_AdjuntoOficio_UsuarioEliminacionId" />
+        <AssociationConnector Association="GedocDbModel.AdjuntosOficioTiposAdjunto" />
+        <EntityTypeShape EntityType="GedocDbModel.RemitenteRelacionBackup" Width="1.5" PointX="21.375" PointY="16.75" />
+        <AssociationConnector Association="GedocDbModel.FK_Remitente_UsuarioElim" />
+        <EntityTypeShape EntityType="GedocDbModel.vw_DestinatarioDesp" Width="1.5" PointX="21.375" PointY="19.75" />
+        </Diagram>
+    </edmx:Diagrams>
+  </edmx:Designer>
+</edmx:Edmx>

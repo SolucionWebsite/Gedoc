@@ -1,0 +1,38 @@
+﻿@using Gedoc.Helpers.Enum
+@using Gedoc.WebApp.Helpers
+@model Gedoc.WebApp.Models.DespachoModel
+
+@{
+    Layout = null;
+    FlujoIngreso form = ViewBag.Form;
+}
+
+
+<h4 class="head-datos-form">Despacho</h4>
+<div class="container-fluid">
+
+    <div class="form-row" style="white-space: nowrap;">
+        <div class="col-md-3">
+            <label class="label-dato-form">
+                Materia Despacho<span class="marca-obligatorio" title="Este campo es obligatorio.">*</span>
+            </label>
+        </div>
+        <div class="col-md-9">
+            <textarea name="Materia" rows="6" cols="20" id="tbMateria" class="form-control texto-largo" data-spanleyenda="leyenda-pnMateria"
+                      data-maxlength="1000" style="width: 100% !important;" required>@Html.Raw(Model.Materia)</textarea>
+
+            <span class="k-invalid-msg" data-for="Materia"></span>
+            <span class="help-block-right" id="leyenda-pnMateria"> </span>
+        </div>
+    </div>
+</div>
+
+<script>
+
+    function inicializaPanelDespacho() {
+
+
+    }
+
+    //# sourceURL=PanelDespacho
+</script>

@@ -1,0 +1,203 @@
+﻿@using Gedoc.Helpers.Dto
+@using Gedoc.WebApp.Models
+
+@{
+    ViewBag.Title = "Mantenedor de Notificaciones de Correo";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<script src="~/Scripts/accionesbandeja.js"></script>
+
+<style>
+</style>
+
+<style>
+    #gridNotificacion {
+        font-size: 0.8em;
+    }
+</style>
+
+<script>
+
+    function onChangeDataSourceGridNotif(e) {
+        dataSourceSharedGridNotif.data(e.items);
+    }
+
+    function onFilterMenuGridNotifInit(e) {
+        $(e.container).find('.k-check-all').click();
+        var grid = e.sender;
+        var dsGrid = grid.dataSource;
+        var dsShared = dataSourceSharedGridNotif;
+        e.container.data("kendoPopup").bind("open",
+            function () {
+                dsShared.sort({ field: e.field, dir: "asc" });
+                var uniqueDsResult = removeDuplicates(dsGrid.data(), e.field);
+                dsShared.data(uniqueDsResult);
+            });
+        function removeDuplicates(items, field) {
+            var getter = function (item) { return item[field] },
+                result = [],
+                index = 0,
+                seen = {};
+            while (index < items.length) {
+                var item = items[index++],
+                    text = getter(item);
+                if (text !== undefined && text !== null && !seen.hasOwnProperty(text)) {
+                    result.push(item);
+                    seen[text] = true;
+                }
+            }
+            return result;
+        }
+    }
+</script>
+
+
+<h4 class="header-level1">@ViewBag.Title</h4>
+
+<div class="div-main">
+
+    @(Html.Kendo().DataSource<DespachoModel>()
+        .Name("dataSourceGridNotif")
+        .Ajax(dataSource => dataSource
+            .Read(read =>
+            {
+                read.Action("GetNotificacionAll", "NotificacionEmail")
+                    .Type(HttpVerbs.Post);
+            })
+            .Events(ev =>
+            {
+                //ev.RequestEnd("function(e) {  Main.enEspera($('#gridNotificacion'), false); Main.notificaResultado(e); }");
+                ev.Change("onChangeDataSourceGridNotif");
+            })
+            .PageSize(10)
+            .ServerOperation(false)
+        )
+        )
+    @(Html.Kendo().DataSource<DespachoModel>()
+        .Name("dataSourceSharedGridNotif")
+        .Ajax(dataSource => dataSource
+            .Read(read =>
+            {
+                read.Action("GetNotificacionAll", "NotificacionEmail")
+                    .Type(HttpVerbs.Post);
+            })
+            .ServerOperation(false)
+        )
+        )
+    @(Html.Kendo().Grid<NotificacionEmailDto>()
+        .Name("gridNotificacion")
+        .EnableCustomBinding(true)
+        .DataSource("dataSourceGridNotif")
+        .HtmlAttributes(new { @class = "k-grid-alternate" })
+        .Scrollable(scr => scr.Height("auto"))
+        .Pageable(p => p.AlwaysVisible(true).PageSizes(new int[3] {15, 50, 100}).Info(true).Enabled(true))
+        .Sortable(s => s.Enabled(true))
+        .Filterable(s => s.Enabled(true))
+        .Navigatable()
+        .NoRecords("No existen documentos.")
+        //.NoRecords(x => x.Template("<div class='empty-grid'>No existen Despachos asociados al presente ingreso.</div>"))
+        .Events(events => events
+            .FilterMenuInit("onFilterMenuGridNotifInit")
+        )
+        .Columns(columns =>
+        {
+            columns.Bound(c => c.Id)
+                .Width(20)
+                .Title("<center>ID</center>")
+                .Filterable(false);
+            columns.Bound(c => c.Codigo)
+                .Width(100)
+                .Title("<center>Código</center>")
+                .Filterable(ftb => ftb.Multi(true).DataSource("dataSourceSharedGridNotif")); ;
+            columns.Bound(c => c.Asunto)
+                .Width(100)
+                .Title("<center>Asunto</center>")
+                .Filterable(ftb => ftb.Multi(true).DataSource("dataSourceSharedGridNotif")); ;
+            columns.Bound(c => c.Mensaje)
+                .Width(170)
+                .Title("<center>Mensaje</center>")
+                .ClientTemplate("<div> #=data.Mensaje# </div>")
+                .Filterable(ftb => ftb.Multi(false).DataSource("dataSourceSharedGridNotif")); ;
+            columns.Bound(c => c.Descripcion)
+                .Width(100)
+                .Title("<center>Descripción</center>")
+                .Filterable(ftb => ftb.Multi(false).DataSource("dataSourceSharedGridNotif")); ;
+            columns.Bound(c => c.Periodicidad)
+                .Width(65)
+                .HtmlAttributes(new { @class = "text-center"})
+                .Title("<center>Periodicidad<br/>(días)</center>")
+                .Filterable(ftb => ftb.Multi(false).DataSource("dataSourceSharedGridNotif")); ;
+            columns.Bound(c => c.Activo)
+                .Width(40)
+                .ClientTemplate("<div class='text-center mt-3' style='height: 48px;' id='divChk#=data.Id#'><input type='checkbox' #= Activo ? checked='checked':'' # class='chkActivo' /></div>")
+                .Filterable(false); ;
+            columns.Command(command =>
+            {
+                command.Custom("Editar").Click("editarNotificacion").IconClass("k-icon k-i-edit");
+            })
+                .Title("<center>Acción</center>")
+                .Width(60);
+        })
+        )
+
+</div>
+
+<script>
+    $(function() {
+        $('#gridNotificacion').on('click',
+            '.chkActivo',
+            function() {
+                var checked = $(this).is(':checked');
+                var grid = $('#gridNotificacion').data().kendoGrid;
+                var dataItem = grid.dataItem($(this).closest('tr'));
+                dataItem.set('Activo', checked);
+                cambiaActivoNotificacion(dataItem, this);
+            });
+    });
+
+    function cambiaActivoNotificacion(dataItem, checkbox) {
+        var divChk = "#" + $(checkbox).closest('div')[0].id;
+        Main.wait("", divChk);
+
+        //Form.setValueHiddeFieldTextArea("ObservacionesAdjuntos", "pnObservacionAdj");
+
+        var data = $.param({ Id: dataItem.Id, Activo: dataItem.Activo, Codigo: dataItem.Codigo });
+        var url = "@Url.Action("SaveActivo")";
+        $.ajax({
+            type: "POST",
+            url: url,
+            data: data
+        }).done(function (response) {
+            Main.unwait(divChk);
+            if (response.Codigo) {
+                Main.showInfo((dataItem.Activo ? "Activada" : "Desactivada") + " con éxito la notificación " + dataItem.Codigo);
+            } else {
+                Main.showAlert("Error inesperado al cambiar el estado de Activo de la notificación " + dataItem.Codigo + ", por favor, vuelva a intentarlo",
+                    "Error");
+            }
+        }).fail(function (error) {
+            Main.unwait(divChk);
+            Main.showError("Ha ocurrido un error al cambiar el estado de Activo de la notificación " + dataItem.Codigo + ", por favor, vuelva a intentarlo.",
+                "Error");
+        });
+    }
+
+
+    function editarNotificacion(e) {
+        e.preventDefault();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        Acciones.ejecutaAccionNuevaVentana("Notificación - " + dataItem.Codigo,
+            '@Url.Action("Edicion", "NotificacionEmail")' + '?id=' + dataItem.Id
+            , null, "100vp", "NOTIF", refrescaGrid);
+        return false;
+    }
+
+    function refrescaGrid() {
+        var gridK = $("#gridNotificacion").data("kendoGrid");
+        if (gridK) {
+            gridK.dataSource.read();
+        }
+    }
+
+</script>

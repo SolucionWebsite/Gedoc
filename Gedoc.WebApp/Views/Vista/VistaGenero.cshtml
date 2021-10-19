@@ -1,0 +1,269 @@
+﻿@using Gedoc.Helpers
+@using Gedoc.Helpers.Dto
+@using Gedoc.WebApp.Models
+
+@{
+    ViewBag.Title = "Requerimientos por Género";
+    Layout = null;
+}
+
+<style type="text/css">
+     .k-detail-cell .k-grid .k-grid-header {
+         display: none;
+     }
+
+     .k-detail-cell .k-grid {
+         border: none;
+     }
+
+     .k-detail-cell {
+         padding: 0;
+     }
+ </style>
+
+<script>
+
+    $(function() {
+
+    });
+
+    function extraDataGrilla() {
+        return {
+            Dato: '3'
+        };
+    }
+
+    function templateTotal1(items) {
+        if (items[0].items && items[0].items.length) {
+            return items[0].items[0].TotalAnnoMes;
+        }
+        return '';
+    }
+
+    function templateTotal2(items) {
+        if (items.length) {
+            return items[0].TotalAnnoMesGenero;
+        }
+        return '';
+    }
+
+    function dataBoundNivel1() {
+        // this.expandRow(this.tbody.find("tr.k-master-row").first());
+    }
+
+</script>
+
+<h4 class="header-level1">@ViewBag.Title</h4>
+
+
+<div class="div-main">
+    <div id="gridGenero" class="grilla-datos"></div>
+
+
+</div>
+
+<script>
+
+    $(document).ready(function() {
+        var estados =  @Html.Raw(Json.Encode(ViewBag.Estados));
+
+        $("#gridGenero").kendoGrid({
+            toolbar: [ // "excel",
+                {
+                    name: "exportExcel",
+                   template: '<a id="btnExportExcel" class="k-button" role="button" href="@Url.Action("ExcelVistaGenero", "Vista", new { filter = "~" })" target="_blank" ><span class="k-icon k-i-file-excel"></span>Exportar a Excel</a>'
+                     //template: '<a id="btnExportExcel" class="k-button" role="button" href="\\#" target="_blank" onclick="return exportarExcel();" ><span class="k-icon k-i-file-excel"></span>Exportar a Excel</a>'
+                } ],
+            //excel: {
+            //    text: "Exportar a Excel",
+            //    fileName: "VistaGenero.xlsx",
+            //    allPages: true
+            //},
+            //excelExport: function(e){
+            //    Main.unwait(".k-grid-excel");
+            //} ,
+            scrollable: {
+                //virtual: true,
+                height: "450px"
+            },
+            selectable: false,
+            sortable: false,
+            navigatable: true,
+            filterable: true,
+            //filterMenuInit: onFilterMenuInit,
+            pageable: {
+                alwaysVisible: true,
+                pageSizes: [10, 20, 30]
+            },
+            columns: [
+                {
+                    field: "AnnoMes", hidden: true,
+                    groupHeaderTemplate: "Año y Mes: #= value || '' # - Total: #= aggregates.AnnoMes.count #",
+                    aggregates: ["count"],
+                    filterable: false
+                },
+                {
+                    field: "RemitenteGenero", hidden: true,
+                    //groupHeaderTemplate: "Género: #= value || '' # - Total: #= count #",
+                    groupHeaderTemplate: "Género: #= value || '' # - Total: #= aggregates.RemitenteGenero.count #",
+                    aggregates: ["count"],
+                    filterable: false
+                },
+                { field: "DocumentoIngreso", title: "Documento de ingreso", width:200, filterable: false },
+                { field: "FechaIngreso", title: "Fecha de ingreso", format: Main.getFormatoLargoFechaGrid(), width:200, filterable: false,
+                    template: "#= kendo.toString(kendo.parseDate(FechaIngreso, 'yyyy-MM-ddTHH:mm:ss'), 'dd/MM/yyyy HH:mm') #"},
+                { field: "EtiquetaTitulos", title: "Etiqueta", width: 250, filterable: false },
+                { field: "EstadoTitulo", title: "Estado", width: 250, filterable: { multi: true,
+                    dataSource: estados }  },
+                { field: "NumeroIngreso", title: "Número de ingreso", width: 250, filterable: false },
+                { field: "CategoriaMonumentoNacTitulo", title: "Categoría de monumento", width: 250, filterable: false },
+                { field: "RemitenteNombre", title: "Remitente", width: 250, filterable: false },
+                { field: "RemitenteInstitucion", title: "Institución remitente", width: 250, filterable: false },
+                { field: "Materia", title: "Materia", width: 350, filterable: false },
+                { field: "UtAsignadaTitulo", title: "UT", width: 250, filterable: false },
+                { field: "ProfesionalNombre", title: "Profesional en área", width: 250, filterable: false },
+                { field: "Cierre", title: "Fecha de cierre", format: Main.getFormatoCortoFechaGrid(), width: 250,
+                    template: "#= kendo.toString(kendo.parseDate(Cierre, 'yyyy-MM-ddTHH:mm:ss'), 'dd/MM/yyyy') || '' #", filterable: false },
+                { field: "MotivoCierreTitulo", title: "Motivo de cierre", width: 250, filterable: false },
+                { field: "ComentarioCierre", title: "Comentario de cierre", width: 250, filterable: false },
+                { field: "CerradoPor", title: "Cerrado por", width: 250, filterable: false },
+                { field: "TipoIngreso", title: "Tipo de ingreso", width: 250, filterable: false },
+                { field: "CasoId", title: "Número de caso", width: 250, filterable: false },
+                { field: "TipoTramiteTitulo", title: "Tipo de trámite", width: 250, filterable: false },
+                { field: "CanalLlegadaTramiteTitulo", title: "Canal de llegada del trámite", width: 250, filterable: false },
+                { field: "MonumentoNacional.DenominacionOficial", title: "Denominacion oficial", width: 250, filterable: false },
+                { field: "MonumentoNacional.OtrasDenominaciones", title: "Otras denominaciones", width: 250, filterable: false },
+                { field: "MonumentoNacional.NombreUsoActual", title: "Nombre o uso actual", width: 250, filterable: false },
+                { field: "MonumentoNacional.ReferenciaLocalidad", title: "Referencia de localización o localidad", width: 250, filterable: false },
+                { field: "MonumentoNacional.RegionTitulo", title: "Región", width: 250, filterable: false },
+                { field: "MonumentoNacional.ComunaTitulo", title: "Comuna", width: 250, filterable: false }
+            ],
+            //dataBound: function(e) {
+            //    var grid = this;
+            //    $(".k-grouping-row").each(function(e) {
+            //        grid.collapseGroup(this);
+            //    });
+            //},
+            dataBound: onDataBound,
+            dataSource: {
+                type: 'aspnetmvc-ajax',
+                transport: {
+                    read: {
+                        url: '@Url.Action("DatosVistaGenero", "Vista")',
+                        data: {
+                            groupPaging: 'true'
+                        }
+                    }
+                },
+                pageSize: 10,
+                page: 1,
+                groupPaging: false,
+                total: 0,
+                serverPaging: true,
+                serverSorting: true,
+                serverFiltering: true,
+                serverGrouping: true,
+                serverAggregates: true,
+                //group: [
+                //    {
+                //        field: "AnnoMes",
+                //        dir: "asc"
+                //    }, {
+                //        field: "RemitenteGenero",
+                //        dir: "asc"
+                //    }
+                //],
+                group: [
+                    { field: "AnnoMes", aggregates: [{ field: "AnnoMes", aggregate: "count" }], dir: "desc" },
+                    {
+                        field: "RemitenteGenero",
+                        aggregates: [{ field: "RemitenteGenero", aggregate: "count" }],
+                        dir: "asc"
+                    },
+                ],
+                aggregate: [{ field: "AnnoMes", aggregate: "count" },
+                    { field: "RemitenteGenero", aggregate: "count" }],
+                schema: {
+                    data: "Data",
+                    total: "Total",
+                    errors: "Errors"
+                }
+            }
+        });
+        
+			
+        //$(".k-grid-excel")[0].onmousedown = function (e){
+        //    Main.wait("", ".k-grid-excel");
+        //}
+    });
+
+    function onDataBound(e) {
+        var grid = this;
+        $(".k-grouping-row").each(function(e) {
+            grid.collapseGroup(this);
+        });
+        
+        // ask the parameterMap to create the request object for you
+        var requestObject = (new kendo.data.transports["aspnetmvc-server"]({ prefix: "" }))
+            .options.parameterMap({
+                page: grid.dataSource.page(),
+                sort: grid.dataSource.sort(),
+                filter: grid.dataSource.filter()
+            });
+
+        // Get the export link as jQuery object
+        var $exportLink = $('#btnExportExcel');
+
+        // Get its 'href' attribute - the URL where it would navigate to
+        var href = $exportLink.attr('href');
+        
+        // Update the 'page' parameter with the grid's current page
+        href = href.replace(/page=([^&]*)/, 'page=' + requestObject.page || '~');
+
+        // Update the 'sort' parameter with the grid's current sort descriptor
+        href = href.replace(/sort=([^&]*)/, 'sort=' + requestObject.sort || '~');
+        
+        // Update the 'pageSize' parameter with the grid's current pageSize
+        href = href.replace(/pageSize=([^&]*)/, 'pageSize=' + grid.dataSource._pageSize);
+            
+        //update filter descriptor with the filters applied
+            
+        href = href.replace(/filter=([^&]*)/, 'filter=' + (requestObject.filter || '~'));
+            
+        // Update the 'href' attribute
+        $exportLink.attr('href', href);
+    }
+
+    function exportarExcel() {
+        var gridFilter = $("#gridGenero").data("kendoGrid").dataSource.filter();
+        window.location.href = '@Url.Action("ExcelVistaGenero", "Vista")';
+        @*window.open('@Url.Action("ExcelVistaGenero", "Vista")', '_blank');*@
+        return false;
+    }
+
+    function onFilterMenuInit(e) {
+        //var ds = dataSourceSharedLogBit;
+        $(e.container).find('.k-check-all').click();
+        var grid = e.sender;
+        e.container.data("kendoPopup").bind("open",
+            function() {
+                var uniqueDsResult = [{ EstadoTitulo: 'Ingresado' }, { EstadoTitulo: 'Cerrado' }]; //removeDuplicates(grid.dataSource.view(), e.field);
+                ds.data(uniqueDsResult);
+            });
+        function removeDuplicates(items, field) {
+            var getter = function (item) { return item[field] },
+                result = [],
+                index = 0,
+                seen = {};
+            while (index < items.length) {
+                var item = items[index++],
+                    text = getter(item);
+                if (text !== undefined && text !== null && !seen.hasOwnProperty(text)) {
+                    result.push(item);
+                    seen[text] = true;
+                }
+            }
+            return result;
+        }
+    }
+</script>

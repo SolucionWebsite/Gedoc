@@ -1,0 +1,20 @@
+﻿@model string
+@{
+    ViewBag.Title = "Error";
+    Layout = "~/Views/Shared/_LayoutVacio.cshtml";
+}
+
+<div class="row">
+    <div class="alert alert-danger col-md-10 offset-md-1 mt-5">
+        <strong>¡ERROR!</strong>
+        <br/>
+        @Html.Raw(ViewBag.mensaje)
+    </div>
+</div>
+<div class="text-center">
+    <button class="btn btn-primary" type="button" onclick="window.history.back();">Atrás</button>
+</div>
+
+<br />
+<br />
+<br />

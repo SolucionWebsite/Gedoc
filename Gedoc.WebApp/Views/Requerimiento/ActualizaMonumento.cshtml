@@ -1,0 +1,193 @@
+﻿@using Gedoc.Helpers.Enum
+@using Newtonsoft.Json
+
+@{
+    ViewBag.Title = "Datos para actualizar monumento";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<script>
+</script>
+
+@Html.Partial("~/Views/Partial/TemplateTagMultiselect.cshtml")
+
+
+<h4 class="header-level1">@ViewBag.Title</h4>
+
+<div class="div-main">
+    <div class="form-row">
+        <div class="col-md-3">
+            <label class="label-dato-form">
+                Buscar Monumento
+            </label>
+        </div>
+        <div class="col-md-3">
+            @Html.TextBox("Monumento", "", new { @class = "k-textbox w-100" })
+        </div>
+        <div class="col-md-1">
+            <button id="btnBuscarMn" type="button" class="btn btn-primary k-icon k-i-search" onclick="return buscarMonumentoNac();"
+                    style="width: 42px; height: 36px;" title="Búsqueda en Regmon">
+            </button>
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="col-md-3">
+            <label class="label-dato-form">
+                Número de Ingresos a modificar
+            </label>
+        </div>
+        <div class="col-md-6">
+            <select id="DocumentoIngreso" name="DocumentoIngreso" multiple></select>
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="col-md-3">
+            <label class="label-dato-form">
+                Número de Casos a modificar
+            </label>
+        </div>
+        <div class="col-md-6">
+            <select id="NumeroCaso" multiple required></select>
+        </div>
+    </div>
+
+    <div class="form-row" id="rowBotones">
+        <div class="col-md-3 offset-md-3">
+            @(Html.Kendo().Button()
+                .Name("btnActualizar")
+                .HtmlAttributes(new { @class = "k-primary" })
+                .Events(events => events.Click("actualizar"))
+                .Content("Actualizar")
+                )
+        </div>
+        <div class="col-md-6">
+            @(Html.Kendo().Button()
+                .Name("btnCancelar")
+                .HtmlAttributes(new { @class = "k-danger" })
+                .Events(events => events.Click("cancelar"))
+                .Content("Cancelar")
+                )
+        </div>
+    </div>
+
+
+</div>
+
+<script>
+
+
+    $(function() {
+        if ($("#DocumentoIngreso").length) {
+            $("#DocumentoIngreso").kendoMultiSelect(
+                Main.getMultiSelectConfigVirtual($("#DocumentoIngreso")
+                    , '@Url.Action("RequerimientoResumenPaging", "Json")'
+                    ,'@Url.Action("RequerimientoResumenByIds", "Json")'  )
+            );
+        }
+
+        if ($("#NumeroCaso").length) {
+            $("#NumeroCaso").kendoMultiSelect(
+                Main.getMultiSelectConfig($("#NumeroCaso"),
+                    '@Url.Action("MantenedorGenerico", "Json")?idM=@((int) Mantenedor.Caso)'  )
+            );
+        }
+    });
+
+
+    // Función q abre la ventana de búsqueda de Regmon
+    function buscarMonumentoNac() {
+        var urlRegmon = "@Url.Action("BuscadorRegmon", "Home")";
+        Main.muestraVentanaRegmonModal("Buscador de Monumentos", urlRegmon, "winRegmon");
+        return false;
+    }
+
+    // Funcion q se gatilla cuando se selecciona un momumento en Regmon
+    function mnRegmonSeleccionado(id) {
+        $("#Monumento").val(id);
+        var kwin = Main.kendoWin["winRegmon"];
+        if (kwin) kwin.close();
+        @*Main.wait("Obteniendo datos del " + id + "...");
+        if (id) {
+            var url = '@Url.Action("GetDatosRemonMn", "Json")?codigo=' + id;
+            $.ajax({
+                type: "POST",
+                url: url
+            }).done(function (response) {
+                Main.unwait();
+                if (response.Codigo) {
+                    if (response.Codigo > 0) {
+                        var kwin = Main.kendoWin["winRegmon"];
+                        if (kwin) kwin.close();
+                        var datos = response.Extra;
+                        mnSeleccionado = datos;
+                        $("#Monumento").val(datos.CodigoMonumentoNac);
+                    } else {
+                        Main.showError(response.Mensaje, "Error");
+                    }
+                } else {
+                    Main.showAlert("Error inesperado al realizar la operación, por favor, vuelva a intentarlo",
+                        "Error");
+                }
+            }).fail(function(error) {
+                Main.showError("Ha ocurrido un error al realizar la operación, por favor, vuelva a intentarlo.",
+                    "Error");
+                Main.unwait();
+            });
+        } else {
+            Main.unwait();
+        }*@
+    }
+
+    function actualizar() {
+        var codMn = $("#Monumento").val();
+        var reqIds = $("#DocumentoIngreso").data("kendoMultiSelect").value();
+        var casoIds = $("#NumeroCaso").data("kendoMultiSelect").value();
+        if (!$("#Monumento").val()) {
+            Main.showError("Por favor, seleccione un Monumento Nacional.");
+            return false;
+        }
+        if (!reqIds.length && !casoIds.length) {
+            Main.showError("Por favor, seleccione al menos un ingreso o un caso a modificar.");
+            return false;
+        }
+
+        Main.wait("Grabando...");
+        var data = {
+            reqIds: reqIds,
+            casoIds: casoIds,
+            codigoMn: codMn
+        };
+        var url = "@Url.Action("ActualizarMn")";
+        $.ajax({
+            type: "POST",
+            url: url,
+            data: data,
+            dataType: "json"
+        }).done(function (response) {
+            Main.unwait();
+            if (response.Codigo) {
+                if (response.Codigo > 0) {
+                    Main.showInfo(response.Mensaje);
+                } else {
+                    Main.showError(response.Mensaje, "Error");
+                }
+            } else {
+                Main.showAlert("Error inesperado al realizar la operación, por favor, vuelva a intentarlo",
+                    "Error");
+            }
+        }).fail(function (error) {
+            Main.unwait();
+            Main.showError("Ha ocurrido un error al realizar la operación, por favor, vuelva a intentarlo.",
+                "Error");
+        });
+
+    }
+
+    function cancelar() {
+
+    }
+
+    //# sourceURL=ActualizaMn
+</script>

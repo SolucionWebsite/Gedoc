@@ -1,0 +1,161 @@
+﻿@using Gedoc.Helpers.Enum
+@using Gedoc.WebApp.Helpers
+@model Gedoc.WebApp.Models.RequerimientoModel
+
+@{
+    Layout = null;
+    Dictionary<CampoIngreso, AspectoCampo> accesoCampos = ViewBag.AccesoCampos;
+    var liberarAsignTemp = accesoCampos[CampoIngreso.Asig_LiberarAsign] != AspectoCampo.Oculto;
+}
+
+<script>
+    function extraDataProfUt(e) {
+        var utK = $("#UtAsignadaId").data("kendoComboBox");
+        return {
+            idM: @((int) Mantenedor.Profesional),
+            extra: utK ? utK.value() : 0
+        }
+    }
+
+    function parseProfUtResponse(response) {
+        if (response.Data) {
+            return response.Data;
+        } else {
+            return {};
+        }
+    }
+
+    function onChangeUt(e) {
+        var profK = $("#ProfesionalId").data("kendoComboBox");
+        if (profK && profK.dataSource) {
+            profK.value("");
+            profK.dataSource.read();
+            profK.enable(this.value());
+        }
+    } 
+
+
+    //# sourceURL=PanelGeneralHist2
+</script>
+
+
+<h4 class="head-datos-form">General</h4>
+<div class="container-fluid">
+    @*@Html.HiddenFor(a => a.ObservacionesHistorico)*@
+
+
+    <div class="form-row">
+        <div class="col-md-3">
+            <label class="label-dato-form">
+                Unidad Técnica Asignada<span class="marca-obligatorio" title="Este campo es obligatorio."> *</span>
+            </label>
+        </div>
+        <div class="col-md-9">
+            @(Html.Kendo().ComboBox()
+                .Name("UtAsignadaId")
+                .DataTextField("Titulo")
+                .DataValueField("Id")
+                .Filter("contains")
+                .HtmlAttributes(new { required = "required", @class = "w-100" })
+                .Messages(Gedoc.WebApp.Helpers.KendoHelper.SetComboBoxMessages)
+                .Events(e => e.Change("onChangeUt"))
+                //.DataSource(source => {
+                //    source.Read(read =>
+                //    {
+                //        read.Type(HttpVerbs.Post)
+                //            .Action("MantenedorGenerico", "Json", new { idM = (int)Mantenedor.UnidadTecnica });
+                //    })
+                //        .ServerFiltering(false)
+                //        .Custom()
+                //        .Schema(s =>
+                //        {
+                //            s.Data("Data").Total("Total");
+                //        });
+                //})
+                )
+            <span class="k-invalid-msg" data-for="UtAsignadaId"></span><br />
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="col-md-3">
+            <label class="label-dato-form">
+                Profesional en área<span class="marca-obligatorio" title="Este campo es obligatorio."> *</span>
+            </label>
+        </div>
+        <div class="col-md-9">
+            @(Html.Kendo().ComboBox()
+                .Name("ProfesionalId")
+                .DataTextField("Titulo")
+                .DataValueField("Id")
+                .Filter("contains")
+                .HtmlAttributes(new { required = "required", @class = "w-100" })
+                .Messages(Gedoc.WebApp.Helpers.KendoHelper.SetComboBoxMessages)
+                .Enable(false)
+                //.CascadeFrom("UtAsignadaId") // No está funcionando
+                //.AutoBind(false)
+                .DataSource(source => {
+                source.Read(read =>
+                {
+                    read.Type(HttpVerbs.Post)
+                        .Action("MantenedorGenerico", "Json")
+                        .Data("extraDataProfUt");
+                })
+                    .ServerFiltering(true)
+                    .Custom()
+                    .Schema(s =>
+                    {
+
+                          s.Data("Data").Total("Total");
+                          //s.Parse(@<text>parseProfUtResponse</text>);
+                    });
+                })
+                )
+            <span class="k-invalid-msg" data-for="ProfesionalId"></span><br />
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="col-md-3">
+            <label class="label-dato-form">
+                Observaciones del ingreso histórico<span class="marca-obligatorio" title="Este campo es obligatorio."> *</span>
+            </label>
+        </div>
+        <div class="col-md-9">
+            @*<div class="k-block text-area-out">
+                <div class="text-area-in texto-largo" id="pnObservacionesHistorico" contenteditable="true" maxlength="255"
+                     data-spanleyenda="leyenda-pnObservacionesHistorico">@Html.Raw(Model.ObservacionesHistorico)</div>
+            </div>*@
+
+            <textarea name="ObservacionesHistorico" rows="4" cols="20" id="tbObservacionesHistorico" class="form-control texto-largo"
+                      data-spanleyenda="leyenda-pnObservacionesHistorico"
+                      data-maxlength="255" style="width: 100% !important;" required>@Html.Raw(Model.ObservacionesHistorico)</textarea>
+            <span class="help-block-right" id="leyenda-pnObservacionesHistorico"> </span>
+            <span class="help-block">Motivo de por qué se agregó al sistema el ingreso. </span>
+        </div>
+    </div>
+
+
+    </div>
+
+
+<script>
+
+    function inicializaPanelGeneralHist() {
+        var ds;
+
+        if ($("#UtAsignadaId:not([type=hidden])").length) {
+            ds = Main.getDataSourceKendoGenerico($("#UtAsignadaId"),
+                '@Url.Action("MantenedorGenerico", "Json")?idM=@((int) Mantenedor.UnidadTecnica)');
+            $("#UtAsignadaId").data("kendoComboBox").setDataSource(ds);
+        }
+
+        @*if ($("#ProfesionalId").length) {
+            ds = Main.getDataSourceKendoGenerico($("#ProfesionalId"),
+                '@Url.Action("MantenedorGenerico", "Json")?idM=@((int)Mantenedor.Profesional)&extra=@Model.UtAsignadaId');
+            $("#ProfesionalId").data("kendoComboBox").setDataSource(ds);
+        }*@
+    }
+
+    //# sourceURL=PanelGeneralHist
+</script>

@@ -1,0 +1,185 @@
+﻿@using Gedoc.Helpers
+@using Gedoc.Helpers.Enum
+@model Gedoc.WebApp.Models.DespachoIniciativaModel
+
+@{
+    ViewBag.Title = "Despacho Iniciativas";
+    FlujoIngreso form = ViewBag.Form;
+    Model.Flujo = form;
+    ResultadoOperacion accesoForm = ViewBag.AccesoForm ?? new ResultadoOperacion(1, "OK", null);
+    Layout = null; // "~/Views/Shared/_LayoutVacio.cshtml"; // null; // "~/Views/Shared/_Layout.cshtml";
+}
+
+<script src="~/Scripts/form.js"></script>
+
+
+@Html.Partial("~/Views/Partial/TemplateTagMultiselect.cshtml", Model)
+
+
+<div class="div-main-form">
+
+    <form id="formDesp" action="@Url.Action("Save")" class="form-datos">
+        @Html.AntiForgeryToken()
+        @Html.HiddenFor(a => a.Id)
+        @Html.HiddenFor(a => a.Flujo)
+        @Html.HiddenFor(a => a.ObservacionesAdjuntos)
+
+        @Html.Partial("~/Views/DespachoInic/Partial/DatosDocumento.cshtml", Model,
+            new ViewDataDictionary { { "Form", form }, { "DesdeReservaCorr", ViewBag.DesdeReservaCorr } })
+
+        @Html.Partial("~/Views/DespachoInic/Partial/DatosDestinatario.cshtml", Model)
+
+        @Html.Partial("~/Views/DespachoInic/Partial/DatosDespacho.cshtml", Model,
+            new ViewDataDictionary { { "Form", form } })
+
+        @Html.Partial("~/Views/DespachoInic/Partial/DatosProyecto.cshtml", Model)
+
+        @Html.Partial("~/Views/DespachoInic/Partial/DatosMonumentoNac.cshtml", Model)
+
+        @Html.Partial("~/Views/DespachoInic/Partial/DatosAdjunto.cshtml", Model)
+
+        @Html.Partial("~/Views/DespachoInic/Partial/DatosGeneral.cshtml", Model)
+
+
+        <div class="footer-modal">
+            <div class="form-row">
+                <div class="offset-md-3 col-md-2 text-center">
+                    <button type="button" id="btnGrabaIngreso" class="k-primary-blue k-button" onclick="grabaDespacho(event);">Guardar</button>
+                </div>
+                <div class="offset-md-2 col-md-2 text-center">
+                    <button type="button" id="btnCancelaDespacho" class="k-danger k-button" onclick="cancelaDespacho(event);">Cancelar</button>
+                </div>
+            </div>
+        </div>
+
+    </form>
+
+</div>
+
+
+<script>
+
+    @if (accesoForm.Codigo < 0)
+    {
+        <text>
+    Main.showAlert("@Html.Raw(accesoForm.Mensaje)")
+        .then(function (result) {
+            Main.cierraModal(null, false, "winFormIngreso");
+        });
+        </text>
+    }
+
+    function configValidacionForm() {
+        var container = $("#formDesp");
+        kendo.init(container);
+        container.kendoValidator({
+            rules: {
+                radio: function(input) {
+                    if (input.filter("[type=radio]").length && input.attr("required")) {
+                        return container.find("[type=radio][name=" + input.attr("name") + "]").is(":checked");
+                    }
+                    return true;
+                },
+                fechaCorrecta: function(input) {
+                    if (input.is("[data-role=datepicker]")) {
+                        return input.data("kendoDatePicker").value();
+                    } else {
+                        return true;
+                    }
+                },
+                upload: function(input) {
+                    if (input[0].type == "file" && input.hasClass("upload-required")) {
+                        return input.closest(".k-upload").find(".k-file").length;
+                    }
+                    return true;
+                },
+                uploadValid: function(input) {
+                    if (input[0].type == "file" && input.closest('.k-upload').find('.k-file').length) {
+                        return input.closest(".k-upload").find(".k-file-invalid").length == 0;
+                    }
+                    return true;
+                },
+                oficioValido: function(input) {
+                    if (input.hasClass("oficio-valido")) {
+                        return Form.isValidNumOficio(input.val(), new Date().getFullYear(), new Date().getFullYear());
+                    }
+                    return true;
+                },
+            },
+            messages: {
+                required: "Este campo es obligatorio",
+                radio: "Este campo es obligatorio",
+                fechaCorrecta: "Fecha incorrecta",
+                number: "Valor incorrecto",
+                upload: "Este campo es obligatorio",
+                uploadValid: "Formato o tamaño de archivo no válido",
+                oficioValido: "Valor incorrecto"
+            }
+        });
+    }
+
+    function grabaDespacho(e) {
+
+        Main.wait("Grabando...");
+
+        var currentTarget = $(e.currentTarget);
+        var form = $("#formDesp");
+
+        var validator = form.data("kendoValidator");
+        if (!validator.validate()) {
+            Main.unwait();
+            Main.showError("Por favor, revise los datos de la página. Hay datos incompletos o erróneos.");
+            return false;
+        }
+
+        Form.setValueHiddeFieldTextArea("ObservacionesAdjuntos", "pnObservacionAdj");
+
+        var data = new FormData($(form).get(0));
+        var url = $(form).attr("action");
+        $.ajax({
+            type: "POST",
+            url: url,
+            data: data,
+            dataType: "json",
+            processData: false, //For posting uploaded files we add this
+            contentType: false, //For posting uploaded files we add this
+        }).done(function(response) {
+            Main.unwait();
+            if (response.Codigo) {
+                if (response.Codigo > 0) {
+                    Main.showInfo(response.Mensaje).then(function (result) {
+                        Main.cierraModal(currentTarget, true, "winFormIngreso");
+                    });
+                } else {
+                    Main.showError(response.Mensaje, "Error");
+                }
+            } else {
+                Main.showAlert("Error inesperado al realizar la operación, por favor, vuelva a intentarlo",
+                    "Error");
+            }
+        }).fail(function(error) {
+            Main.unwait();
+            Main.showError("Ha ocurrido un error al realizar la operación, por favor, vuelva a intentarlo.",
+                "Error");
+        });
+    };
+
+    function cancelaDespacho(e) {
+        Main.cierraModal($(e.currentTarget), { resultado: false }, "winFormIngreso");
+    };
+
+    $(function () {
+        configValidacionForm();
+
+        inicializaPanelDocumentoDesp();
+        inicializaPanelDestinatarioDesp();
+        inicializaPanelDespacho();
+        inicializaPanelAdjuntoDesp();
+        inicializaPanelProyectoDesp();
+        inicializaPanelMonNacDesp();
+        inicializaPanelGeneralDesp();
+
+        Form.inicializaForm();
+    });
+    //# sourceURL=FormIngreso
+</script>

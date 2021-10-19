@@ -1,0 +1,355 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\packages\EntityFramework.6.4.0\build\EntityFramework.props" Condition="Exists('..\packages\EntityFramework.6.4.0\build\EntityFramework.props')" />
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{8EBEC630-05CC-4F63-AD66-847B44C025AD}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Gedoc.Repositorio</RootNamespace>
+    <AssemblyName>Gedoc.Repositorio</AssemblyName>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <Deterministic>true</Deterministic>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
+    <TargetFrameworkProfile />
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccProvider>SAK</SccProvider>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="AutoMapper, Version=9.0.0.0, Culture=neutral, PublicKeyToken=be96cd2c38ef1005, processorArchitecture=MSIL">
+      <HintPath>..\packages\AutoMapper.9.0.0\lib\net461\AutoMapper.dll</HintPath>
+    </Reference>
+    <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\EntityFramework.6.4.0\lib\net45\EntityFramework.dll</HintPath>
+    </Reference>
+    <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\EntityFramework.6.4.0\lib\net45\EntityFramework.SqlServer.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Linq.Dynamic, Version=1.0.6132.35681, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Linq.Dynamic.1.0.7\lib\net40\System.Linq.Dynamic.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Security" />
+    <Reference Include="System.Transactions" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Implementacion\AdjuntoRepositorio.cs" />
+    <Compile Include="Implementacion\DespachoIniciativaRepositorio.cs" />
+    <Compile Include="Implementacion\BitacoraRepositorio.cs" />
+    <Compile Include="Implementacion\DespachoRepositorio.cs" />
+    <Compile Include="Implementacion\MantenedorRepositorio.cs" />
+    <Compile Include="Implementacion\RepositorioBase.cs" />
+    <Compile Include="Implementacion\RequerimientoRepositorio.cs" />
+    <Compile Include="Implementacion\RolRepositorio.cs" />
+    <Compile Include="Implementacion\UsuarioRepositorio.cs" />
+    <Compile Include="Interfaces\IAdjuntoRepositorio.cs" />
+    <Compile Include="Interfaces\IBitacoraRepositorio.cs" />
+    <Compile Include="Interfaces\IDespachoRepositorio.cs" />
+    <Compile Include="Interfaces\IDespachoIniciativaRepositorio.cs" />
+    <Compile Include="Interfaces\IMantenedorRepositorio.cs" />
+    <Compile Include="Interfaces\IReporteRepositorio.cs" />
+    <Compile Include="Interfaces\IRequerimientoRepositorio.cs" />
+    <Compile Include="Interfaces\IRolRepositorio.cs" />
+    <Compile Include="Interfaces\IUsuarioRepositorio.cs" />
+    <Compile Include="Maps\AutoMapperInitializer.cs" />
+    <Compile Include="Maps\BaseMap.cs" />
+    <Compile Include="Maps\GenericMap.cs" />
+    <Compile Include="Maps\Interfaces\IGenericMap.cs" />
+    <Compile Include="Maps\Interfaces\IMantenedorMap.cs" />
+    <Compile Include="Maps\Interfaces\IReporteMap.cs" />
+    <Compile Include="Maps\Interfaces\IRequerimientoMap.cs" />
+    <Compile Include="Maps\Interfaces\IRolMap.cs" />
+    <Compile Include="Maps\Interfaces\IUsuarioMap.cs" />
+    <Compile Include="Maps\MantenedorMap.cs" />
+    <Compile Include="Maps\RequerimientoMap.cs" />
+    <Compile Include="Maps\MantenedorMapProfile.cs" />
+    <Compile Include="Maps\RequerimientoMapProfile.cs" />
+    <Compile Include="Maps\DespachoMapProfile.cs" />
+    <Compile Include="Maps\RolMap.cs" />
+    <Compile Include="Maps\UnidadTecnicaMapProfile.cs" />
+    <Compile Include="Maps\UsuarioMap.cs" />
+    <Compile Include="Maps\UsuarioMapProfile.cs" />
+    <Compile Include="Model\AccionBandeja.cs">
+      <DependentUpon>GedocModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Model\AccionesPermitidasBandejaOficio.cs">
+      <DependentUpon>GedocModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Model\AccionesPermitidasBandejas.cs">
+      <DependentUpon>GedocModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Model\Adjunto.cs">
+      <DependentUpon>GedocModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Model\AdjuntoOficio.cs">
+      <DependentUpon>GedocModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Model\BandejaEntrada.cs">
+      <DependentUpon>GedocModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Model\Bitacora.cs">
+      <DependentUpon>GedocModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Model\CalendarioBitacora.cs">
+      <DependentUpon>GedocModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Model\CampoPlantilla.cs">
+      <DependentUpon>GedocModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Model\Caracter.cs">
+      <DependentUpon>GedocModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Model\Caso.cs">
+      <DependentUpon>GedocModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Model\Correlativo.cs">
+      <DependentUpon>GedocModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Model\Despacho.cs">
+      <DependentUpon>GedocModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Model\DespachoIniciativa.cs">
+      <DependentUpon>GedocModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Model\EstadoDespacho.cs">
+      <DependentUpon>GedocModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Model\EstadoOficio.cs">
+      <DependentUpon>GedocModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Model\EstadoRegistro.cs">
+      <DependentUpon>GedocModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Model\EstadoRequerimiento.cs">
+      <DependentUpon>GedocModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Model\EtapaOficio.cs">
+      <DependentUpon>GedocModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Model\EtapaRequerimiento.cs">
+      <DependentUpon>GedocModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Model\fn_FechaDiasHabiles_Result.cs">
+      <DependentUpon>GedocModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Model\GedocModel.Context.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>GedocModel.Context.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Model\GedocModel.Context.Custom.cs" />
+    <Compile Include="Model\GedocModel.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>GedocModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Model\GedocModel.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>GedocModel.edmx</DependentUpon>
+    </Compile>
+    <Compile Include="Model\Lista.cs">
+      <DependentUpon>GedocModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Model\ListaValor.cs">
+      <DependentUpon>GedocModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Model\LogSistema.cs">
+      <DependentUpon>GedocModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Model\LogSistemaTexto.cs">
+      <DependentUpon>GedocModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Model\LogWssIntegracion.cs">
+      <DependentUpon>GedocModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Model\Menu.cs">
+      <DependentUpon>GedocModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Model\MonumentoNacional.cs">
+      <DependentUpon>GedocModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Model\MotivoCierre.cs">
+      <DependentUpon>GedocModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Model\NotificacionEmail.cs">
+      <DependentUpon>GedocModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Model\NotificacionEmailRegistro.cs">
+      <DependentUpon>GedocModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Model\Oficio.cs">
+      <DependentUpon>GedocModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Model\OficioObservacion.cs">
+      <DependentUpon>GedocModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Model\PlantillaOficio.cs">
+      <DependentUpon>GedocModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Model\Remitente.cs">
+      <DependentUpon>GedocModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Model\RemitenteRelacionBackup.cs">
+      <DependentUpon>GedocModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Model\Reporte.cs">
+      <DependentUpon>GedocModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Model\Requerimiento.cs">
+      <DependentUpon>GedocModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Model\ReservaCorrelativo.cs">
+      <DependentUpon>GedocModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Model\Rol.cs">
+      <DependentUpon>GedocModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Model\SesionTabla.cs">
+      <DependentUpon>GedocModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Model\SesionTablaDetalle.cs">
+      <DependentUpon>GedocModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Model\SplitString_Result.cs">
+      <DependentUpon>GedocModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Model\SProcGetRoles1_Result.cs">
+      <DependentUpon>GedocModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Model\SProcGetRoles_Result.cs">
+      <DependentUpon>GedocModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Model\SProcGetRoles_Result1.cs">
+      <DependentUpon>GedocModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Model\sp_DatosBandejaEntrada_Result.cs">
+      <DependentUpon>GedocModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Model\sp_DespachosUltimos_Result.cs">
+      <DependentUpon>GedocModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Model\sp_IngresosUltimos_Result.cs">
+      <DependentUpon>GedocModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Model\sysdiagrams.cs">
+      <DependentUpon>GedocModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Model\TipoTramite.cs">
+      <DependentUpon>GedocModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Model\UnidadTecnica.cs">
+      <DependentUpon>GedocModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Model\Usuario.cs">
+      <DependentUpon>GedocModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Model\vw_AccionesBandeja.cs">
+      <DependentUpon>GedocModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Model\vw_BandejaEntrada.cs">
+      <DependentUpon>GedocModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Model\vw_BandejaEntradaDespachoInic.cs">
+      <DependentUpon>GedocModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Model\vw_DestinatarioDesp.cs">
+      <DependentUpon>GedocModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Model\vw_EtiquetasReq.cs">
+      <DependentUpon>GedocModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Model\vw_FichaIngreso.cs">
+      <DependentUpon>GedocModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Model\vw_GeneroReq.cs">
+      <DependentUpon>GedocModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Model\vw_GeneroReqNivel1.cs">
+      <DependentUpon>GedocModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Model\vw_GeneroReqNivel2.cs">
+      <DependentUpon>GedocModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Model\vw_RemitentesReq.cs">
+      <DependentUpon>GedocModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Model\vw_Usuario.cs">
+      <DependentUpon>GedocModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+    <EntityDeploy Include="Model\GedocModel.edmx">
+      <Generator>EntityModelCodeGenerator</Generator>
+      <LastGenOutput>GedocModel.Designer.cs</LastGenOutput>
+    </EntityDeploy>
+    <None Include="Model\GedocModel.edmx.diagram">
+      <DependentUpon>GedocModel.edmx</DependentUpon>
+    </None>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Gedoc.Helpers\Gedoc.Helpers.csproj">
+      <Project>{FE77FDB2-C678-4B7A-A409-7DA3F1846EE3}</Project>
+      <Name>Gedoc.Helpers</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Model\GedocModel.Context.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <DependentUpon>GedocModel.edmx</DependentUpon>
+      <LastGenOutput>GedocModel.Context.cs</LastGenOutput>
+    </Content>
+    <Content Include="Model\GedocModel.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <DependentUpon>GedocModel.edmx</DependentUpon>
+      <LastGenOutput>GedocModel.cs</LastGenOutput>
+    </Content>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>Este proyecto hace referencia a los paquetes NuGet que faltan en este equipo. Use la restauración de paquetes NuGet para descargarlos. Para obtener más información, consulte http://go.microsoft.com/fwlink/?LinkID=322105. El archivo que falta es {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\EntityFramework.6.4.0\build\EntityFramework.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\EntityFramework.6.4.0\build\EntityFramework.props'))" />
+    <Error Condition="!Exists('..\packages\EntityFramework.6.4.0\build\EntityFramework.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\EntityFramework.6.4.0\build\EntityFramework.targets'))" />
+  </Target>
+  <Import Project="..\packages\EntityFramework.6.4.0\build\EntityFramework.targets" Condition="Exists('..\packages\EntityFramework.6.4.0\build\EntityFramework.targets')" />
+</Project>

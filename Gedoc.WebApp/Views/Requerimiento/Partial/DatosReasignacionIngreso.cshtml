@@ -1,0 +1,117 @@
+﻿@using Gedoc.Helpers.Enum
+@using Gedoc.WebApp.Helpers
+@using Newtonsoft.Json
+@model Gedoc.WebApp.Models.RequerimientoModel
+
+@{
+    Layout = null;
+    Dictionary<CampoIngreso, AspectoCampo> accesoCampos = ViewBag.AccesoCampos;
+}
+
+    <script>
+
+    function inicializaPanelReasignacion() {
+        var ds;
+
+        if ($("#UtAsignadaId:not([type=hidden])").length) {
+            ds = Main.getDataSourceKendoGenerico($("#UtAsignadaId"),
+                '@Url.Action("MantenedorGenerico", "Json")?idM=@((int) Mantenedor.UnidadTecnica)');
+            $("#UtAsignadaId").data("kendoComboBox").setDataSource(ds);
+        }
+
+        if ($("#UnidadTecnicaCopia").length) {
+            $("#UnidadTecnicaCopia").kendoMultiSelect(
+                Main.getMultiSelectConfig($("#UnidadTecnicaCopia"),
+                    '@Url.Action("MantenedorGenerico", "Json")?idM=@((int) Mantenedor.UnidadTecnica)'
+                ,"", ""
+                , @Html.Raw(JsonConvert.SerializeObject(Model.UnidadTecnicaCopia)) )
+            );
+        }
+
+
+
+    }
+
+    function cambiaUtTemporal(e) {
+        var asignTempLiberada = @Json.Encode(Model.LiberarAsignacionTemp);
+        habilitaAsignTemp((e.sender.value() && !asignTempLiberada) ? true : false);
+    }
+
+    //# sourceURL=PanelAsignacionIngreso
+    </script>
+
+
+<h4 class="head-datos-form">Reasignación</h4>
+<div class="container-fluid">
+
+
+        <div class="form-row">
+            <div class="col-md-3">
+                <label class="label-dato-form">
+                    Unidad Técnica Reasignada
+                    @if (accesoCampos[CampoIngreso.Asig_UtAsign] != AspectoCampo.SoloLectura)
+                    {
+                        <span class="marca-obligatorio" title="Este campo es obligatorio."> *</span>
+                    }
+                </label>
+            </div>
+            <div class="col-md-9">
+                @if (accesoCampos[CampoIngreso.Asig_UtAsign] == AspectoCampo.SoloLectura)
+                {
+                    <label id="lbUtAsignada">@Model.UtAsignadaTitulo </label>
+                }
+                else
+                {
+                    @(Html.Kendo().ComboBox()
+                        .Name("UtAsignadaId")
+                        .DataTextField("Titulo")
+                        .DataValueField("Id")
+                        .Filter("contains")
+                        .HtmlAttributes(new { required = "required", @class = "w-100" })
+                        .Messages(Gedoc.WebApp.Helpers.KendoHelper.SetComboBoxMessages)
+                        )
+                    <span class="k-invalid-msg" data-for="UtAsignadaId"></span><br />
+                }
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="col-md-3">
+                <label class="label-dato-form">
+                    Unidad Técnica en copia
+                </label>
+            </div>
+            <div class="col-md-9">
+                @if (accesoCampos[CampoIngreso.Asig_UtCopia] == AspectoCampo.SoloLectura)
+                {
+                    <label id="lbUtCopia">@Model.UtCopiaTitulos</label>
+                }
+                else
+                {
+                    <select id="UnidadTecnicaCopia" name="UnidadTecnicaCopia" multiple></select>
+                }
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="col-md-3">
+                <label class="label-dato-form">
+                    Comentario de Reasignación
+                </label>
+            </div>
+            <div class="col-md-9">
+                @if (accesoCampos[CampoIngreso.Asig_ComentarioAsign] == AspectoCampo.SoloLectura)
+                {
+                    <div id="lbComentarioAsign" class="pre-wrap">@Html.Raw(Model.ComentarioDevolucion) </div>
+                }
+                else
+                {
+                    <textarea name="ComentarioDevolucion" rows="4" cols="20" id="tbComentarioDevolucion" class="form-control texto-largo" 
+						  data-spanleyenda="leyenda-pnComentarioDevolucion"
+                          data-maxlength="255" style="width: 100% !important;">@Html.Raw(Model.ComentarioDevolucion)</textarea>
+                    <span class="help-block-right" id="leyenda-pnComentarioDevolucion"> </span>
+                }
+            </div>
+        </div>
+
+</div>

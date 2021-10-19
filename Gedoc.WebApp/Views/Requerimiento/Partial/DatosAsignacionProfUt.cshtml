@@ -1,0 +1,207 @@
+﻿@using Gedoc.Helpers.Enum
+@using Gedoc.Helpers
+@model Gedoc.WebApp.Models.RequerimientoModel
+
+@{
+    Layout = null;
+    Dictionary<CampoIngreso, AspectoCampo> accesoCampos = ViewBag.AccesoCampos;
+}
+
+<script>
+
+    function onDataBoundProfUt(e) {
+        // Si al abrir el form el profesional asignado ya no es de la UT y por tanto no aparece en la lista del combo de profesional entonces
+        // ocasiona q se muestre el Id del profesinal asignado en vez del nombre pues este no existe en la lista del combo. Con lo siguiente
+        // se deja vacío el control si ocurre lo mencionado.
+        if (this.value() && this.dataSource.data().length && this.selectedIndex == -1) { // El combo de profesional tiene valor inicial asignado, ya se llenaron los valores de la lista, pero no hay elemento seleccionado entonces vacío el control.
+                this.value(null);
+        }
+    }
+
+    function onChangeProfUt(e) {
+        // TODO: lo siguiente replicarlo para el resto de los combo. Al ingresar un texto en el combo q no corresponda con un valor de la lista del combo ocasiona q se muestre el mensaje "El campo XXXXXX debe ser un número" cuando el control pierde el foco.
+        // Lo siguiente es para evitar q el control quede con un texto q introduzca el usuario y q no corresponde a la lista del combobox. Ref. https://docs.telerik.com/kendo-ui/knowledge-base/prevent-submission-of-missing-value
+        if (this.value() && this.dataSource.data().length && this.selectedIndex == -1) {    
+            this.dataSource.filter({
+                value: this.value(),
+                field: this.options.dataTextField,
+                operator: "contains"
+            });
+            //this.select(0);
+            //if ( this.selectedIndex == -1 ) {                    
+            //    this.text("");
+            //}
+            this.value(null);
+        }
+    }
+
+    //# sourceURL=PanelAsignacionProfUt
+</script>
+
+
+@if (!Model.EnAsignacionTemp)
+{
+    <h4 class="head-datos-form">Unidad Técnica - Asignación de Profesional</h4>
+    <div class="container-fluid">
+
+        <div class="form-row">
+            <div class="col-md-3">
+                <label class="label-dato-form">
+                    Fecha de Recepción UT<span class="marca-obligatorio" title="Este campo es obligatorio."> *</span>
+                </label>
+            </div>
+            <div class="col-md-4">
+                <input id="RecepcionUt" name="RecepcionUt" required />
+                @*@(Html.Kendo().DatePicker()
+                        .Name("RecepcionUt")
+                        .Min(Model.FechaIngreso)
+                        .Max(DateTime.Today)
+                        .Value(DateTime.Today) // TODO
+                        .Format(GeneralData.FORMATO_FECHA_CORTO)
+                        .DateInput()
+                    )*@
+                <span class="k-invalid-msg" data-for="RecepcionUt"></span><br />
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="col-md-3">
+                <label class="label-dato-form">
+                    Profesional UT Asignado<span class="marca-obligatorio" title="Este campo es obligatorio."> *</span>
+                </label>
+            </div>
+            <div class="col-md-9">
+                @(Html.Kendo().ComboBox()
+                .Name("ProfesionalId")
+                .DataTextField("Titulo")
+                .DataValueField("Id")
+                .Filter("contains")
+                .HtmlAttributes(new { required = "required", @class= "w-100" })
+                .Messages(Gedoc.WebApp.Helpers.KendoHelper.SetComboBoxMessages)
+                .Events(e => e.DataBound("onDataBoundProfUt").Change("onChangeProfUt"))
+                )
+                <span class="k-invalid-msg" data-for="ProfesionalId"></span><br />
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="col-md-3">
+                <label class="label-dato-form">
+                    Comentario de Encargado UT
+                </label>
+            </div>
+            <div class="col-md-9">
+                @*<div class="k-block text-area-out">
+                    <div class="text-area-in texto-largo" id="pnComentarioEncargadoUt" contenteditable="true" maxlength="255"
+                         data-spanleyenda="leyenda-pnComentarioEncargadoUt">@Html.Raw(Model.ComentarioEncargadoUt)</div>
+                </div>*@
+
+                <textarea name="ComentarioEncargadoUt" rows="4" cols="20" id="tbComentarioEncargadoUt" class="form-control texto-largo" 
+						  data-spanleyenda="leyenda-pnComentarioEncargadoUt"
+                          data-maxlength="255" style="width: 100% !important;">@Html.Raw(Model.ComentarioEncargadoUt)</textarea>
+                <span class="help-block-right" id="leyenda-pnComentarioEncargadoUt"> </span>
+            </div>
+        </div>
+
+            <div class="form-row">
+                <div class="col-md-3" style="white-space:nowrap">
+                    <label class="label-dato-form">
+                        Requiere timbraje de <br /> plano<span class="marca-obligatorio" title="Este campo es obligatorio."> *</span>
+                    </label>
+                </div>
+                <div class="col-md-2">
+                    @(Html.Kendo().RadioButtonFor(m => m.RequiereTimbrajePlano).Label("Sí").Value(true))
+                    @(Html.Kendo().RadioButtonFor(m => m.RequiereTimbrajePlano).HtmlAttributes(new { @class = "ml-3" }).Label("No").Value(false))
+
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="col-md-3" style="white-space:nowrap">
+                    <label class="label-dato-form">
+                        Requiere acuerdo / <br /> Acta CMN<span class="marca-obligatorio" title="Este campo es obligatorio."> *</span>
+                    </label>
+                </div>
+                <div class="col-md-2">
+                    @(Html.Kendo().RadioButtonFor(m => m.RequiereAcuerdo).Label("Sí").Value(true))
+                    @(Html.Kendo().RadioButtonFor(m => m.RequiereAcuerdo).HtmlAttributes(new { @class = "ml-3" }).Label("No").Value(false))
+
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <h4 class="head-datos-form">Unidad Técnica Temporal - Asignación de Profesional</h4>
+        <div class="container-fluid">
+            <div class="form-row">
+                <div class="col-md-3">
+                    <label class="label-dato-form">
+                        Unidad Técnica Temporal
+                    </label>
+                </div>
+                <div class="col-md-9">
+                    <label id="lbUtAsignada">@Model.UtTemporalTitulo </label>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="col-md-3">
+                    <label class="label-dato-form">
+                        Profesional UT Temporal Asignado<span class="marca-obligatorio" title="Este campo es obligatorio."> *</span>
+                    </label>
+                </div>
+                <div class="col-md-9">
+                    @(Html.Kendo().ComboBox()
+                        .Name("ProfesionalTempId")
+                        .DataTextField("Titulo")
+                        .DataValueField("Id")
+                        .Filter("contains")
+                        .HtmlAttributes(new { required = "required", @class= "w-100" })
+                        .Messages(Gedoc.WebApp.Helpers.KendoHelper.SetComboBoxMessages)
+                        )
+                    <span class="k-invalid-msg" data-for="ProfesionalTempId"></span><br />
+                </div>
+            </div>
+        </div>
+    }
+
+
+
+<script>
+
+    function inicializaPanelAsignacionProfUt() {
+
+        if ($("#RecepcionUt").length) {
+            $("#RecepcionUt").kendoDatePicker({
+                max: new Date(),
+                min: new Date(@(Model.FechaIngreso.Year), @(Model.FechaIngreso.Month - 1), @(Model.FechaIngreso.Day)),
+                format: Main.formatoFecha,
+                dateInput: false,
+                culture: "es-ES"
+                @if (Model.RecepcionUt.HasValue)
+                {
+                    @:,value: new Date(@Model.RecepcionUt.GetValueOrDefault().Year, @(Model.RecepcionUt.GetValueOrDefault().Month - 1), @Model.RecepcionUt.GetValueOrDefault().Day)
+                }
+                else
+                {
+                    @:,value: null
+                }
+            });
+        }
+
+        var ds;
+        if ($("#ProfesionalId").length) {
+            ds = Main.getDataSourceKendoGenerico($("#ProfesionalId"),
+                '@Url.Action("MantenedorGenerico", "Json")?idM=@((int)Mantenedor.Profesional)&extra=@Model.UtAsignadaId');
+            $("#ProfesionalId").data("kendoComboBox").setDataSource(ds);
+        }
+        if ($("#ProfesionalTempId").length) {
+            ds = Main.getDataSourceKendoGenerico($("#ProfesionalTempId"),
+                '@Url.Action("MantenedorGenerico", "Json")?idM=@((int)Mantenedor.Profesional)&extra=@Model.UtTemporalId');
+            $("#ProfesionalTempId").data("kendoComboBox").setDataSource(ds);
+        }
+    }
+
+    //# sourceURL=PanelAsignacionProfUt2
+</script>

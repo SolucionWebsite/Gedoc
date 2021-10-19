@@ -1,0 +1,205 @@
+﻿@using Gedoc.Helpers.Enum
+@using Newtonsoft.Json
+@model Gedoc.WebApp.Models.RequerimientoModel
+
+@{
+    Layout = null;
+    Dictionary<CampoIngreso, AspectoCampo> accesoCampos = ViewBag.AccesoCampos;
+}
+
+<script id="tagTemplate" type="text/x-kendo-template">
+    <span title="#: Titulo #">
+        #: acortaTexto(Titulo) #
+    </span>
+</script>
+
+
+<h4 class="head-datos-form">Adjuntos</h4>
+<div class="container-fluid">
+    <div class="form-row">
+        <div class="col-md-3" style="white-space:nowrap">
+            <label class="label-dato-form">
+                Adjunta documentación
+                @if (accesoCampos[CampoIngreso.Adj_AdjuntaDoc] != AspectoCampo.SoloLectura)
+                {
+                    <span class="marca-obligatorio" title="Este campo es obligatorio."> *</span>
+                }
+            </label>
+        </div>
+        <div class="col-md-2">
+            @if (accesoCampos[CampoIngreso.Adj_AdjuntaDoc] == AspectoCampo.SoloLectura)
+            {
+                <label id="lbAdjuntaDoc">@(Model.AdjuntaDocumentacion ? "Sí" : "No")</label>
+            }
+            else
+            {
+                @(Html.Kendo().RadioButtonFor(m => m.AdjuntaDocumentacion).Label("Sí").Value(true))
+                @(Html.Kendo().RadioButtonFor(m => m.AdjuntaDocumentacion).HtmlAttributes(new { @class = "ml-3" }).Label("No").Value(false))
+
+            }
+        </div>
+    </div>
+
+    @if (accesoCampos[CampoIngreso.Adj_CantAdj] != AspectoCampo.Oculto)
+    {
+        <div class="form-row">
+            <div class="col-md-3">
+                <label class="label-dato-form">
+                    Cantidad de adjuntos
+                    @if (accesoCampos[CampoIngreso.Adj_CantAdj] != AspectoCampo.SoloLectura)
+                    {
+                        <span class="marca-obligatorio" title="Este campo es obligatorio."> *</span>
+                    }
+                </label>
+            </div>
+            <div class="col-md-5">
+                @if (accesoCampos[CampoIngreso.Adj_CantAdj] == AspectoCampo.SoloLectura)
+                {
+                    <label id="lbFechaIngreso">@Model.CantidadAdjuntos</label>
+                }
+                else
+                {
+                    @*<input id="cantAdjuntos" name="CantidadAdjuntos" value="0" />*@
+                    @(Html.Kendo().NumericTextBoxFor(model => model.CantidadAdjuntos)
+                        .Name("CantidadAdjuntos")
+                        .Value(Model.CantidadAdjuntos.GetValueOrDefault(0))
+                        .Step(1)
+                        .Min(0)
+                        .Decimals(0)
+                        .Format("0")
+                        .HtmlAttributes(new { required = "required" }) )
+                    <span class="k-invalid-msg" data-for="CantidadAdjuntos"></span><br />
+                }
+            </div>
+        </div>
+    }
+    <div class="form-row">
+        <div class="col-md-3">
+            <label class="label-dato-form">
+                Tipos de adjuntos
+                @if (accesoCampos[CampoIngreso.Adj_TipoAdj] != AspectoCampo.SoloLectura)
+                {
+                    <span class="marca-obligatorio" title="Este campo es obligatorio."> *</span>
+                }
+            </label>
+        </div>
+        <div class="col-md-9">
+            @if (accesoCampos[CampoIngreso.Adj_TipoAdj] == AspectoCampo.SoloLectura)
+            {
+                <label id="lbFechaIngreso">@Model.TipoAdjuntoTitulos</label>
+            }
+            else
+            {
+                <select id="tipoAdjunto" name="TipoAdjunto" multiple required></select>
+                <span class="k-invalid-msg" data-for="TipoAdjunto"></span><br />
+            }
+        </div>
+    </div>
+    <div class="form-row">
+        <div class="col-md-3">
+            <label class="label-dato-form">
+                Soporte
+                @if (accesoCampos[CampoIngreso.Adj_Soporte] != AspectoCampo.SoloLectura)
+                {
+                    <span class="marca-obligatorio" title="Este campo es obligatorio."> *</span>
+                }
+            </label>
+        </div>
+        <div class="col-md-9">
+            @if (accesoCampos[CampoIngreso.Adj_Soporte] == AspectoCampo.SoloLectura)
+            {
+                <label id="lbFechaIngreso">@Model.SoporteTitulos</label>
+            }
+            else
+            {
+                <select id="soporte" name="Soporte" multiple required></select>
+                <span class="k-invalid-msg" data-for="Soporte"></span><br />
+            }
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="col-md-3">
+            <label class="label-dato-form">
+                Observaciones de adjuntos
+            </label>
+        </div>
+        <div class="col-md-9">
+            @if (accesoCampos[CampoIngreso.Adj_ObsAdj] == AspectoCampo.SoloLectura)
+            {
+                <div id="divObsAdj" class="pre-wrap">@Html.Raw(Model.ObservacionesAdjuntos) </div>
+            }
+            else
+            {
+                @*<div class="k-block text-area-out">
+                <div class="text-area-in texto-largo datos-adjuntos" id="pnObservacionAdj" contenteditable="true" maxlength="255"
+                     data-spanleyenda="leyenda-pnObservacionAdj">@Html.Raw(Model.ObservacionesAdjuntos)</div>
+                </div>*@
+                <textarea name="ObservacionesAdjuntos" rows="4" cols="20" id="tbObservacionesAdjuntos" class="form-control texto-largo datos-adjuntos"
+                          data-spanleyenda="leyenda-pnObservacionAdj"
+                          data-maxlength="255" style="width: 100% !important;">@Html.Raw(Model.ObservacionesAdjuntos)</textarea>
+                <span class="help-block-right" id="leyenda-pnObservacionAdj"> </span>
+                <span class="help-block">Indique por ejemplo si hay URL CEDOC, o número de fichero físico. </span>
+
+            }
+        </div>
+    </div>
+
+</div>
+
+
+
+<script>
+
+    function incializaPanelAdjunto() {
+        if ($("#tipoAdjunto").length) {
+            $("#tipoAdjunto").kendoMultiSelect(
+                Main.getMultiSelectConfig($("#tipoAdjunto"),
+                    '@Url.Action("MantenedorGenerico", "Json")?idM=@((int) Mantenedor.TipoDocumento)'
+                    ,"", ""
+                    , @Html.Raw(JsonConvert.SerializeObject(Model.TipoAdjunto)) )
+            );
+        }
+
+        if ($("#soporte").length) {
+            $("#soporte").kendoMultiSelect(
+                Main.getMultiSelectConfig($("#soporte"),
+                    '@Url.Action("MantenedorGenerico", "Json")?idM=@((int) Mantenedor.Soporte)'
+                    ,"", ""
+                    , @Html.Raw(JsonConvert.SerializeObject(Model.Soporte)) )
+            );
+        }
+
+        $("input[name$='AdjuntaDocumentacion'").click(function () {
+            cambiaEstadoAdjuntos();
+        });
+
+        cambiaEstadoAdjuntos();
+    }
+
+
+    function cambiaEstadoAdjuntos() {
+        if (!$("input[name$='AdjuntaDocumentacion'").length) {
+            return;
+        }
+        var desactivar = $("input[name$='AdjuntaDocumentacion']:checked").val() != "True";
+        $(".datos-adjuntos").prop("disabled", desactivar);
+        $(".datos-adjuntos[contenteditable]").attr("contenteditable", !desactivar);
+        $(".datos-adjuntos[contenteditable]").css("background-color", desactivar ? "lightgrey" : "");
+
+        var cantAdjK = $("#CantidadAdjuntos").data("kendoNumericTextBox");
+        if (cantAdjK != undefined) cantAdjK.enable(!desactivar);
+        var tipoAdjK = $("#tipoAdjunto").data("kendoMultiSelect");
+        tipoAdjK.enable(!desactivar);
+        var soporteK = $("#soporte").data("kendoMultiSelect");
+        soporteK.enable(!desactivar);
+
+        if (desactivar) {
+            $('.k-invalid-msg[data-for=TipoAdjunto]').hide();
+            $('.k-invalid-msg[data-for=Soporte]').hide();
+        }
+
+    }
+
+    //# sourceURL=PanelAdjuntoIngreso
+</script>

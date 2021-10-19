@@ -1,0 +1,109 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29613.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gedoc.Service", "Gedoc.Service\Gedoc.Service.csproj", "{683C856A-B72C-4A7B-A311-043456B97184}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gedoc.WebApp", "Gedoc.WebApp\Gedoc.WebApp.csproj", "{1F07BA3A-69B8-4BAE-92DD-444DCC9640E3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gedoc.Helpers", "Gedoc.Helpers\Gedoc.Helpers.csproj", "{FE77FDB2-C678-4B7A-A409-7DA3F1846EE3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gedoc.Repositorio", "Gedoc.Repositorio\Gedoc.Repositorio.csproj", "{8EBEC630-05CC-4F63-AD66-847B44C025AD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gedoc.WebReport", "Gedoc.WebReport\Gedoc.WebReport.csproj", "{C789AC7F-2C49-4BF0-8E9E-D3689000C578}"
+	ProjectSection(ProjectDependencies) = postProject
+		{FE1ED1B8-3FE4-4B27-8751-F3A92134049E} = {FE1ED1B8-3FE4-4B27-8751-F3A92134049E}
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gedoc.Interop.Wss", "Gedoc.Interop.Wss\Gedoc.Interop.Wss.csproj", "{B5E33619-69CB-488F-8B32-A093AD7B62C5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gedoc.Etl.WinSrv", "Gedoc.Etl.WinSrv\Gedoc.Etl.WinSrv.csproj", "{3FBCCB47-C379-4A93-A931-DCFD821BF22F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gedoc.ReportData.Wss", "Gedoc.ReportData.Wss\Gedoc.ReportData.Wss.csproj", "{FE1ED1B8-3FE4-4B27-8751-F3A92134049E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gedoc.Alertas", "Gedoc.Alertas\Gedoc.Alertas.csproj", "{08BD431D-493D-401E-B8D5-718A5C25F7BA}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{683C856A-B72C-4A7B-A311-043456B97184}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{683C856A-B72C-4A7B-A311-043456B97184}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{683C856A-B72C-4A7B-A311-043456B97184}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{683C856A-B72C-4A7B-A311-043456B97184}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1F07BA3A-69B8-4BAE-92DD-444DCC9640E3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1F07BA3A-69B8-4BAE-92DD-444DCC9640E3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1F07BA3A-69B8-4BAE-92DD-444DCC9640E3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1F07BA3A-69B8-4BAE-92DD-444DCC9640E3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FE77FDB2-C678-4B7A-A409-7DA3F1846EE3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FE77FDB2-C678-4B7A-A409-7DA3F1846EE3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FE77FDB2-C678-4B7A-A409-7DA3F1846EE3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FE77FDB2-C678-4B7A-A409-7DA3F1846EE3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8EBEC630-05CC-4F63-AD66-847B44C025AD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8EBEC630-05CC-4F63-AD66-847B44C025AD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8EBEC630-05CC-4F63-AD66-847B44C025AD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8EBEC630-05CC-4F63-AD66-847B44C025AD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C789AC7F-2C49-4BF0-8E9E-D3689000C578}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C789AC7F-2C49-4BF0-8E9E-D3689000C578}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C789AC7F-2C49-4BF0-8E9E-D3689000C578}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C789AC7F-2C49-4BF0-8E9E-D3689000C578}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B5E33619-69CB-488F-8B32-A093AD7B62C5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B5E33619-69CB-488F-8B32-A093AD7B62C5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B5E33619-69CB-488F-8B32-A093AD7B62C5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B5E33619-69CB-488F-8B32-A093AD7B62C5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3FBCCB47-C379-4A93-A931-DCFD821BF22F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3FBCCB47-C379-4A93-A931-DCFD821BF22F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3FBCCB47-C379-4A93-A931-DCFD821BF22F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3FBCCB47-C379-4A93-A931-DCFD821BF22F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FE1ED1B8-3FE4-4B27-8751-F3A92134049E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FE1ED1B8-3FE4-4B27-8751-F3A92134049E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FE1ED1B8-3FE4-4B27-8751-F3A92134049E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FE1ED1B8-3FE4-4B27-8751-F3A92134049E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{08BD431D-493D-401E-B8D5-718A5C25F7BA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{08BD431D-493D-401E-B8D5-718A5C25F7BA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{08BD431D-493D-401E-B8D5-718A5C25F7BA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{08BD431D-493D-401E-B8D5-718A5C25F7BA}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {50474CA4-4FE2-4140-AA16-D1934A408A5A}
+	EndGlobalSection
+	GlobalSection(TeamFoundationVersionControl) = preSolution
+		SccNumberOfProjects = 10
+		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
+		SccTeamFoundationServer = https://dev.azure.com/brainsoftnet
+		SccLocalPath0 = .
+		SccProjectUniqueName1 = Gedoc.Helpers\\Gedoc.Helpers.csproj
+		SccProjectName1 = Gedoc.Helpers
+		SccLocalPath1 = Gedoc.Helpers
+		SccProjectUniqueName2 = Gedoc.Repositorio\\Gedoc.Repositorio.csproj
+		SccProjectName2 = Gedoc.Repositorio
+		SccLocalPath2 = Gedoc.Repositorio
+		SccProjectUniqueName3 = Gedoc.Service\\Gedoc.Service.csproj
+		SccProjectName3 = Gedoc.Service
+		SccLocalPath3 = Gedoc.Service
+		SccProjectUniqueName4 = Gedoc.WebApp\\Gedoc.WebApp.csproj
+		SccProjectName4 = Gedoc.WebApp
+		SccLocalPath4 = Gedoc.WebApp
+		SccProjectUniqueName5 = Gedoc.WebReport\\Gedoc.WebReport.csproj
+		SccProjectName5 = Gedoc.WebReport
+		SccLocalPath5 = Gedoc.WebReport
+		SccProjectUniqueName6 = Gedoc.Interop.Wss\\Gedoc.Interop.Wss.csproj
+		SccProjectName6 = Gedoc.Interop.Wss
+		SccLocalPath6 = Gedoc.Interop.Wss
+		SccProjectUniqueName7 = Gedoc.Etl.WinSrv\\Gedoc.Etl.WinSrv.csproj
+		SccProjectName7 = Gedoc.Etl.WinSrv
+		SccLocalPath7 = Gedoc.Etl.WinSrv
+		SccProjectUniqueName8 = Gedoc.ReportData.Wss\\Gedoc.ReportData.Wss.csproj
+		SccProjectName8 = Gedoc.ReportData.Wss
+		SccLocalPath8 = Gedoc.ReportData.Wss
+		SccProjectUniqueName9 = Gedoc.Alertas\\Gedoc.Alertas.csproj
+		SccProjectName9 = Gedoc.Alertas
+		SccLocalPath9 = Gedoc.Alertas
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,395 @@
+﻿@using Gedoc.Helpers
+@using Gedoc.Helpers.Dto
+@using Gedoc.Helpers.Enum
+@using Newtonsoft.Json;
+@model  Gedoc.WebApp.Models.ListaModel
+@{
+    ViewBag.Title = "Edit";
+    ResultadoOperacion accesoForm = ViewBag.AccesoForm ?? new ResultadoOperacion(1, "OK", null);
+    Layout = null;
+    // var listaId = ViewBag.ListaId ?? 0;
+}
+
+<script src="~/Scripts/form.js"></script>
+
+<script>
+    function extraDataGridListaValor() {
+        var listaId = $("input#IdLista").val();
+        return { listaId: listaId };
+    }
+
+    function onExcelExport(e) {
+        var grid = this;
+        var colAcciones = 6;
+
+        //e.workbook.fileName = "ReservaCorrelativos.xlsx";
+        var sheet = e.workbook.sheets[0];
+        //para no exportar la columna Acciones al excel:
+        for (var r = 0; r < sheet.rows.length; r++) {
+            sheet.rows[r].cells.splice(colAcciones, 1);
+        }
+        // Se personalizan los títulos de columnas pues sino entonces aparecen con el código HTML de la grilla. Se conservan el fontsize, textalign y background q se asigna por defecto al exportar a Excel
+        var fontSize = sheet.rows[0].cells[0].fontSize;
+        var textAlign = sheet.rows[0].cells[0].textAlign;
+        var background = sheet.rows[0].cells[0].background;
+        var color = sheet.rows[0].cells[0].color;
+        var headers = [
+            { value: "Código", fontSize: fontSize, textAlign: textAlign, background: background, color: color },
+            { value: "Título", fontSize: fontSize, textAlign: textAlign, background: background, color: color },
+            { value: "Código Padre", fontSize: fontSize, textAlign: textAlign, background: background, color: color },
+            { value: "Valor Extra 1", fontSize: fontSize, textAlign: textAlign, background: background, color: color },
+            { value: "Valor Extra 2", fontSize: fontSize, textAlign: textAlign, background: background, color: color },
+            { value: "Estado", fontSize: fontSize, textAlign: textAlign, background: background, color: color }
+        ];
+        sheet.rows.splice(0, 1, { cells: headers });
+
+        //exportGridWithTemplatesContent(e);
+    }
+
+    //# sourceURL=FrameEditLista2
+</script>
+
+
+<div class="div-main-form">
+    <form id="formLista" action="@Url.Action("SaveLista", "Lista")" class="form-datos">
+        @Html.HiddenFor(a => a.IdLista)
+
+        <div class="form-row">
+            <label for="Nombre" class="label-dato-form col-md-2">
+                Nombre<span class="marca-obligatorio" title="Este campo es obligatorio."> *</span>
+            </label>
+            <div class="col-md-4">
+                @Html.TextBoxFor(a => a.Nombre, new {@class = "k-textbox w-100", maxlength = "100", required = "true"})
+                <span class="k-invalid-msg" data-for="Nombre"></span>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <label for="Descripcion" class="label-dato-form col-md-2">Descripción</label>
+            <div class="col-md-10">
+                @Html.TextBoxFor(a => a.Descripcion, new {@class = "k-textbox w-100", maxlength = "200"})
+                <span class="k-invalid-msg" data-for="Descripcion"></span>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <label for="IdListaPadre" class="label-dato-form col-md-2">Lista padre</label>
+            <div class="col-md-4">
+                @(Html.Kendo().ComboBox()
+                    .Name("IdListaPadre")
+                    .DataTextField("Titulo")
+                    .DataValueField("Id")
+                    .Filter("contains")
+                    .HtmlAttributes(new {@class = "w-100"})
+                    .Messages(Gedoc.WebApp.Helpers.KendoHelper.SetComboBoxMessages)
+                    )
+                <span class="k-invalid-msg" data-for="IdListaPadre"></span>
+            </div>
+
+            <label for="IdEstadoRegistro" class="label-dato-form col-md-2 pl-5">
+                Estado<span class="marca-obligatorio" title="Este campo es obligatorio."> *</span>
+            </label>
+            <div class="col-md-4">
+                @(Html.Kendo().ComboBox()
+                    .Name("IdEstadoRegistro")
+                    .DataTextField("Titulo")
+                    .DataValueField("Id")
+                    .Filter("contains")
+                    .HtmlAttributes(new {@class = "w-100", required = "true"})
+                    .Messages(Gedoc.WebApp.Helpers.KendoHelper.SetComboBoxMessages)
+                    )
+                <span class="k-invalid-msg" data-for="IdEstadoRegistro"></span>
+            </div>
+        </div>
+
+
+        <fieldset id="grupoListaValores">
+            <legend>Valores de la lista</legend>
+
+            @*<div style="height: 50vh" id="tablaValores">
+            </div>*@
+
+            @(Html.Kendo().DataSource<ListaValorDto>()
+                .Name("dataSourceGridListaValor")
+                .Ajax(dataSource => dataSource
+                    .Read(read =>
+                    {
+                        read.Action("GetListaValorAll", "Lista").Data("extraDataGridListaValor")
+                            .Type(HttpVerbs.Post);
+                    })
+                    .ServerOperation(false)
+                    .PageSize(10)
+                )
+                )
+            @(Html.Kendo().Grid<ListaValorDto>()
+                .Name("gridListaValor")
+                .DataSource("dataSourceGridListaValor")
+                .HtmlAttributes(new {@class = "k-grid-alternate" })
+                .ToolBar(toolbar =>
+                {
+                    toolbar.Search();
+                    toolbar.Custom()
+                        .HtmlAttributes(new {onclick = "agregarListaValor(); return false;"})
+                        .Name("NuevaListaValor")
+                        .Text("Agregar")
+                        .IconClass("k-icon k-i-plus-outline")
+                        .Url("#")
+                        ;
+                    toolbar.Excel().Text("Excel");
+                })
+                .Scrollable(scr => scr.Height("auto"))
+                .Pageable(p => p.AlwaysVisible(true).PageSizes(new int[3] {10, 50, 100}).Enabled(true).Info(true)
+                    .Messages(m => m.ItemsPerPage("registros por página")))
+                .Sortable()
+                .Navigatable()
+                .Excel(excel =>
+                {
+                    excel.FileName($"Valores_{Model.Nombre}.xlsx");
+                    excel.AllPages(true);
+                })
+                .Columns(columns =>
+                {
+                    columns.Bound(c => c.Codigo)
+                        //.Title("Código <span class='k-icon k-i-kpi' style='color: lightgray;'></span>")
+                        .HeaderTemplate("Código <span class='k-icon k-i-kpi' style='color: lightgray;'></span>")
+                        .Width(120);
+                    columns.Bound(c => c.Titulo)
+                        .Title("Título <span class='k-icon k-i-kpi' style='color: lightgray;'></span>")
+                        .Width(300);
+                    columns.Bound(c => c.Orden).Visible(false);
+                    columns.Bound(c => c.CodigoPadre)
+                        .HeaderTemplate("Código<br>Padre <span class='k-icon k-i-kpi' style='color: lightgray;'></span>");
+                    columns.Bound(c => c.ValorExtra1)
+                        .HeaderTemplate("Valor<br>Extra 1 <span class='k-icon k-i-kpi' style='color: lightgray;'></span>");
+                    columns.Bound(c => c.ValorExtra2)
+                        .HeaderTemplate("Valor<br>Extra 2 <span class='k-icon k-i-kpi' style='color: lightgray;'></span>");
+                    columns.Bound(c => c.EstadoRegistroNombre)
+                        .HeaderTemplate("Estado <span class='k-icon k-i-kpi' style='color: lightgray;'></span>");
+                    //columns.Template(@<text></text>).ClientTemplate("<button type='button' class='k-button k-button-icontext k-grid-edit' onclick='editar(#=Id#,true)'><span class='k-icon k-i-edit'></span>Editar</button>");
+                    //columns.Command(command =>
+                    //{
+                    //    command.Edit();
+                    //    command.Destroy();
+                    //}).Width(180);
+                    columns.Bound(c => c.IdLista)
+                        .Width(120)
+                        .Title("<center>Acción</center>")
+                        .Sortable(false)
+                        .ClientTemplate("#= buildAccionesListaValor(data.IdLista, data.Codigo, data.Titulo) #");
+                })
+                .Events(e => e
+                    .ExcelExport("onExcelExport")
+                )
+                )
+
+        </fieldset>
+
+        <div class="footer-modal">
+            <div class="form-row">
+                <div class="offset-md-3 col-md-2 text-center">
+                    <button type="button" id="btngrabaOficio" class="k-primary-blue k-button" onclick="guardarLista(event);">Guardar</button>
+                </div>
+                <div class="offset-md-2 col-md-2 text-center">
+                    <button type="button" id="btncancelaOficio" class="k-danger k-button" onclick="cancelaLista(event);">Cancelar</button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+<script>
+
+    @if (accesoForm.Codigo < 0)
+    {
+        <text>
+    Main.showAlert("@Html.Raw(accesoForm.Mensaje)")
+        .then(function(result) {
+            Main.cierraModal(null, false, "winFormIngreso");
+        });
+        </text>
+    }
+
+    var grid;
+
+    $(function() {
+
+        if (@Model.IdLista == 0) {
+            $("#grupoListaValores").hide();
+        }
+        
+        var listaId = $("input#IdLista").val();
+        var ds;
+        ds = Main.getDataSourceKendoGenerico($("#IdListaPadre"),
+            '@Url.Action("MantenedorGenerico", "Json")?idM=@((int) Mantenedor.Lista)&extra=' + listaId);
+        $("#IdListaPadre").data("kendoComboBox").setDataSource(ds);
+
+        ds = Main.getDataSourceKendoGenerico($("#IdEstadoRegistro"),
+            '@Url.Action("MantenedorGenerico", "Json")?idM=@((int) Mantenedor.EstadoRegistro)');
+        $("#IdEstadoRegistro").data("kendoComboBox").setDataSource(ds);
+
+        Form.inicializaForm();
+
+        configValidacionForm();
+
+        $(".k-grid-search input").prop("placeholder", "Buscar...");
+        $(".k-grid-search input").prop("title", "Buscar...");
+    });
+
+    function configValidacionForm() {
+        var container = $("#formLista");
+        kendo.init(container);
+        container.kendoValidator({
+            messages: {
+                required: "Este campo es obligatorio"
+            }
+        });
+    }
+
+    function guardarLista(e) {
+        var idLista = $("#IdLista").val();
+        //if (idLista > 0) {
+        //    var gridK = $("#gridListaValor").data("kendoGrid");
+        //    if (!gridK || !gridK.dataItems().length) {
+        //        Main.showError("Tiene que especificar al menos un valor de la lista.");
+        //        return false;
+        //    }
+        //}
+
+        Main.wait("Grabando...");
+
+        var currentTarget = $(e.currentTarget);
+        var form = $("#formLista");
+
+        var validator = form.data("kendoValidator");
+        if (!validator.validate()) {
+            Main.unwait();
+            Main.showError("Por favor, revise los datos de la página. Hay datos incompletos o erróneos.");
+            return false;
+        }
+
+        var data = $(form).serialize();
+        var url = $(form).attr("action");
+        $.ajax({
+            type: "POST",
+            url: url,
+            data: data,
+            //dataType: "json"
+        }).done(function(response) {
+            Main.unwait();
+            if (response.Codigo) {
+                if (response.Codigo > 0) {
+                    Main.showInfo(response.Mensaje).then(function(result) {
+                        if (idLista == 0) {
+                            $("#IdLista").val(response.Extra);
+                            $("#grupoListaValores").show();
+                        } else {
+                            Main.cierraModal(currentTarget, true, "winFormIngreso");
+                        }
+                    });
+                } else {
+                    Main.showError(response.Mensaje, "Error");
+                }
+            } else {
+                Main.showAlert("Error inesperado al realizar la operación, por favor, vuelva a intentarlo",
+                    "Error");
+            }
+        }).fail(function(error) {
+            Main.unwait();
+            Main.showError("Ha ocurrido un error al realizar la operación, por favor, vuelva a intentarlo.",
+                "Error");
+        });
+    }
+
+    function cancelaLista(e) {
+        Main.cierraModal($(e.currentTarget), { resultado: false }, "winFormIngreso");
+    };
+
+
+    function agregarListaValor() {
+        var idLista = $("input#IdLista").val();
+        var url = '@Url.Action("FormListaValor", "Lista")' + '?id=0&listaId=' + idLista;
+        Main.muestraVentanaModal("Nuevo valor de lista - @Html.Raw(Model.Nombre)", url, '', '', false, "winFormListaValor", undefined, true)
+            .then(function(result) {
+                if (result == true || result.resultado == true) {
+                    refrescaGridListaValor();
+                }
+            });
+    }
+
+    function editarListaValor(id, codigo) {
+        var url = '@Url.Action("FormListaValor", "Lista")' + '?listaId=' + id + '&codigo=' + codigo;
+        Main.muestraVentanaModal("Editar valor de lista - @Html.Raw(Model.Nombre)", url, '', '', false, "winFormListaValor", undefined, true)
+            .then(function(result) {
+                if (result == true || result.resultado == true) {
+                    refrescaGridListaValor();
+                }
+            });
+    }
+
+    function eliminarListaValor(listaId, codigo, titulo) {
+        var btnEliminar = "#btnDelUt" + listaId;
+        Main.showConfirm("Se va a eliminar el valor: " + titulo + ", ¿desea continuar?", "Eliminar registro", true)
+            .then(function(esOk) {
+                if (esOk) {
+                    Main.wait("", btnEliminar);
+                    var url = "@Url.Action("EliminaListaValor", "Lista")?listaId=" + listaId + "&codigo=" + codigo;
+                    $.ajax({
+                        type: "POST",
+                        url: url
+                        //dataType: "json",
+                    }).done(function(response) {
+                        Main.unwait(btnEliminar);
+                        if (response.Codigo) {
+                            refrescaGridListaValor();
+                            if (response.Codigo > 0) {
+                                Main.showInfo(response.Mensaje, "Registro eliminado");
+                            } else {
+                                Main.showError(response.Mensaje, "Error");
+                            }
+                        } else {
+                            Main.showError("Error inesperado al realizar la operación, por favor, vuelva a intentarlo",
+                                "Error");
+                        }
+                    }).fail(function(error) {
+                        Main.unwait(btnEliminar);
+                        Main.showError("Ha ocurrido un error al realizar la operación, por favor, vuelva a intentarlo.",
+                            "Error");
+                    });
+                }
+            });
+    }
+
+
+    function buildAccionesListaValor(id, codigo, titulo) {
+        var enlace = "";
+        var btn = "<button class='k-button mr-1' onclick='editarListaValor(\"" +
+            id +
+            "\", \"" +
+            codigo +
+            "\")' title='Editar' type='button' data-role='button' role='button'><span class='k-icon k-i-edit'></span></button>";
+        enlace += btn;
+        btn = "<button class='k-button' id='btnDelUt" +
+            id +
+            "\", \"" +
+            codigo +
+            "' onclick='eliminarListaValor(\"" +
+            id +
+            "\", \"" +
+            codigo +
+            "\", \"" +
+            titulo +
+            "\")' title='Eliminar' type='button' data-role='button' role='button'><span class='k-icon k-i-trash'></span></button>";
+        enlace += btn;
+
+        enlace = '<div style="display: inline-flex;">' + enlace + '</div>';
+        return enlace;
+    }
+
+    function refrescaGridListaValor() {
+        var gridK = $("#gridListaValor").data("kendoGrid");
+        if (gridK) {
+            gridK.dataSource.read();
+        }
+    }
+
+    //# sourceURL=FrameEditLista
+</script>

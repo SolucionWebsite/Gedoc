@@ -1,0 +1,283 @@
+﻿@using Gedoc.Helpers.Dto
+
+<style>
+    /*.k-grid-edit {
+        display: none !important;
+    }*/
+</style>
+
+
+<script src="~/Scripts/jquery-rut/jquery.rut.min.js"></script>
+
+
+<h4 class="header-level1">@ViewBag.Title</h4>
+
+
+
+<div class="div-main">
+    <div class="row">
+        <div class="col-xs-18 col-md-12">
+            @(Html.Kendo().Grid<UsuarioDto>()
+                .Name("grid")
+                .Columns(columns =>
+                {
+                    columns.Bound(u => u.Id).Title("ID")
+                        .Width(80);
+                    columns.Bound(u => u.Username).Title("Username")
+                        .Width(210);
+                    columns.Bound(u => u.Email).Title("Email")
+                        .Width(250);
+                    columns.Bound(u => u.Rut).Title("RUT")
+                        .Width(130)
+                        .Hidden(true);
+                    columns.Bound(u => u.FirmaDigitalPin)
+                        .Title("PIN Firma Digtal")
+                        .Width(150)
+                        .Hidden(true).EditorTemplateName("password")
+                        .ClientTemplate("<span>#: Array((data.FirmaDigitalPin || '').length).join('*') #</span>");
+                    columns.Bound(u => u.NombresApellidos).Title("Nombre y Apellido");
+                    columns.Bound(c => c.Activo)
+                        .Width(130)
+                        .ClientTemplate("<div class='text-center mt-3' style='height: 16px;' id='divChk#=data.Id#'><input type='checkbox' #= Activo ? checked='checked':'' # class='chkActivo' /></div>")
+                        .Filterable(true);
+                    //columns.Bound(c => c.Activo).Title("Estado").Width(110).ClientTemplate(
+                    //    "# if (Activo == true) { #" +
+                    //    "<input type='checkbox' checked disabled/>" +
+                    //    "# } else { #" +
+                    //    "<input type='checkbox' disabled/>" +
+                    //    "# } #"
+                    //    );
+                    columns.Command(command =>
+                    {
+                        command.Edit().Text("Editar");
+                        command.Destroy().Text("Eliminar");
+                        command.Custom("Perfiles").Click("misRoles").IconClass("k-icon k-i-custom");
+                    })
+                        .Width(320)
+                        .Title("Acciones");
+                })
+                //.HtmlAttributes(new { style = "height: 600px;" })
+                .ToolBar(toolbar =>
+                {
+                    toolbar.Custom()
+                        .HtmlAttributes(new { onclick = "nuevoUsuario(); return false;" })
+                        .Name("NuevoUsuario")
+                        .Text("Agregar Usuario")
+                        .IconClass("k-icon k-i-plus")
+                        .Url("#")
+                        ;
+                    //toolbar.Create().Text("Agregar Usuario");
+                    toolbar.Excel().Text("Exportar a Excel");
+                    toolbar.Search();
+                })
+                .Excel(excel => excel
+                    .FileName("Usuarios.xlsx")
+                    .AllPages(true)
+                )
+                .Resizable(resize => resize.Columns(true))
+                .Editable(editable => editable
+                    .Mode(GridEditMode.PopUp)
+                    .TemplateName("UsuarioEditPopup")
+                    .ConfirmDelete("¿Está seguro de borrar el registro?"))
+                .Pageable()
+                .Filterable()
+                .Sortable(sortable =>
+                {
+                    sortable.SortMode(GridSortMode.SingleColumn);
+                })
+                .Scrollable(scr => scr.Height("auto"))
+                .Events(e => e
+                    .Save("gridSave")
+                    .Edit("gridEdit")
+                    .Cancel("hidePasswordColumn")
+                    .BeforeEdit("gridBeforeEdit"))
+                .DataSource(dataSource => dataSource
+                    .Ajax()
+                    .Model(model =>
+                    {
+                        model.Id(u => u.Id);
+                        model.Field(u => u.Id).Editable(false);
+                        model.Field(u => u.Username).Editable(true);
+                        model.Field(u => u.Email).Editable(false);
+                        model.Field(u => u.Rut).Editable(true);
+                        model.Field(u => u.FirmaDigitalPin).Editable(true);
+                        model.Field(u => u.NombresApellidos).Editable(false);
+                        model.Field(u => u.Activo).DefaultValue(true);
+                    }
+                    )
+                    .Read(read => read.Action("Usuario_Read", "Usuario"))
+                    .Create(create => create.Action("Usuario_Create", "Usuario"))
+                    .Update(update => update.Action("Usuario_Update", "Usuario"))
+                    .Destroy(destroy => destroy.Action("Usuario_Destroy", "Usuario"))
+                    .ServerOperation(false)
+                    .Events(ev => ev.Error("gridError").RequestStart("onRequestStart"))
+                )
+            )
+
+        </div>
+    </div>
+</div>
+<div id="dialog"></div>
+<script>
+    $(function () {
+        $('#grid').on('click',
+            '.chkActivo',
+            function () {
+                var checked = $(this).is(':checked');
+                var grid = $('#grid').data().kendoGrid;
+                var dataItem = grid.dataItem($(this).closest('tr'));
+                dataItem.set('Activo', checked);
+                cambiaActivoUsuario(dataItem, this);
+            });
+
+        $(".k-grid-search input").prop("placeholder", "Buscar...");
+        $(".k-grid-search input").prop("title", "Buscar...");
+    });
+
+    function cambiaActivoUsuario(dataItem, checkbox) {
+        var divChk = "#" + $(checkbox).closest('div')[0].id;
+        Main.wait("", divChk);
+
+        //Form.setValueHiddeFieldTextArea("ObservacionesAdjuntos", "pnObservacionAdj");
+
+        var data = $.param({ Id: dataItem.Id, Activo: dataItem.Activo });
+        var url = "@Url.Action("UpdateActivo")";
+        $.ajax({
+            type: "POST",
+            url: url,
+            data: data
+        }).done(function (response) {
+            Main.unwait(divChk);
+            var grid = $("#grid").data("kendoGrid");
+            if (response.Codigo) {
+                Main.showInfo((dataItem.Activo ? "Activado" : "Desactivado") + " con éxito el usuario " + dataItem.Username);
+                grid.saveChanges();
+            } else {
+                Main.showAlert("Error inesperado al cambiar el estado del usuario " + dataItem.Username + ", por favor, vuelva a intentarlo",
+                    "Error");
+                grid.cancelChanges();
+            }
+        }).fail(function (error) {
+            Main.unwait(divChk);
+            Main.showError("Ha ocurrido un error al cambiar el estado del usuario " + dataItem.Username + ", por favor, vuelva a intentarlo.",
+                "Error");
+        });
+    }
+
+    function misRoles(e) {
+        e.preventDefault();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        var urlRoles = '@Url.Action("RolesUsuario", "Rol")' + '?userId=' + dataItem.Id;
+        $("#dialog").kendoWindow({
+            title: 'Perfiles usuario "' + dataItem.NombresApellidos + '"',
+            modal: true,
+            height: 450,
+            width: 500,
+            iframe: true,
+            content: urlRoles
+        });
+        var dialog = $("#dialog").data("kendoWindow");
+        dialog.setOptions({
+            title: 'Perfiles usuario "' + dataItem.NombresApellidos + '"'
+        });
+        dialog.center();
+        dialog.open();
+    }
+
+    function showPasswordColumn(e) {
+        ////this.showColumn("Password");
+        //this.showColumn("Rut");
+        //this.showColumn("FirmaDigitalPin");
+    }
+
+    function hidePasswordColumn() {
+        //// this.hideColumn("Password");
+        //this.hideColumn("Rut");
+        //this.hideColumn("FirmaDigitalPin");
+    }
+
+    function gridBeforeEdit(e) {
+        //this.showColumn("Rut");
+        //this.showColumn("FirmaDigitalPin");
+    }
+
+    function gridEdit(e) {
+        //if (e.model.isNew()) {
+        //    //$("[name='Email']").attr("readonly", true);
+        //    $('input[name=Email]').parent().html(e.model.Email);
+        //    //$("[name='NombresApellidos']").attr("readonly", true);
+        //    $('input[name=NombresApellidos]').parent().html(e.model.NombresApellidos);
+        //} else {
+        //    //$("[name='Username']").attr("readonly", true);
+        //    $('input[name=Username]').parent().html(e.model.Username);
+        //}
+        var window = e.container.data('kendoWindow');
+        var update = $(e.container).parent().find(".k-grid-update");  
+        var cancel = $(e.container).parent().find(".k-grid-cancel");   
+        if (e.model.isNew()) {
+            // Nuevo
+            window.title('Nuevo usuario');
+            e.container.find(".solo-edit").hide();
+            // e.container.find(".solo-add").show();
+        } else {
+            // Edición
+            window.title('Editar usuario');
+            // e.container.find(".solo-edit").show();
+            e.container.find(".solo-add").hide();
+        }
+        $(update).html('<span class="k-icon k-i-check"></span>Grabar');
+        $(cancel).html('<span class="k-icon k-i-cancel"></span>Cancelar');
+    }
+
+    function gridSave(e) {
+        var rut = e.model.get('Rut');
+        if (rut && !$.validateRut(rut)) {
+            Main.showAlert("El RUT no es válido.");
+            e.preventDefault();
+            return false;
+        }
+        if (e.model.get('FirmaDigitalPin') != e.model.get('FirmaDigitalPinConfirm')) { // $('#FirmaDigitalPinConfirn').val()) {
+            Main.showAlert("El PIN y la confirmación de PIN no coinciden.");
+            e.preventDefault();
+            return false;
+        }
+        e.model.dirty = true; // Se fuerza a q siempre se haga la llamada ajax del update, aún cuando no se realicen modificaciones en los datos del usuario
+    }
+
+    function onRequestStart(e) {
+        this.lastRequestType = e.type;
+    }
+
+    function gridError(args) {
+        if (this.lastRequestType == "destroy") {
+            this.cancelChanges();
+        }
+        if (args.errors && args.errors.Error) {
+            var grid = $("#grid").data("kendoGrid");
+            grid.one("dataBinding", function (e) {
+                e.preventDefault();   // cancel grid rebind if error occurs
+
+                for (var i = 0; i < (args.errors.Error.errors.length || 0); i++) {
+                    var error = args.errors.Error.errors[i];
+                    Main.showError(error);
+                }
+            });
+        }
+        if (args.errors && args.errors.ErrorAD) {
+            var error = args.errors.ErrorAD.errors[0];
+            Main.showAlert(error);
+        }
+    }
+
+    function nuevoUsuario() {
+        // Cuando la grilla tiene aplicado filtro y/o orden en alguna columna, o en el campo Buscar, entonces
+        // el toolbar Create no funciona, no se muestra el nuevo registro para agregar. Por eso se implementa
+        // el create limpiando los filtros de la grilla y luego ejecutando el addRow (href. https://stackoverflow.com/a/16928708):
+        $(".k-grid-search input").val(""); // Se vacía el campo Buscar por si tiene filtro
+        var grid = $("#grid").data("kendoGrid");
+        grid.dataSource.filter({}); // Se eliminan los filtros de las columnas
+        grid.dataSource.sort({});  // Se elimina el orden de las columnas
+        //add record using Grid API
+        grid.addRow();
+    }
+</script>

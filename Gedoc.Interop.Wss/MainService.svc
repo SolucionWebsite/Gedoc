@@ -1,0 +1,2 @@
+﻿<%@ ServiceHost Language="C#" Debug="true" Service="Gedoc.Interop.Wss.MainService" CodeBehind="MainService.svc.cs" 
+     Factory="SimpleInjector.Integration.Wcf.SimpleInjectorServiceHostFactory,SimpleInjector.Integration.Wcf"%>

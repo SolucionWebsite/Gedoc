@@ -1,0 +1,22 @@
+﻿
+@(Html.Kendo().ComboBox()
+    .Name("IdMenuPadre")
+    .DataTextField("Titulo")
+    .DataValueField("Id")
+    .Filter("contains")
+    .HtmlAttributes(new { @class = "w-100" }) 
+    .Messages(Gedoc.WebApp.Helpers.KendoHelper.SetComboBoxMessages)
+    .DataSource(source => {
+          source.Custom()
+              .Schema(schema => schema.Data("Data"))
+              .Transport(transport =>
+              {
+                  transport.Read(read =>
+                  {
+                      read.Action("GetMenuRaiz", "Menu")
+                          .Type(HttpVerbs.Post);
+                  });
+              });
+    })
+    )
+

@@ -1,0 +1,58 @@
+﻿
+@model System.Web.Mvc.HandleErrorInfo
+@{
+    ViewBag.Title = "Error";
+    Layout = "~/Views/Shared/_LayoutVacio.cshtml";
+
+}
+
+
+<div class="row">
+    <div class="alert alert-danger col-md-10 offset-md-1 mt-5">
+        <div style="text-align: center;">
+            <span class="k-icon k-i-warning k-icon-48"></span>
+
+            <strong>¡Error inesperado!</strong>
+        </div>
+        <br />
+        Ha ocurrido un error inesperado al procesar la solicitud, por favor, contacte al administrador de la aplicación. @(string.IsNullOrEmpty(ViewBag.ErrorId) ? "" : " Código de error: " + ViewBag.ErrorId)
+    </div>
+    @if (Model != null && HttpContext.Current.IsDebuggingEnabled)
+    {
+        <div class="alert alert-danger col-md-10 offset-md-1 mt-5">
+            <p>
+                <b>Exception:</b> @Model.Exception.Message<br />
+                <b>Controller:</b> @Model.ControllerName<br />
+                <b>Action:</b> @Model.ActionName
+            </p>
+            <div style="overflow:scroll">
+                <pre>
+                    @Model.Exception.StackTrace
+                </pre>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div style="display: none !important; left: -2000px !important;"> @*para poder acceder al error al ver el código de la página pero q el usuario no lo vea*@
+            <p>
+                <b>Exception:</b> @(Model?.Exception?.Message ?? "null")<br />
+                <b>Controller:</b> @(Model?.ControllerName ?? "null")<br />
+                <b>Action:</b> @(Model?.ActionName ?? "null")
+            </p>
+            <div style="overflow:scroll">
+                <pre>
+                    @(Model?.Exception?.StackTrace ?? "null")
+                </pre>
+            </div>
+        </div>
+    }
+</div>
+<div class="text-center">
+    <button class="btn btn-primary" type="button" onclick="window.history.back();">Atrás</button>
+</div>
+
+<br />
+<br />
+<br />
+

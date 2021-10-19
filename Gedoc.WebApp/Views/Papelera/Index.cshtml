@@ -1,0 +1,218 @@
+﻿@model IEnumerable<Gedoc.WebApp.Models.PapeleraModel>
+@using Gedoc.Helpers
+
+@{
+    Layout = null;
+    ViewBag.Title = "Papelera Reciclaje";
+    //Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    .k-grid {
+        font-size: 0.8em;
+    }
+</style>
+
+<script src="~/Scripts/form.js"></script>
+
+<p>
+    <div class="btn-group btn-group-justified" role="group" aria-label="...">
+        <div class="btn-group" role="group">
+            <button type="button" class="btn btn-default btn-outline-dark" id="btnRestoreTrash"> <i class="k-icon k-i-undo" /> Restaurar Selección</button>
+        </div>
+        <div class="btn-group" role="group">
+            <button type="button" class="btn btn-default btn-outline-dark" id="btnDeleteTrash"><i class="k-icon k-i-close" /> Eliminar Selección</button>
+        </div>
+        <div class="btn-group" role="group">
+            <button type="button" class="btn btn-default btn-outline-dark" id="btnEmptyTrash"><i class="k-icon k-i-delete" /> Vaciar Papelera de Reciclaje</button>
+        </div>
+    </div>
+</p>
+
+
+<div id="divGrillaPapelera">
+
+    @*<h5>
+            <a href="#" class="badge badge-light mr-3 enlace-accion"
+               onclick="Acciones.ejecutaAccionNuevaVentana('Nuevo Documento', '@Url.Action("AccionAdjunto", "Adjunto")' + '?idAccion=BI&idAdjunto=0&idIngreso=@reqId', null, '');return false;">
+                <span class="k-icon k-i-plus-outline"></span>
+                Nueva
+            </a>
+        </h5>*@
+
+    @(Html.Kendo().DataSource<Gedoc.WebApp.Models.PapeleraModel>()
+        .Name("dataSourceGrid")
+        .Ajax(dataSource => dataSource
+            .Read(read =>
+            {
+                read.Action("PapeleraGetData", "Papelera")
+                    .Type(HttpVerbs.Post)                    
+                    //.Data("extraDataGrilla")
+                    ;
+            }).ServerOperation(false)
+            .Events(ev =>
+            {
+                //ev.RequestStart("function() { Main.enEspera($('#gridBandeja'), true) }")
+                ev.RequestEnd("function(e) {  Main.enEspera($('#gridBandeja'), false); Main.notificaResultado(e); }");
+            })
+            .PageSize(10)
+        )
+        )
+    @(Html.Kendo().Grid<Gedoc.WebApp.Models.PapeleraModel>()
+        .Name("gridPapeleraReciclaje")
+        .EnableCustomBinding(true)
+        .DataSource("dataSourceGrid")
+        .Scrollable(scr => scr.Height("auto"))
+        .Pageable(p => p.AlwaysVisible(true).PageSizes(new int[3] { 10, 50, 100 }).Enabled(true)
+            .Messages(m => m.ItemsPerPage("registros por página")))
+        .PersistSelection()
+        .Sortable()
+        .Navigatable()
+        .NoRecords("La Papelera se encuentra vacía.")
+        .Columns(columns =>
+        {
+            columns.Select().Width(50);
+            columns.Bound(c => c.TipoObjetoId).Title("<center>Tipo</center>").Width(50).ClientTemplate("#=buildIconType(data.TipoObjetoId)#");
+            columns.Bound(c => c.Nombre).Title("<center>Nombre</center>");
+            columns.Bound(c => c.UbicacionOriginal).Title("<center>Ubicación Original</center>");
+            columns.Bound(c => c.EliminadoPor).Title("<center>Eliminado Por</center>");
+            columns.Bound(c => c.CreadoPor).Title("<center>Creado Por</center>");
+            columns.Bound(c => c.FechaEliminacion).Title("<center>Fecha Eliminación</center>").Format(GeneralData.FORMATO_FECHA_LARGO_GRID).Width(100);
+            columns.Bound(c => c.Tamaño).Title("<center>Tamaño</center>").Width(70); ;
+        })
+        )
+</div>
+
+
+<script>
+
+    $(document).ready(function () {
+        $("#btnRestoreTrash").click(function () {
+            var selectedItems=[];
+            var entityGrid = $("#gridPapeleraReciclaje").data("kendoGrid");
+            var rows = entityGrid.select();
+            rows.each(function (index, row) {
+                selectedItems.push(entityGrid.dataItem(row));
+            });
+
+            if (selectedItems.length >= 1) {
+                Main.showConfirm("¿Estas seguro que deseas restaurar estos elementos?", "Restaurar", true)
+                    .then(function (isOk) {
+                        if (!isOk) return false;
+                        kendo.ui.progress($("#gridPapeleraReciclaje"), true);
+                        $.ajax({
+                            url: '@Url.Action("RestoreTrashItems")',
+                            type: "POST",
+                            data: JSON.stringify({ 'items': selectedItems }),
+                            contentType: "application/json",
+                            dataType: "json",
+                            success: function (data) {
+                                if (data.Codigo > 0) {
+                                    Main.showAlert(data.Mensaje);
+                                } else {
+                                    Main.showError(data.Mensaje);
+                                }
+                                entityGrid.dataSource.read();
+                                kendo.ui.progress($("#gridPapeleraReciclaje"), false);
+                            },
+                            error: function (data) {
+                                 Main.showAlert('Error al restaurar los elementos');
+                                entityGrid.dataSource.read();
+                                kendo.ui.progress($("#gridPapeleraReciclaje"), false);
+                            }
+                        });
+                    });
+                    //.fail(function () {
+                    //    console.log("User rejected");
+                    //});
+            } else {
+                 Main.showAlert('Por favor, seleccione al menos un elemento.');
+            }
+        });
+
+        $("#btnDeleteTrash").click(function () {
+            var selectedItems=[];
+            var entityGrid = $("#gridPapeleraReciclaje").data("kendoGrid");
+            var rows = entityGrid.select();
+            rows.each(function (index, row) {
+                selectedItems.push(entityGrid.dataItem(row));
+            });
+
+            if (selectedItems.length >= 1) {
+                Main.showConfirm("¿Estas seguro que deseas eliminar estos elementos?", "Eliminar", true)
+                    .then(function (isOk) {
+                        if (!isOk) return false;
+                        kendo.ui.progress($("#gridPapeleraReciclaje"), true);
+                        $.ajax({
+                            url: '@Url.Action("DeleteTrashItems")',
+                            type: "POST",
+                            data: JSON.stringify({ 'items': selectedItems }),
+                            contentType: "application/json",
+                            dataType: "json",
+                            success: function (data) {
+                                if (data.Codigo > 0) {
+                                    Main.showAlert(data.Mensaje);
+                                } else {
+                                    Main.showError(data.Mensaje);
+                                }
+                                kendo.ui.progress($("#gridPapeleraReciclaje"), false);
+                                entityGrid.dataSource.read();
+                            },
+                            error: function (data) {
+                                 Main.showAlert('Eliminados error');
+                                kendo.ui.progress($("#gridPapeleraReciclaje"), false);
+                            }
+                        });
+                    });
+            } else {
+                Main.showAlert('Por favor, seleccione al menos un elemento.');
+            }
+        });
+
+        $("#btnEmptyTrash").click(function () {
+            var entityGrid = $("#gridPapeleraReciclaje").data("kendoGrid");
+            Main.showConfirm("¿Estas seguro que deseas eliminar todos los elementos?", "Eliminar", true)
+                .then(function (isOk) {
+                    if (!isOk) return false;
+                    kendo.ui.progress($("#gridPapeleraReciclaje"), true);
+                    $.ajax({
+                        url: '@Url.Action("EmptyTrash")',
+                        type: "POST",
+                        //data: JSON.stringify({ 'items': selectedItems }),
+                        contentType: "application/json",
+                        dataType: "json",
+                        success: function (data) {
+                            if (data.Codigo > 0) {
+                                Main.showAlert(data.Mensaje);
+                            } else {
+                                Main.showError(data.Mensaje);
+                            }
+                            kendo.ui.progress($("#gridPapeleraReciclaje"), false);
+                            entityGrid.dataSource.read();
+                        },
+                        error: function (data) {
+                             Main.showAlert("Error al Vaciar Papelera"); 
+                            kendo.ui.progress($("#gridPapeleraReciclaje"), false);
+                            entityGrid.dataSource.read();
+                        }
+                    });
+                });
+        });
+    });
+
+
+    function buildIconType(iconType) {
+        var enlace = "";
+        if (iconType == 1) {
+            enlace = '<span class="k-icon k-i-file" title="Archivo"></span>';
+            //<span class="k-icon k-i-copy"></span>
+        }
+        else if (iconType == 2) {
+            enlace = '<span class="k-icon k-i-list-bulleted" title="Registro"></span>';
+        }
+        //enlace = '<p>' + enlace + '</p>';
+        return enlace;
+    }
+
+    //# sourceURL=GrillaPapelera
+</script>

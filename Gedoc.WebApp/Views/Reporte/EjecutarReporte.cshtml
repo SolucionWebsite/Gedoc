@@ -1,0 +1,83 @@
+﻿@model Gedoc.Helpers.Dto.ReporteDto
+@{
+    ViewBag.Title = "Reportes";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var rutawebreport = System.Configuration.ConfigurationManager.AppSettings["RutaWebReport"];
+    if (Model.Id == 14)
+    {
+        rutawebreport += "/VerAuditoria.aspx";
+
+    }
+    else if (Model.Id == 12)
+    {
+        rutawebreport += "/VistaReporteTramites.aspx";
+
+    }
+    else if (Model.Id == 13)
+    {
+        rutawebreport += "/VistaReporteProcMasivos.aspx";
+
+    }
+    else if (Model.Id == 10)
+    {
+        rutawebreport += "/VistaReporte.aspx?id=" + Model.Id + "&ut=" + ViewBag.ut + "&sesion=" + ViewBag.sesion + "&r=Reporte_Tabla_de_Comision.rdl";
+    }
+    else
+    {
+        rutawebreport += "/VistaReporte.aspx?id=" + Model.Id;
+
+    }
+    // rutawebreport = Uri.EscapeUriString(rutawebreport);
+    var uri = new UriBuilder(rutawebreport);
+    rutawebreport = uri.ToString();
+}
+
+<script type="text/javascript">
+    //* Resultado de la carga ETL cuando es reporte de Marcar Ver en Tabla:
+    // @(ViewBag.ResultadoCargaEtl ?? "No es reporte de Marcar Ver en Tabla")
+    //*
+
+    function onFrameLoad(e) {
+        Main.unwait();
+    }
+</script>
+
+<iframe src="" frameborder="0" scrolling="no" id="iframe" width="100%" onload="onFrameLoad(this)"></iframe>
+
+<script type="text/javascript">
+    $(function () {
+        //Main.wait();
+
+        // Selecting the iframe element
+        var iframe = document.getElementById("iframe");
+
+        // Adjusting the iframe height onload event
+        iframe.onload = function () {
+            try {
+                iframe.style.height = (iframe.contentWindow.document.body.scrollHeight + 300) + 'px';
+            } catch (err) {
+                iframe.style.height = '3000px';
+            }
+        }
+
+        var url = '@Html.Raw(rutawebreport)';
+        $("#iframe").attr('src', url);
+
+        if (window.addEventListener) {
+            window.addEventListener("message", receiveMessage, false);
+        } else if (window.attachEvent) {
+            window.attachEvent("onmessage", receiveMessage, false);
+        }
+    });
+
+    function receiveMessage(e) {
+
+        // if (e.origin !== 'http://the-trusted-iframe-origin.com') return;
+
+        if (e.data === "volverReporte" || e.message === "volverReporte")
+            window.location.href = '@Url.Action("", "Reporte")';
+    }
+
+
+</script>

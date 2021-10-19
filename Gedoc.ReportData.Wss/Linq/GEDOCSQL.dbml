@@ -1,0 +1,38 @@
+﻿<?xml version="1.0" encoding="utf-8"?><Database Name="GDOC" Class="GEDOCSQLDataContext" xmlns="http://schemas.microsoft.com/linqtosql/dbml/2007">
+  <Connection Mode="WebSettings" ConnectionString="Data Source=SP2010;Initial Catalog=GDOC;User ID=sa" SettingsObjectName="System.Configuration.ConfigurationManager.ConnectionStrings" SettingsPropertyName="GDOCConnectionString" Provider="System.Data.SqlClient" />
+  <Table Name="dbo.TB_SesionTabla" Member="TB_SesionTablas">
+    <Type Name="TB_SesionTabla">
+      <Column Name="Sesion_Id" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="Nombre" Type="System.String" DbType="VarChar(50) NOT NULL" CanBeNull="false" />
+      <Column Name="UnidadTecnica_Id" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="CreadoPor" Type="System.String" DbType="VarChar(255) NOT NULL" CanBeNull="false" />
+      <Column Name="FechaCreacion" Type="System.DateTime" DbType="DateTime NOT NULL" CanBeNull="false" />
+      <Association Name="TB_SesionTabla_TB_SesionTablaDetalle" Member="TB_SesionTablaDetalles" ThisKey="Sesion_Id" OtherKey="Sesion_Id" Type="TB_SesionTablaDetalle" />
+    </Type>
+  </Table>
+  <Table Name="dbo.TB_SesionTablaDetalle" Member="TB_SesionTablaDetalles">
+    <Type Name="TB_SesionTablaDetalle">
+      <Column Name="SesionDetalle_Id" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="Sesion_Id" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="Requerimento_Id" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="DocumentoIngreso" Type="System.String" DbType="VarChar(30) NOT NULL" CanBeNull="false" />
+      <Association Name="TB_SesionTabla_TB_SesionTablaDetalle" Member="TB_SesionTabla" ThisKey="Sesion_Id" OtherKey="Sesion_Id" Type="TB_SesionTabla" IsForeignKey="true" />
+    </Type>
+  </Table>
+  <Table Name="dbo.TB_Log" Member="TB_Logs">
+    <Type Name="TB_Log">
+      <Column Name="Id_Log" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="Formulario" Type="System.String" DbType="VarChar(100) NOT NULL" CanBeNull="false" />
+      <Column Name="Accion" Type="System.String" DbType="VarChar(30)" CanBeNull="true" />
+      <Column Name="Estado" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
+      <Column Name="Etapa" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
+      <Column Name="Fecha" Type="System.DateTime" DbType="DateTime NOT NULL" CanBeNull="false" />
+      <Column Name="Usuario" Type="System.String" DbType="VarChar(255) NOT NULL" CanBeNull="false" />
+      <Column Name="DocumentoIngreso" Type="System.String" DbType="VarChar(100)" CanBeNull="true" />
+      <Column Name="DireccionIp" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
+      <Column Name="NombrePc" Type="System.String" DbType="VarChar(500)" CanBeNull="true" />
+      <Column Name="UserAgent" Type="System.String" DbType="VarChar(500)" CanBeNull="true" />
+      <Column Name="ExtraData" Type="System.String" DbType="VarChar(2000)" CanBeNull="true" />
+    </Type>
+  </Table>
+</Database>

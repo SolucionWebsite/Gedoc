@@ -1,0 +1,109 @@
+﻿@using Gedoc.Helpers.Enum
+@using Gedoc.WebApp.Helpers
+@model Gedoc.WebApp.Models.RequerimientoModel
+
+@{
+    Layout = null;
+    Dictionary<CampoIngreso, AspectoCampo> accesoCampos = ViewBag.AccesoCampos;
+}
+
+<h4 class="head-datos-form">Forzar Prioridad</h4>
+<div class="container-fluid">
+    @*@Html.HiddenFor(a => a.ForzarPrioridadMotivo)*@
+
+    <div class="form-row">
+        <div class="col-md-3" style="white-space:nowrap">
+            <label class="label-dato-form">
+                ¿Desea priorizar?
+            </label>
+        </div>
+        <div class="col-md-2">
+            @(Html.Kendo().RadioButtonFor(m => m.ForzarPrioridad).Label("Sí").Value(true))
+            @(Html.Kendo().RadioButtonFor(m => m.ForzarPrioridad).HtmlAttributes(new { @class = "ml-3" }).Label("No").Value(false))
+
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="col-md-3">
+            <label class="label-dato-form">
+                Nueva Fecha de Prioridad
+            </label>
+        </div>
+        <div class="col-md-4">
+            <input id="ForzarPrioridadFecha" name="ForzarPrioridadFecha" disabled required value="@(Model.ForzarPrioridadFecha.HasValue ? Model.ForzarPrioridadFecha.Value.ToString("dd/MM/yyyy") : "")" />
+            <span class="k-invalid-msg" data-for="ForzarPrioridadFecha"></span><br />
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="col-md-3">
+            <label class="label-dato-form">
+                Motivo
+            </label>
+        </div>
+        <div class="col-md-9">
+            @*<div class="k-block text-area-out">
+                <div class="text-area-in texto-largo" id="pnForzarPrioridadMotivo" contenteditable="false" maxlength="255"
+                     data-spanleyenda="leyenda-pnForzarPrioridadMotivo">
+                    @Html.Raw(Model.ForzarPrioridadMotivo)
+                </div>
+            </div>*@
+
+            <textarea name="ForzarPrioridadMotivo" rows="4" cols="20" id="tbForzarPrioridadMotivo" class="form-control texto-largo" 
+						  data-spanleyenda="leyenda-pnForzarPrioridadMotivo"
+                          data-maxlength="255" style="width: 100% !important;">@Html.Raw(Model.ForzarPrioridadMotivo)</textarea>
+            <span class="help-block-right" id="leyenda-pnForzarPrioridadMotivo"> </span>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    function inicializaPanelForzarPrioridad() {
+        if ($("#ForzarPrioridadFecha").length) {
+            $("#ForzarPrioridadFecha").kendoDatePicker({
+                min: new Date(),
+                format: Main.formatoFecha,
+                dateInput: false,
+                culture: "es-ES"
+                @if (Model.ForzarPrioridadFecha.HasValue)
+                {
+                    @:,value: new Date(@Model.ForzarPrioridadFecha.GetValueOrDefault().Year, @(Model.ForzarPrioridadFecha.GetValueOrDefault().Month - 1), @Model.ForzarPrioridadFecha.GetValueOrDefault().Day)
+                }
+                else
+                {
+                    @:,value: null
+                }
+            });
+        }
+
+        $("#ForzarPrioridad_True").change(function () {
+            ActivarDesactivarControles(true);
+        });
+
+        $("#ForzarPrioridad_False").change(function () {
+            ActivarDesactivarControles(false);
+        });
+
+        ActivarDesactivarControles( @(Html.Raw(Json.Encode(Model.ForzarPrioridad.GetValueOrDefault(false)))) );
+    }
+
+    function ActivarDesactivarControles(enable) {
+        if (enable) {
+            $("#ForzarPrioridadFecha").data("kendoDatePicker").enable(true);
+            //$("#pnForzarPrioridadMotivo").attr("contenteditable", true);
+            $("#tbForzarPrioridadMotivo").prop("disabled", false);
+        }
+        else {
+            $("#ForzarPrioridadFecha").data("kendoDatePicker").enable(false);
+            $("#ForzarPrioridadFecha").data("kendoDatePicker").value("");
+            //$("#pnForzarPrioridadMotivo").attr("contenteditable", false);
+            //$("#pnForzarPrioridadMotivo").text("");
+            $("#tbForzarPrioridadMotivo").prop("disabled", true);
+            $("#tbForzarPrioridadMotivo").val("");
+        }
+    }
+
+    //# sourceURL=PanelForzarPrioridad
+</script>

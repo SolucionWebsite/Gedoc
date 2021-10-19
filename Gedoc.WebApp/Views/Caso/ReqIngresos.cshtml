@@ -1,0 +1,532 @@
+﻿@using Gedoc.Helpers.Dto
+@model Gedoc.Helpers.Dto.RequerimientoDto
+
+@{
+    ViewBag.Title = "Ingresos";
+    Layout = "~/Views/Shared/_LayoutVacio.cshtml";
+    var casoInfo = (Gedoc.Helpers.Dto.CasoDto)ViewBag.Caso;
+}
+
+
+@Html.Partial("~/Views/Partial/TemplateTagMultiselect.cshtml", Model)
+
+
+<div class="table-responsive">
+    <table class="table table-bordered table-condensed">
+        <thead>
+            <tr>
+                <th>Número de caso</th>
+                <th>Creado por</th>
+                <th>Fecha creación</th>
+                <th>Cant. de ingresos</th>
+                <th>Modificado por</th>
+                <th>Fecha de modificación</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>@(casoInfo.Id)</td>
+                <td>@(casoInfo.UsuarioCreacionNombresApellidos)</td>
+                <td>@(casoInfo.FechaCreacion?.ToString("dd/MM/yyyy"))</td>
+                <td>@(casoInfo.CantidadReq)</td>
+                <td>@(casoInfo.UsuarioModificacionNombresApellidos)</td>
+                <td>@(casoInfo.FechaModificacion?.ToString("dd/MM/yyyy"))</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<div class="accordion" id="accordionFilters">
+    <div class="card">
+        <div class="card-header" id="headingFilters">
+            <h5 class="mb-0" style="cursor: pointer;" data-toggle="collapse" data-target="#collapseFilters" aria-expanded="true" aria-controls="collapseFilters">
+                Criterios de Búsqueda
+            </h5>
+        </div>
+
+        <div id="collapseFilters" class="collapse show" aria-labelledby="headingFilters" data-parent="#accordionFilters">
+            <div class="card-body">
+                <div class="form-row">
+                    <label class="label-dato-form col-md-2">Unidad Técnica Asignada</label>
+                    <div class="col-md-4">
+                        @(Html.Kendo().MultiSelect()
+                                .Messages(Gedoc.WebApp.Helpers.KendoHelper.SetMultiSelectMessages)
+                                .Name("unidadestecnicas")
+                                .TagTemplateId("tagMultiTemplate2")
+                                .Filter("contains")
+                                .Placeholder("[TODOS]")
+                                .DataTextField("Text")
+                                .DataValueField("Value")
+                                .BindTo(ViewBag.UnidadesTecnicas)
+                                //.Suggest(true)
+                                .HtmlAttributes(new { style = "width:100%;" })
+                                )
+
+                    </div>
+                    <label class="label-dato-form col-md-2 pl-3">Remitente</label>
+                    <div class="col-md-4">
+                        @(Html.Kendo().MultiSelect()
+                                .Name("remitentes")
+                                .TagTemplateId("tagMultiTemplate2")
+                                .Messages(Gedoc.WebApp.Helpers.KendoHelper.SetMultiSelectMessages)
+                                //.Placeholder("Buscar o seleccionar documentos...")
+                                .DataTextField("Text")
+                                .DataValueField("Value")
+                                .Height(520)
+                                .HtmlAttributes(new { style = "width:100%;" })
+                                .DataSource(source =>
+                                {
+                                    source.Custom()
+                                        .ServerFiltering(true)
+                                        .ServerPaging(true)
+                                        .PageSize(80)
+                                        .Type("aspnetmvc-ajax")
+                                        .Transport(transport =>
+                                        {
+                                            transport.Read("VirtualizationRemitentes_Read", "Caso");
+                                        })
+                                        .Schema(schema =>
+                                        {
+                                            schema.Data("Data").Total("Total");
+                                        });
+                                })
+                                .Virtual(v => v.ItemHeight(26).ValueMapper("valueMapperRemitentes"))
+                                )
+                    </div>
+                </div>
+                <div class="form-row">
+                    <label class="label-dato-form col-md-2">Fecha Desde </label>
+                    <div class="col-md-4">
+                        @(Html.Kendo().DatePicker()
+                                .Name("dpStart")
+                                //.Value(DateTime.Now.AddMonths(-1))
+                                .HtmlAttributes(new { title = "Fecha Desde" }))
+                    </div>
+                    <label class="label-dato-form col-md-2 pl-3">Institución remitente </label>
+                    <div class="col-md-4">
+                        @(Html.Kendo().TextBox().Name("instituciones").HtmlAttributes(new { style = "width:100%;" }))
+                    </div>
+                </div>
+                <div class="form-row">
+                    <label class="label-dato-form col-md-2">Fecha Hasta </label>
+                    <div class="col-md-4">
+                        @(Html.Kendo().DatePicker()
+                                .Name("dpEnd")
+                                //.Value(DateTime.Now)
+                                .Max(DateTime.Now)
+                                .HtmlAttributes(new { title = "Fecha Hasta" }))
+                    </div>
+                    <label class="label-dato-form col-md-2 pl-3">Región y Comuna </label>
+                    <div class="col-md-4">
+                        @(Html.Kendo().ComboBox()
+                                .Name("comunas")
+                                .Filter("contains")
+                                .Placeholder("Buscar o seleccionar región...")
+                                .DataTextField("Text")
+                                .DataValueField("Value")
+                                .Messages(Gedoc.WebApp.Helpers.KendoHelper.SetComboBoxMessages)
+                                .BindTo(ViewBag.Comunas)
+                                .Suggest(true)
+                                .HtmlAttributes(new { style = "width:100%;" })
+                                )
+
+                    </div>
+                </div>
+                <div class="form-row">
+                    <label class="label-dato-form col-md-2">Documento de ingreso </label>
+                    <div class="col-md-4">
+                        @(Html.Kendo().MultiSelect()
+                                .Name("documentos")
+                                .TagTemplateId("tagMultiTemplate")
+                                .Messages(Gedoc.WebApp.Helpers.KendoHelper.SetMultiSelectMessages)
+                                .Placeholder("Buscar o seleccionar documentos...")
+                                .DataTextField("Titulo")
+                                .DataValueField("Id")
+                                .Filter("contains")
+                                .Height(520)
+                                .HtmlAttributes(new { style = "width:100%;" })
+                                //.DataSource(source =>
+                                //{
+                                //    source.Custom()
+                                //        .ServerFiltering(true)
+                                //        .ServerPaging(true)
+                                //        .PageSize(80)
+                                //        .Type("aspnetmvc-ajax")
+                                //        .Transport(transport =>
+                                //        {
+                                //            transport.Read("RequerimientoResumenPaging", "Json");
+                                //        })
+                                //        .Schema(schema =>
+                                //        {
+                                //            schema.Data("Data").Total("Total");
+                                //        });
+                                //})
+                                .Virtual(v => v.ItemHeight(26).ValueMapper("valueMapperDocumentos").MapValueTo("dataItem"))
+                                )
+                    </div>
+                    <label class="label-dato-form col-md-2 pl-3">Etiqueta </label>
+                    <div class="col-md-4">
+                        @(Html.Kendo().ComboBox()
+                                .Name("etiquetas")
+                                .Filter("contains")
+                                .Placeholder("[TODOS]")
+                                .DataTextField("Text")
+                                .DataValueField("Value")
+                                .Messages(Gedoc.WebApp.Helpers.KendoHelper.SetComboBoxMessages)
+                                .BindTo(ViewBag.Etiquetas)
+                                .Suggest(true)
+                                .HtmlAttributes(new { style = "width:100%;" })
+                                )
+                    </div>
+                </div>
+                <div class="form-row">
+                    <label class="label-dato-form col-md-2">Tipo de Trámite </label>
+                    <div class="col-md-4">
+                        @(Html.Kendo().ComboBox()
+                                .Name("tipostramite")
+                                .Filter("contains")
+                                .Placeholder("[TODOS]")
+                                .DataTextField("Text")
+                                .DataValueField("Value")
+                                .Messages(Gedoc.WebApp.Helpers.KendoHelper.SetComboBoxMessages)
+                                .BindTo(ViewBag.TiposTramite)
+                                .Suggest(true)
+                                .HtmlAttributes(new { style = "width:100%;" })
+                                )
+                    </div>
+                    <label class="label-dato-form col-md-2 pl-3">Categoría Monumento Nacional </label>
+                    <div class="col-md-4">
+                        @(Html.Kendo().MultiSelect()
+                                .Name("categoriamonumentonacional")
+                                .TagTemplateId("tagMultiTemplate2")
+                                .Messages(Gedoc.WebApp.Helpers.KendoHelper.SetMultiSelectMessages)
+                                .Filter("contains")
+                                .Placeholder("[TODOS]")
+                                .DataTextField("Text")
+                                .DataValueField("Value")
+                                .BindTo(ViewBag.CategoriasMonumentosNacionales)
+                                //.Suggest(true)
+                                .HtmlAttributes(new { style = "width:100%;" })
+                                )
+                    </div>
+                </div>
+                <div class="form-row">
+                    <label class="label-dato-form col-md-2">Estado y Etapa </label>
+                    <div class="col-md-4">
+                        @(Html.Kendo().ComboBox()
+                                .Name("estados")
+                                .Filter("contains")
+                                .Placeholder("Buscar o seleccionar estado...")
+                                .DataTextField("Text")
+                                .DataValueField("Value")
+                                .Messages(Gedoc.WebApp.Helpers.KendoHelper.SetComboBoxMessages)
+                                .BindTo(ViewBag.Estados)
+                                .Suggest(true)
+                                .HtmlAttributes(new { style = "width:100%;" })
+                                )
+                    </div>
+                    <label class="label-dato-form col-md-2 pl-3">Monumento Nacional </label>
+                    <div class="col-md-4">
+                        @(Html.Kendo().TextBox().Name("monumentosnacionales").HtmlAttributes(new { style = "width:100%;" }))
+                    </div>
+                </div>
+                <div class="form-row">
+                    <label class="label-dato-form col-md-2">Materia / Nombre Proyecto o Programa / Proyecto o Actividad </label>
+                    <div class="col-md-4">
+                        @(Html.Kendo().TextBox().Name("materia").HtmlAttributes(new { style = "width:100%;" }))
+                    </div>
+                </div>
+                <div class="row mt-4 k-text-center">
+                    <div class="col-md-6">
+                        @(Html.Kendo().Button()
+                            .Name("btnBuscar")
+                            .HtmlAttributes(new { style = "width:70%;", @class = "k-primary" })
+                            .Content("Buscar")
+                            .Events(e => e.Click("onClickbtnBuscar"))
+                            )
+                    </div>
+                    <div class="col-md-6">
+                        @(Html.Kendo().Button()
+                            .Name("btnLimpiar")
+                            .HtmlAttributes(new { style = "width:70%;", type = "button" })
+                            .Content("Limpiar Filtros")
+                            .Events(e => e.Click("clearFilters"))
+                            )
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@(Html.Kendo().Grid<RequerimientoDto>()
+        .Name("grid")
+        .Columns(columns =>
+        {
+            columns.Select().Width(50);
+            columns.Bound(c => c.DocumentoIngreso).Filterable(ftb => ftb.Search(true)).Title("Documento Ingreso").Width(205)
+                .ClientTemplate(
+                    "#= Main.getTemplateFicha(data.DocumentoIngreso, data.Id, data.DocumentoIngreso) #");
+            columns.Bound(c => c.FechaIngreso).Title("Fecha Ingreso").Format("{0: dd/MM/yyyy}").Width(170);
+            columns.Bound(c => c.RemitenteNombre).Filterable(ftb => ftb.Multi(true).Search(true)).Title("Remitente").Width(170);
+            columns.Bound(c => c.RemitenteInstitucion).Filterable(ftb => ftb.Multi(true).Search(true)).Title("Institución Remitente").Width(300);
+            columns.Bound(c => c.Materia)
+                .Filterable(ftb => ftb.Search(true))
+                .ClientTemplate("<span title='#:data.Materia#'> #:Main.acortaTexto(data.Materia, 100)#" + "</span>")
+                .Width(300);
+            columns.Bound(c => c.UtAsignadaTitulo).Filterable(ftb => ftb.Multi(true).Search(true)).Title("Unidad Técnica").Width(190);
+            columns.Bound(c => c.EstadoTitulo).Filterable(ftb => ftb.Multi(true)).Title("Estado").Width(200);
+            columns.Bound(c => c.CantOficiosCmn).Title("Oficios CMN").Width(120).Filterable(false)
+                .ClientTemplate(
+                    "<a class=\"enlace-grilla\" href=\"javascript:;\" onclick=\"Main.muestraVentanaModal('Oficios CMN asociados al ingreso #: DocumentoIngreso #', '" + @Url.Action("DespachosIngresoForm", "Despacho") + "?idRequerimiento=#: Id #', null, '', undefined, null, false);return false;\">#: CantOficiosCmn #</a>");
+        })
+        .Resizable(resize => resize.Columns(true))
+        .HtmlAttributes(new { style = "height: 680px;" })
+        .Pageable()
+        .Filterable()
+        .Sortable()
+        .Scrollable()
+        .PersistSelection()
+        .AutoBind(false)
+        .ToolBar(toolbar =>
+        {
+            toolbar.Custom().Text("Agregar Ingresos").IconClass("k-icon k-i-plus").HtmlAttributes(new { id = "agregarIngresosCustom" });
+            toolbar.Custom().Text("Eliminar seleccionados").IconClass("k-icon k-i-plus-outline").HtmlAttributes(new { id = "eliminarIngresosCustom" });
+            //toolbar.Search();
+        })
+        .Selectable(selectable =>
+        {
+            selectable.Mode(GridSelectionMode.Multiple);
+            selectable.Type(GridSelectionType.Row);
+        })
+        .Events(ev => ev.Change("onChange"))
+        .DataSource(dataSource => dataSource
+            .Ajax()
+            .ServerOperation(false)
+            .Model(model =>
+            {
+                model.Id(p => p.Id);
+            })
+            .Read(read => read.Action("GetIngresosByCasoId", "Caso", new { idCaso = @Request.Params["IdCaso"] }).Data("filterInfo"))
+        )
+)
+
+<div id="dialog2"></div>
+
+
+<script>
+    var selectedReqs = [];
+
+    function onChange(arg) {
+        selectedReqs = this.selectedKeyNames();
+    }
+
+    $(document).ready(function () {
+        @*if ($("#remitentes").length) {
+            $("#remitentes").kendoMultiSelect(
+                Main.getMultiSelectConfigVirtual($("#remitentes")
+                    , '@Url.Action("RemitentePaging", "Caso")'
+                    , '@Url.Action("RemitenteByIds", "Caso")')
+            );
+        }*@
+
+        $("#eliminarIngresosCustom").click(function(e) {
+            e.preventDefault();
+            if (selectedReqs.length < 1) {
+                 Main.showAlert('Debe seleccionar uno o más ingresos para eliminar.');
+                return false;
+            }
+            var jsonData = JSON.stringify({
+                'reqs': selectedReqs
+            });
+            if (jsonData.length > 0) {
+                $.ajax({
+                    url: '@Url.Action("EliminarCasosReqs")',
+                    type: "POST",
+                    data: jsonData,
+                    contentType: "application/json",
+                    dataType: "json",
+                    success: function(data) {
+                        if (data) {
+                            Main.showMensaje(data.Mensaje, data.Codigo > 0);
+                        } else {
+                            Main.showError("Error al realizar la operación.");
+                        }
+                        var grid = $("#grid").data("kendoGrid");
+                        grid.dataSource.read();
+                    },
+                    error: errorFunc
+                });
+            }
+        });
+
+        $("#agregarIngresosCustom").click(function (e) {
+            agregarIngresosCustom(e);
+        });
+
+        $(".k-textbox.k-grid-search input").attr("placeholder", "Buscar...");
+
+        if ($("#documentos").length) {
+            ds = Main.getDataSourceKendoGenericoVirtual(
+                $("#documentos")
+                , '@Url.Action("RequerimientoResumenPaging", "Json")'
+                , 80);
+            $("#documentos").data("kendoMultiSelect").setDataSource(ds);
+        }
+
+        var grid = $("#grid").data("kendoGrid");
+        grid.dataSource.read();
+    });
+
+    function agregarIngresosCustom(e) {
+        e.preventDefault();
+
+        //var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        var urlRoles = '@Url.Action("AgregarIngreso", "Caso")';
+
+        $("#dialog2").remove();
+        if (!$("#dialog2").length) {
+            $(document.body).append('<div id="dialog2"></div>');
+        }
+
+        var dialog = $("#dialog2");
+        dialog.kendoWindow({
+            title: 'Agregar Ingresos al Caso: @Html.Raw(casoInfo.Titulo)',
+            modal: true,
+            height: 700,
+            width: 1200,
+            iframe: true,
+            content: urlRoles + "?IdCaso=@casoInfo.Id",
+            open: function (e) {
+                //kendo.ui.progress(e.sender.element, true);
+            },
+            close: function(e) {
+                var grid = $("#grid").data("kendoGrid");
+                grid.dataSource.read();
+                this.content("");
+                //this.destroy();
+            }
+        });
+        var K_dialog = dialog.data("kendoWindow");
+        K_dialog.center();
+        K_dialog.open();
+    }
+
+    function onClickbtnBuscar() {
+        var grid = $("#grid").data("kendoGrid");
+        grid.dataSource.page(0);
+        grid.dataSource.read();
+
+        $("#grid").css("display", "block");
+    }
+
+    function clearFilters(e) {
+        e.preventDefault();
+        var dtDesde = $("#dpStart").data("kendoDatePicker");
+        var dtHasta = $("#dpEnd").data("kendoDatePicker");
+        var cmbRemitentes = $("#remitentes").data("kendoMultiSelect");
+        cmbRemitentes.value([]);
+        var cmbEstados = $("#estados").data("kendoComboBox");
+        cmbEstados.value("");
+        var txtInstituciones = $("#instituciones");
+        txtInstituciones.val("");
+        var cmbTiposTramite = $("#tipostramite").data("kendoComboBox");
+        cmbTiposTramite.value("");
+        var cmbDocumentos = $("#documentos").data("kendoMultiSelect");
+        cmbDocumentos.value([]);
+        var cmbCategoriaMonumentoNacional = $("#categoriamonumentonacional").data("kendoMultiSelect");
+        cmbCategoriaMonumentoNacional.value([]);
+        var cmbMonumentosNacionales = $("#monumentosnacionales"); //$("#monumentosnacionales").data("kendoComboBox");
+        cmbMonumentosNacionales.val("");
+        var cmbUnidadesTecnicas = $("#unidadestecnicas").data("kendoMultiSelect");
+        cmbUnidadesTecnicas.value([]);
+        var cmbEtiquetas = $("#etiquetas").data("kendoComboBox");
+        cmbEtiquetas.value("");
+        var cmbComunas = $("#comunas").data("kendoComboBox");
+        cmbComunas.value("");
+        var txtMateria = $("#materia");
+        txtMateria.val("");
+
+        var grid = $("#grid").data("kendoGrid");
+        grid.dataSource.page(0);
+        grid.dataSource.read();
+    }
+
+    function filterInfo() {
+        var dtDesde = $("#dpStart").data("kendoDatePicker");
+        var dtHasta = $("#dpEnd").data("kendoDatePicker");
+        var cmbRemitentes = $("#remitentes").data("kendoMultiSelect");
+        var cmbEstados = $("#estados").data("kendoComboBox");
+        var cmbDocumentos = $("#documentos").data("kendoMultiSelect");
+        var txtInstituciones = $("#instituciones");
+        var cmbTiposTramite = $("#tipostramite").data("kendoComboBox");
+        var cmbCategoriaMonumentoNacional = $("#categoriamonumentonacional").data("kendoMultiSelect");
+        var cmbMonumentosNacionales = $("#monumentosnacionales"); //$("#monumentosnacionales").data("kendoComboBox");
+        var cmbUnidadesTecnicas = $("#unidadestecnicas").data("kendoMultiSelect");
+        var cmbEtiquetas = $("#etiquetas").data("kendoComboBox");
+        var cmbComunas = $("#comunas").data("kendoComboBox");
+        var txtMateria = $("#materia");
+        var queryFilter = {
+            FechaDesde: dtDesde.value(),
+            FechaHasta: dtHasta.value(),
+            Estado: cmbEstados.value() === "" ? 0 : parseInt(cmbEstados.value().split('-')[0]),
+            Etapa: cmbEstados.value() === "" ? 0 : parseInt(cmbEstados.value().split('-')[1]),
+            //remitente: cmbRemitentes.value() === "" ? 0 : parseInt(cmbRemitentes.value()),
+            Remitente: cmbRemitentes.value(),
+            Institucion: txtInstituciones.val(),
+            TipoTramite: cmbTiposTramite.value() === "" ? 0 : parseInt(cmbTiposTramite.value()),
+            CategoriaMonumentoNacional: cmbCategoriaMonumentoNacional.value(), //=== "" ? 0 : parseInt(cmbCategoriaMonumentoNacional.value()),
+            //monumentoNacional: cmbMonumentosNacionales.value() === "" ? 0 : parseInt(cmbMonumentosNacionales.value()),
+            MonumentoNacional: cmbMonumentosNacionales.val(),
+            UnidadTecnica: cmbUnidadesTecnicas.value(), //=== "" ? 0 : parseInt(cmbUnidadesTecnicas.value()),
+            Etiqueta: cmbEtiquetas.value(), //cmbEtiquetas.value() === "" ? 0 : parseInt(cmbEtiquetas.value()),
+            Comuna: cmbComunas.value(), //cmbComunas.value() === "" ? 0 : parseInt(cmbComunas.value()),
+            DocumentoIngreso: cmbDocumentos.value(),
+            Materia: txtMateria.val()
+        };
+        return queryFilter;
+    }
+
+    function valueMapperRemitentes(options) {
+        $.ajax({
+            url: "@Url.Action("Remitentes_ValueMapper", "Caso")",
+            data: convertValues(options.value),
+            success: function (data) {
+                options.success(data);
+            }
+        });
+    }
+
+    function valueMapperDocumentos(options) {
+        $.ajax({
+            url: "@Url.Action("RequerimientoResumenByIds", "Json")",
+            type: "POST",
+            data: $.param({ ids: options.value, cerrado: false }, true), // convertValues(options.value), //
+            success: function (data) {
+                if (data.Resultado && data.Resultado.Codigo < 0) {
+                    Main.showError(data.Resultado.Mensaje);
+                } else {
+                    var data = data.Data && data.Data.length > 0 ? data.Data[0] : null;
+                    options.success(data);
+                }
+            }
+        });
+    }
+
+    function convertValues(value) {
+        var data = {};
+        value = $.isArray(value) ? value : [value];
+        for (var idx = 0; idx < value.length; idx++) {
+            data["values[" + idx + "]"] = value[idx];
+        }
+        return data;
+    }
+
+    function errorFunc(e) {
+        console.error(e);
+    }
+
+    //# sourceURL=FormEditarCaso
+</script>

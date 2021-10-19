@@ -1,0 +1,95 @@
+﻿@using Gedoc.Helpers.Dto
+
+
+<h4 class="header-level1">@ViewBag.Title</h4>
+
+<div class="div-main">
+
+    <div class="row">
+        <div class="col-xs-18 col-md-12">
+            @(Html.Kendo().Grid<RolDto>()
+                .Name("grid")
+                .Columns(columns =>
+                {
+                    columns.Bound(r => r.Id).Title("ID");
+                    columns.Bound(r => r.Titulo).Title("Título");
+                    columns.Bound(r => r.Activo).Title("Estado").ClientTemplate(
+                        "# if (Activo == true) { #" +
+                        "<input type='checkbox' checked disabled/>" +
+                        "# } else { #" +
+                        "<input type='checkbox' disabled/>" +
+                        "# } #"
+                        );
+                    columns.Command(command =>
+                    {
+                        command.Edit().Text("Editar");
+                        //command.Destroy().Text("Eliminar");
+                        command.Custom("Acciones").Click("misAcciones").IconClass("k-icon k-i-custom");
+                    }).Width(310);
+                })
+                //.HtmlAttributes(new {style = "height: 600px;"})
+                .ToolBar(toolbar =>
+                {
+                    toolbar.Create().Text("Agregar Perfil");
+                    toolbar.Excel().Text("Exportar a Excel");
+                    toolbar.Search();
+                })
+                .Excel(excel => excel
+                    .FileName("Roles.xlsx")
+                    .AllPages(true)
+                )
+                .Resizable(resize => resize.Columns(true))
+                .Editable(editable => editable.Mode(GridEditMode.InLine).ConfirmDelete("Está seguro de borrar el registro?"))
+                .Pageable()
+                .Filterable()
+                .Sortable(sortable =>
+                {
+                    sortable.SortMode(GridSortMode.SingleColumn);
+                })
+                .Scrollable(scr => scr.Height("auto"))
+                .DataSource(dataSource => dataSource
+                    .Ajax()
+                    .Model(model =>
+                    {
+                        model.Id(u => u.Id);
+                        model.Field(u => u.Id).Editable(false);
+                    }
+                    )
+                    .Read(read => read.Action("Roles_Read", "Rol"))
+                    .Create(create => create.Action("Rol_Create", "Rol"))
+                    .Update(update => update.Action("Rol_Update", "Rol"))
+                    .Destroy(destroy => destroy.Action("Rol_Destroy", "Rol"))
+                    .ServerOperation(false)
+                )
+                )
+
+        </div>
+    </div>
+</div>
+<div id="dialog"></div>
+<script>
+    $(function () {
+        $(".k-grid-search input").prop("placeholder", "Buscar...");
+        $(".k-grid-search input").prop("title", "Buscar...");
+    });
+
+    function misAcciones(e) {
+        e.preventDefault();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        var urlRoles = '@Url.Action("AccionesRol", "Rol")' + '?IdRol=' + dataItem.Id;
+        $("#dialog").kendoWindow({
+            title: 'Acciones perfil "' + dataItem.Titulo + '"',
+            modal: true,
+            height: 450,
+            width: 550,
+            iframe: true,
+            content: urlRoles
+        });
+        var dialog = $("#dialog").data("kendoWindow");
+        dialog.setOptions({
+            title: 'Acciones perfil "' + dataItem.Titulo + '"'
+        });
+        dialog.center();
+        dialog.open();
+    }
+</script>

@@ -1,0 +1,199 @@
+﻿@using Gedoc.Helpers
+@using Gedoc.Helpers.Dto
+@using Gedoc.Helpers.Enum
+@using Gedoc.WebApp.Models
+
+@{
+    Layout = null; // "~/Views/Shared/_LayoutVacio.cshtml";
+    ViewBag.Title = "Despachos";
+    var reqId = ViewBag.IdRequerimiento;   
+}
+
+<style>
+    .k-grid {
+        font-size: 0.8em;
+    }
+</style>
+
+<script src="~/Scripts/form.js"></script>
+<script src="~/Scripts/accionesbandeja.js"></script>
+
+@*@section scripts{
+    }*@
+
+
+<script>
+
+    $(function() {
+
+    });
+
+    function ejecutaAccionDesp(idDespacho, idAccion, titulo) {
+        if (idAccion == "CDESP") {
+            Acciones.ejecutaAccionNuevaVentana(titulo,
+                '@Url.Action("CierreDespacho", "Despacho")' + '?idDespacho=' + idDespacho
+                , null, "100vp", idAccion, refrescaGrid);
+        } else if (idAccion == "DDESP") {
+            deleteDespacho(idDespacho);
+        }
+        else {
+            Acciones.ejecutaAccionNuevaVentana(titulo,
+                '@Url.Action("AccionDespacho", "Despacho")' + '?idAccion=' + idAccion + '&idDespacho=' + idDespacho
+                , null, "100vp", idAccion, refrescaGrid);
+        }
+    }
+
+     function deleteDespacho(idDespacho) {
+         Main.showConfirm("¿Desea eliminar el Despacho?", "Eliminar", true)
+            .then(function (isOk) {
+                if (!isOk) return false;
+                kendo.ui.progress($("#dataSourceGridDesp"), true);
+                $.ajax({
+                    type: "POST",
+                    url: '@Url.Action("EliminarDespacho", "Despacho")',
+                    contentType: "application/json; charset=utf-8",
+                    data: JSON.stringify({
+                        id: idDespacho
+                    }),
+                    dataType: "json",
+                    success: function (data) {
+                        kendo.ui.progress($("#dataSourceGridDesp"), false);
+                         Main.showAlert(data.Mensaje);
+                        refrescaGrid();
+                    },
+                    error: function (data) {
+                        kendo.ui.progress($("#dataSourceGridDesp"), false);
+                         Main.showAlert("Error al eliminar");
+                        refrescaGrid();
+                    }
+                });
+            });
+        }
+
+    function refrescaGrid() {
+        var gridK = $("#gridDespachosIngreso").data("kendoGrid");
+        if (gridK) {
+            gridK.dataSource.read();
+        }
+    }
+
+    function extraDataGrilla() {
+        return {
+            Dato: '@reqId'
+        };
+    }
+
+    function buildAccionesRegistro(idDespacho, idEstado, numeroDespacho) {
+        var accionesHtml = [];
+        var onclick = "";
+        var acc = "";
+
+        onclick = "@Url.Action("GetArchivo", "Despacho")" + "?idDespacho=" + idDespacho;
+        acc = "<a href='" + onclick + "' target='_blank'><img width='20' height='20' src='Content/images/icono-Descargar.png' title='Descargar despacho'/></a>";
+        accionesHtml.push(acc);
+
+         onclick = idEstado == @((int)EstadoDespacho.Despachado)
+            ? 'Main.showAlert(\'Atención. El documento se encuentra en estado Despacho.\'); return false;'
+            : 'ejecutaAccionDesp(' + idDespacho + ', \'EDESP\', \'Editar Despacho - ' + numeroDespacho + '\'); return false;';
+        acc = '<a href="#" onclick="' + onclick + '">' +
+            '<img width="20" height="20" src="Content/images/Icono-Editar.png" title="Editar despacho" /></a>';
+        accionesHtml.push(acc);
+
+        onclick = idEstado == @((int)EstadoDespacho.Despachado)
+            ? 'Main.showAlert(\'Atención. El documento ya se encuentra en estado Despacho.\'); return false;'
+            : 'ejecutaAccionDesp(' + idDespacho + ', \'CDESP\', \'Cerrar Despacho - ' + numeroDespacho  + '\'); return false;';
+        acc = '<a href="#" onclick="' + onclick + '">' +
+            '<img width="20" height="20" src="Content/images/icono-Cerrar.png" title="Cerrar despacho" /></a>';
+        accionesHtml.push(acc);
+
+        var deleteAction =  @Html.Raw(Json.Encode(ViewBag.DeleteAccion));
+        if (deleteAction == true) {
+            onclick = idEstado == @((int)EstadoDespacho.Despachado)
+                            ? 'Main.showAlert(\'Atención. El documento ya se encuentra en estado Despacho.\'); return false;'
+                : 'ejecutaAccionDesp(' + idDespacho + ', \'DDESP\', \'Eliminar Despacho - ' + numeroDespacho + '\'); return false;';
+            acc = '<a href="#" onclick="' + onclick + '">' +                
+                '<img height="20" src="Content/images/Icono-Eliminar.png" title="Eliminar Despacho" /></a>';
+            accionesHtml.push(acc);
+        }
+
+
+        return accionesHtml.join(' ');
+    }
+
+
+    @*function getDatosAccion(accionId) {
+
+        var datosAcciones = @Html.Raw(Json.Encode(ViewBag.DatosAcciones));
+
+        for (var i = 0; i < datosAcciones.length; i++) {
+            if (datosAcciones[i].Id == accionId) {
+                return datosAcciones[i];
+            }
+        }
+        return { "Icono": "", "Hint": "" }
+    }*@
+
+    @*function buildUrlDescarga(idDespacho)
+    {
+        var enlace = "@Url.Action("GetArchivo", "Despacho")" + "?idDespacho=" + idDespacho;
+        enlace = "<a href='" + enlace + "'  class='text-center enlace-grilla' target='_blank'>Descargar</a>";
+        return enlace;
+    }*@
+
+    //# sourceURL=GrillaDespachos
+
+</script>
+
+<div id="divGrillaDespachos">
+    @(Html.Kendo().DataSource<DespachoModel>()
+        .Name("dataSourceGridDesp")
+        .Ajax(dataSource => dataSource
+            .Read(read =>
+            {
+                read.Action("DespachosIngreso", "Despacho")
+                    .Type(HttpVerbs.Post)
+                    .Data("extraDataGrilla");
+            })
+            .Events(ev =>
+            {
+                //ev.RequestStart("function() { Main.enEspera($('#gridDespachosIngreso'), true) }")
+                ev.RequestEnd("function(e) {  Main.enEspera($('#gridDespachosIngreso'), false); Main.notificaResultado(e); }");
+            })
+            .PageSize(10)
+        )
+        )
+    @(Html.Kendo().Grid<DespachoModel>()
+        .Name("gridDespachosIngreso")
+        .EnableCustomBinding(true)
+        .DataSource("dataSourceGridDesp")
+        .HtmlAttributes(new { @class = "k-grid-alternate" })
+        .Scrollable(scr => scr.Height("auto"))
+        .Pageable(p => p.AlwaysVisible(false).PageSizes(new int[3] {10, 50, 100}).Enabled(true))
+        .Sortable()
+        .Navigatable()
+        .NoRecords("No existen documentos.")
+        //.NoRecords(x => x.Template("<div class='empty-grid'>No existen Despachos asociados al presente ingreso.</div>"))
+        .Columns(columns =>
+        {
+            //columns.Bound(c => c.Id).Title("<center>Descargar</center>").Width(100).ClientTemplate("#=buildUrlDescarga(data.Id)#");
+            columns.Bound(c => c.NumeroDespacho).Width(130).Title("<center>Número del Oficio</center>");
+            columns.Bound(c => c.FechaEmisionOficio).Width(100).Title("<center>Fecha Emisión <br/>Oficio</center>")
+                .Format(GeneralData.FORMATO_FECHA_CORTO_GRID);
+            columns.Bound(c => c.RemitenteNombre).Width(130).Title("<center>Destinatario</center>");
+            columns.Bound(c => c.RemitenteInstitucion).Width(130).Title("<center>Institución</center>");
+            columns.Bound(c => c.Materia)
+                .Title("<center>Materia</center>")
+                .Width(250)
+                .ClientTemplate("<span title='#:data.Materia#'> #=Main.acortaTexto(data.Materia, 100)#" + "</span>");
+            columns.Bound(c => c.EstadoDespachoTitulo).Width(120).Title("<center>Estado Despacho</center>");
+            columns.Bound(c => c.ProveedorDespachoTitulo).Width(120).Title("<center>Proveedor <br/>Despacho</center>");
+            columns.Bound(c => c.Id)
+                .Title("<center>Acciones</center>")
+                .Width(130)
+                .ClientTemplate("#= buildAccionesRegistro(data.Id, data.EstadoId, data.NumeroDespacho)#")
+                .Sortable(false);
+        })
+        )
+
+
+</div>

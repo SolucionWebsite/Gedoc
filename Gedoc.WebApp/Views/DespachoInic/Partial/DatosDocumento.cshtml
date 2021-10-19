@@ -1,0 +1,99 @@
+﻿@using Gedoc.Helpers.Enum
+@using Gedoc.Helpers
+@model Gedoc.WebApp.Models.DespachoIniciativaModel
+
+@{
+    Layout = null;
+    FlujoIngreso form = ViewBag.Form;
+    var esDesdeReservaCorr = ViewBag.DesdeReservaCorr ?? false;
+}
+
+
+<h4 class="head-datos-form">Documento</h4>
+<div class="container-fluid">
+
+    @if (form == FlujoIngreso.DespachoInic)
+    {
+        <div class="form-row">
+            <div class="col-md-3">
+                <label class="label-dato-form">
+                    Documento a cargar<span class="marca-obligatorio" title="Este campo es obligatorio."> *</span>
+                </label>
+            </div>
+            <div class="col-md-9">
+                @(Html.Kendo().Upload()
+                    .Name("Files")
+                    .Multiple(false)
+                    .HtmlAttributes(new { aria_label = "files", @class= "upload-required" })
+                    .Messages(msg => msg.InvalidFileExtension("Tipo de archivo no permitido").InvalidMaxFileSize("Tamaño de archivo demasiado grande"))
+                    .Events(ev => ev.Select("function onselectFile(e) { setTimeout( function() { $(':focus').blur(); }, 200); }"))
+                    .Validation(validation => validation
+                        .AllowedExtensions(WebConfigValues.AdjuntosPermitidos)
+                        .MaxFileSize(50*1024*1024)
+                    )
+                )
+                @*TODO: poner esta leyenda de manera dinámica tomando los datos según configuración de tipo y tamaño de archivos permitidos*@
+                <span class="help-block" id="leyenda-file">@Gedoc.Helpers.GeneralData.ARCHIVOS_PERMITIDOS</span>
+                <span class="k-invalid-msg" data-for="Files"></span>
+            </div>
+        </div>
+    }
+    
+    @if (Model.Id == 0 || esDesdeReservaCorr)
+    {
+        <div class="form-row">
+            <div class="col-md-3">
+                <label class="label-dato-form">
+                    Número del oficio @if (esDesdeReservaCorr) {<span class="marca-obligatorio" title="Este campo es obligatorio."> *</span>}
+                </label>
+            </div>
+            <div class="col-md-3">
+                @Html.TextBoxFor(a => a.NumeroDespacho,
+                    new Dictionary<string, object> {
+                        {"class", "k-textbox w-100 oficio-valido"},
+                        {"data_formatearDesp", "true"},
+                        { esDesdeReservaCorr ? "required" : "required-NO", "true"}
+                    })
+                <span class="help-block" id="leyenda-file">Número del oficio timbrado</span>
+            </div>
+            <div class="col-md-6">
+                <span class="help-block" id="leyenda-numdesp">El documento a ingresar tiene que ser del año en curso, por ejemplo 00023-@(DateTime.Today.Year.ToString()).</span>
+            </div>
+            <div class="col-md-6 offset-3">
+                <span class="k-invalid-msg" data-for="NumeroDespacho"></span>
+            </div>
+        </div>
+    }
+
+    <div class="form-row">
+        <div class="col-md-3">
+            <label class="label-dato-form no-wrap">
+                Fecha de emisión de oficio<span class="marca-obligatorio" title="Este campo es obligatorio.">*</span>
+            </label>
+        </div>
+        <div class="col-md-4">
+            @(Html.Kendo().DatePicker()
+                .Name("FechaEmisionOficio")
+                .HtmlAttributes(new { required = "required" })
+                .Max(DateTime.Today)
+                .Value(@Model.FechaEmisionOficio)
+                .Culture("es-ES")
+                .Format(GeneralData.FORMATO_FECHA_CORTO)
+                .ParseFormats(new List<string>() { GeneralData.FORMATO_FECHA_CORTO }) )
+            <span class="k-invalid-msg" data-for="FechaEmisionOficio"></span>
+        </div>
+
+    </div>
+
+
+</div>
+
+
+<script>
+
+    function inicializaPanelDocumentoDesp() {
+        Form.setDateInputLang($("#FechaEmisionOficio"));
+    }
+
+    //# sourceURL=PanelDocumentoDespacho
+</script>

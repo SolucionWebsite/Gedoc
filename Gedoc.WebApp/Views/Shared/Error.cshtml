@@ -1,0 +1,40 @@
+﻿
+@model System.Web.Mvc.HandleErrorInfo
+@{
+    ViewBag.Title = "Error";
+    Layout = "~/Views/Shared/_LayoutVacio.cshtml";
+
+}
+
+
+<div class="row">
+    <div class="alert alert-danger col-md-10 offset-md-1 mt-5">
+        <i class="k-icon k-icon-32 k-i-warning" aria-hidden="true"></i>
+        <strong>¡Error inesperado!</strong>
+        <br />
+        Ha ocurrido un error inesperado al procesar la solicitud, por favor, contacte al administrador de la aplicación.
+    </div>
+    @if (Model != null && HttpContext.Current.IsDebuggingEnabled)
+    {
+        <div class="alert alert-danger col-md-10 offset-md-1 mt-5">
+            <p>
+                <b>Exception:</b> @Model.Exception.Message<br />
+                <b>Controller:</b> @Model.ControllerName<br />
+                <b>Action:</b> @Model.ActionName
+            </p>
+            <div style="overflow:scroll">
+                <pre>
+                    @Model.Exception.StackTrace
+                </pre>
+            </div>
+        </div>
+    }
+</div>
+<div class="text-center">
+    <button class="btn btn-primary" type="button" onclick="window.history.back();">Volver</button>
+</div>
+
+<br />
+<br />
+<br />
+

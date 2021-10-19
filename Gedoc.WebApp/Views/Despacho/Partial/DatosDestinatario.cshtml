@@ -1,0 +1,355 @@
+﻿@using Gedoc.Helpers.Enum
+@using Gedoc.WebApp.Helpers
+@using Newtonsoft.Json
+@model Gedoc.WebApp.Models.DespachoModel
+
+@{
+    Layout = null;
+}
+
+<script>
+
+    function comboRemValueMapper(options) {
+        $.ajax({
+            url: "@Url.Action("RemitenteResumenByIds", "Json")",
+            type: "POST",
+            data: $.param({ ids: options.value }, true),
+            success: function (data) {
+                if (data.Resultado && data.Resultado.Codigo < 0) {
+                    Main.showError(data.Resultado.Mensaje);
+                } else {
+                    var data = data.Data && data.Data.length > 0 ? data.Data[0] : null;
+                    options.success(data);
+                }
+            }
+        });
+    }
+
+    //# sourceURL=PanelDestinatarioDesp2
+</script>
+
+<h4 class="head-datos-form">Destinatario</h4>
+<div class="container-fluid">
+
+    <div class="form-row">
+        <div class="col-md-3">
+            <label class="label-dato-form">
+                Destinatario<span class="marca-obligatorio" title="Este campo es obligatorio."> *</span>
+            </label>
+        </div>
+        <div class="col-md-6">
+            @*<input id="DestinatarioId" name="DestinatarioId" class="w-100" required />*@
+
+            @(Html.Kendo().ComboBox()
+                    .Name("DestinatarioId")
+                    .HtmlAttributes(new { required = "required", @class = "w-100" })
+                    .DataTextField("Titulo")
+                    .DataValueField("Id")
+                    .Filter("contains")
+                    .Height(520)
+                    .Virtual(v => v.ItemHeight(26).ValueMapper("comboRemValueMapper").MapValueTo("dataItem"))
+                    .Messages(Gedoc.WebApp.Helpers.KendoHelper.SetComboBoxMessages)
+                    )
+            <span class="k-invalid-msg" data-for="DestinatarioId"></span>
+            <span class="help-block">Nombres y apellidos: Juan Diego Pérez Dominguez.</span>
+        </div>
+        <div class="col-md-3 text-center">
+            <h5>
+                <a href="#" class="badge badge-light enlace-accion" onclick="nuevoRemitente(this);return false;">
+                    <span class="k-icon k-i-user"></span>
+                    Nuevo destinatario
+                </a>
+            </h5>
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="col-md-3">
+            <label class="label-dato-form">
+                Nombre
+            </label>
+        </div>
+        <div class="col-md-9">
+            <label id="lbRemitenteNombre">@Model.RemitenteNombre</label>
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="col-md-3">
+            <label class="label-dato-form">
+                RUT
+            </label>
+        </div>
+        <div class="col-md-9">
+            <label id="lbRemitenteRut">@Model.RemitenteRut</label>
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="col-md-3">
+            <label class="label-dato-form">
+                Género
+            </label>
+        </div>
+        <div class="col-md-9">
+            <label id="lbRemitenteGenero">@Model.RemitenteGenero</label>
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="col-md-3">
+            <label class="label-dato-form">
+                Cargo o Profesión
+            </label>
+        </div>
+        <div class="col-md-9">
+            <label id="lbRemitenteCargo">@Model.RemitenteCargo</label>
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="col-md-3">
+            <label class="label-dato-form">
+                Institución
+            </label>
+        </div>
+        <div class="col-md-9">
+            <label id="lbRemitenteInst">@Model.RemitenteInstitucion</label>
+        </div>
+    </div>
+
+    <div class="form-row">
+
+        <div class="col-md-3">
+            <label class="label-dato-form">
+                Tipo de institución
+            </label>
+        </div>
+        <div class="col-md-9">
+            <label id="lbRemitenteTipoInst">@Model.RemitenteTipoInstitucion</label>
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="col-md-3">
+            <label class="label-dato-form">
+                Dirección
+            </label>
+        </div>
+        <div class="col-md-9">
+            <label id="lbRemitenteDir">@Model.RemitenteDireccion</label>
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="col-md-3">
+            <label class="label-dato-form">
+                Correo electrónico
+            </label>
+        </div>
+        <div class="col-md-9">
+            <label id="lbRemitenteEmail">@Model.RemitenteEmail</label>
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="col-md-3">
+            <label class="label-dato-form">
+                Teléfono
+            </label>
+        </div>
+        <div class="col-md-9">
+            <label id="lbRemitenteTelef">@Model.RemitenteTelefono</label>
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="col-md-3">
+            <label class="label-dato-form">
+                Destinatarios en copia
+            </label>
+        </div>
+        <div class="col-md-9">
+            <select id="DestinatarioCopia" name="DestinatarioCopia" multiple></select>
+        </div>
+    </div>
+
+    <div class="row" id="datosDestCopia">
+        <div class="offset-3 col-md-9" style="background-color: lightyellow">
+            <div class="row">
+                <div class="col-md-12">
+                    <label class="gdoc-formlabel">Datos del último destinatario seleccionado </label>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-3">
+                    <label class="gdoc-formlabel">Nombre </label>
+                </div>
+                <div class="col-md-9">
+                    <label id="lbNombreDestCopia" class="gdoc-formlabel"></label>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-3">
+                    <label class="gdoc-formlabel">Cargo </label>
+                </div>
+                <div class="col-md-9">
+                    <label id="lbCargoDestCopia" class="gdoc-formlabel"></label>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-3">
+                    <label class="gdoc-formlabel">Institución </label>
+                </div>
+                <div class="col-md-9">
+                    <label id="lbInstDestCopia" class="gdoc-formlabel"></label>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-3">
+                    <label class="gdoc-formlabel">Email </label>
+                </div>
+                <div class="col-md-9">
+                    <label id="lbEmailDestCopia" class="gdoc-formlabel"></label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+<script>
+
+
+
+    function inicializaPanelDestinatarioDesp() {
+        if ($("#DestinatarioCopia").length) {
+            var destCopiaK = $("#DestinatarioCopia").kendoMultiSelect(
+                Main.getMultiSelectConfigVirtual($("#DestinatarioCopia")
+                    , '@Url.Action("RemitenteResumenPaging", "Json")'
+                    ,'@Url.Action("RemitenteResumenByIds", "Json")'
+                    ,"", ""
+                    , @Html.Raw(JsonConvert.SerializeObject(Model.DestinatarioCopia)) )
+            );
+            destCopiaK.bind("change", destinatariosCopiaChange);
+        }
+
+        if ($("#DestinatarioId").length) {
+            var ds = Main.getDataSourceKendoGenericoVirtual($("#DestinatarioId"),
+                '@Url.Action("RemitenteResumenPaging", "Json")');
+            $("#DestinatarioId").data("kendoComboBox").setDataSource(ds);
+            $("#DestinatarioId").data("kendoComboBox").bind("select", onSelectRemitente);
+
+
+        }
+
+        $("#datosDestCopia").hide();
+    }
+
+    function onSelectRemitente(e) {
+        if (!e.dataItem) {
+            muestraDatosRemitente({
+                Nombre: "",
+                Rut: "",
+                Genero: "",
+                Cargo: "",
+                Institucion: "",
+                TipoInstitucion: "",
+                Direccion: "",
+                Email: "",
+                Telefono: ""
+            });
+            return;
+        }
+        kendo.ui.progress($("#panelRemitente"), true);
+        var id = e.dataItem.Id;
+        var url = '@Url.Action("RemitenteById", "Json")?id=' + id;
+        $.ajax({
+            type: "POST",
+            url: url
+        }).done(function(response) {
+            kendo.ui.progress($("#panelRemitente"), false);
+            if (response.Resultado.Codigo) {
+                if (response.Resultado.Codigo > 0) {
+                    muestraDatosRemitente(response.Data);
+                } else {
+                    Main.showError(response.Resultado.Mensaje, "Error");
+                }
+            } else {
+                Main.showAlert("Error inesperado al realizar la operación, por favor, vuelva a intentarlo",
+                    "Error");
+            }
+        }).fail(function(error) {
+            kendo.ui.progress($("#panelRemitente"), false);
+            Main.showError("Ha ocurrido un error al realizar la operación, por favor, vuelva a intentarlo.",
+                "Error");
+        });
+    }
+
+    function nuevoRemitente(ctrol) {
+        var result = Main.muestraVentanaModal(
+            "Nuevo destinatario",
+            '@Url.Action("NuevoRemitente", "Remitente")',
+            "700px",
+            "100vp",
+            undefined,
+            "winFormRemit"); //, "80%", "90%");
+        result.then(function(result) {
+            if (result) {
+                muestraDatosRemitente(result);
+                $("#DestinatarioId").data("kendoComboBox").value(result.Id);
+                setTimeout(function() {
+                    $("#DestinatarioId").data("kendoComboBox").dataSource.read();
+                }, 50);
+            }
+        });
+    }
+
+    function muestraDatosRemitente(remitente) {
+        $("#lbRemitenteNombre").text(remitente.Nombre);
+        $("#lbRemitenteRut").text(remitente.Rut || "");
+        $("#lbRemitenteGenero").text(remitente.Genero || "");
+        $("#lbRemitenteCargo").text(remitente.Cargo || "");
+        $("#lbRemitenteInst").text(remitente.Institucion || "");
+        $("#lbRemitenteTipoInst").text(remitente.TipoInstitucion || "");
+        $("#lbRemitenteDir").text(remitente.Direccion || "");
+        $("#lbRemitenteEmail").text(remitente.Email || "");
+        $("#lbRemitenteTelef").text(remitente.Telefono || "");
+    }
+
+    function destinatariosCopiaChange() {
+        var destCopiaK = $("#DestinatarioCopia").data("kendoMultiSelect");
+        if (destCopiaK && destCopiaK.value() && destCopiaK.value().length) {
+            var idDest = destCopiaK.value()[destCopiaK.value().length - 1];
+            $.ajax({
+                url: "@Url.Action("RemitenteById", "Json")",
+                type: "POST",
+                data: $.param({ id: idDest }, true),
+                success: function (data) {
+                    if (data.Resultado && data.Resultado.Codigo < 0) {
+                        Main.showError(data.Resultado.Mensaje);
+                    } else {
+                        var datos = data.Data
+                            ? data.Data
+                            : { Nombre: "", Cargo: "", Institucion: "", Email: "", Id: "" };
+                        muestraDatosUltDestCopia(datos);
+                    }
+                }
+            });
+        } else {
+            //muestraDatosUltDestCopia({ Nombre: "", Cargo: "", Institucion: "", Email: "", Id: "" });
+            $("#datosDestCopia").hide();
+        }
+    }
+
+    function muestraDatosUltDestCopia(data) {
+        $("#lbNombreDestCopia").text(data.Nombre || "");
+        $("#lbCargoDestCopia").text(data.Cargo || "");
+        $("#lbInstDestCopia").text(data.Institucion || "");
+        $("#lbEmailDestCopia").text(data.Email || "");
+        $("#datosDestCopia").show();
+    }
+
+    //# sourceURL=PanelDestinatarioDesp
+</script>

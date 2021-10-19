@@ -1,0 +1,144 @@
+﻿@using Gedoc.Helpers.Enum
+@using Gedoc.WebApp.Helpers
+@model Gedoc.WebApp.Models.RequerimientoModel
+
+@{
+    Layout = null;
+    Dictionary<CampoIngreso, AspectoCampo> accesoCampos = ViewBag.AccesoCampos;
+    var mostrarLiberar = accesoCampos[CampoIngreso.Asig_LiberarAsign] != AspectoCampo.Oculto && 
+                         Model.UtTemporalId.GetValueOrDefault(0) > 0;
+    var inhabilitaLiberar = !Model.EnAsignacionTemp || Model.LiberarAsignacionTemp;
+}
+
+<script>
+
+    function comboReqValueMapper(options) {
+        $.ajax({
+            url: "@Url.Action("RequerimientoResumenByIds", "Json")",
+            type: "POST",
+            data: $.param({ ids: options.value, cerrado: false }, true),
+            success: function (data) {
+                if (data.Resultado && data.Resultado.Codigo < 0) {
+                    Main.showError(data.Resultado.Mensaje);
+                } else {
+                    var data = data.Data && data.Data.length > 0 ? data.Data[0] : null;
+                    options.success(data);
+                }
+            }
+        });
+    }
+    
+//# sourceURL=PanelOtrosCampos2
+</script>
+
+
+<h4 class="head-datos-form">Otros Campos</h4>
+<div class="container-fluid">
+
+    <div class="form-row">
+        <div class="col-md-3">
+            <label class="label-dato-form">
+                Requerimiento anterior
+            </label>
+        </div>
+        <div class="col-md-9">
+            @(Html.Kendo().ComboBox()
+                .Name("RequerimientoAnteriorId")
+                .DataTextField("Titulo")
+                .DataValueField("Id")
+                .Filter("contains")
+                .HtmlAttributes(new Dictionary<string, object> { { "class", "w-100" } })
+                .Height(520)
+                .Virtual(v => v.ItemHeight(26).ValueMapper("comboReqValueMapper").MapValueTo("dataItem")) 
+                .Messages(Gedoc.WebApp.Helpers.KendoHelper.SetComboBoxMessages)
+                )
+            <span class="help-block" id="leyenda-reqanterior">Seleccione un Requerimiento existente asociado.</span>
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="col-md-3">
+            <label class="label-dato-form">
+                Requerimiento no registrado
+            </label>
+        </div>
+        <div class="col-md-9">
+            @Html.TextBoxFor(a => a.RequerimientoNoRegistrado, new { @class = "k-textbox w-100" })
+            <span class="help-block" id="leyenda-reqnoreg">Ingresos previos al año 2016, ejemplo: 06798-2014</span>
+        </div>
+    </div>
+
+    <div class="form-row" style="white-space: nowrap;">
+        <div class="col-md-3">
+            <label class="label-dato-form">
+                Proyecto o actividad
+            </label>
+        </div>
+
+        <div class="col-md-9">
+            <textarea name="ProyectoActividad" rows="6" cols="20" id="tbProyectoActividad" class="form-control texto-largo"
+                      data-spanleyenda="leyenda-pnProyectoActividad"
+                      data-maxlength="255" style="width: 100% !important;">@Html.Raw(Model.ProyectoActividad)</textarea>
+
+            <span class="help-block-right" style="float: right;" id="leyenda-pnProyectoActividad"> </span>
+            <span class="help-block" id="leyenda-ProyectoActividad">Es para ampliar la materia si es necesario, describiendo el proyecto, precisando la solicitud que se hace. </span>
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="col-md-3">
+            <label class="label-dato-form">
+                Unidad Técnica de apoyo
+            </label>
+        </div>
+        <div class="col-md-9">
+            @(Html.Kendo().ComboBox()
+                .Name("UtApoyoId")
+                .DataTextField("Titulo")
+                .DataValueField("Id")
+                .Filter("contains")
+                .HtmlAttributes(new Dictionary<string, object> { { "class", "w-100" } })
+                .Messages(Gedoc.WebApp.Helpers.KendoHelper.SetComboBoxMessages)
+                )
+            <span class="help-block" id="leyenda-reqanterior">Solicitud de apoyo por parte de otra Unidad Técnica para elaborar respuesta o recabar información.</span>
+        </div>
+    </div>
+
+
+    @if (mostrarLiberar)
+    {
+        <div class="form-row">
+            <div class="offset-md-3 col-md-9" id="divchbLiberarAsig">
+                @Html.CheckBoxFor(m => m.LiberarAsignacionTemp,
+                    inhabilitaLiberar ? (object) new { @disabled = "disabled", @class = "k-checkbox" } : new { @class = "k-checkbox" } )
+                <label class="k-checkbox-label" for="LiberarAsignacionTemp">Liberar Asignación Temporal</label>
+            </div>
+        </div>
+    }
+
+</div>
+
+
+<script>
+
+    function inicializaPanelOtrosCampos() {
+
+        var ds;
+
+        if ($("#RequerimientoAnteriorId").length) {
+            ds = Main.getDataSourceKendoGenericoVirtual(
+                $("#RequerimientoAnteriorId")
+                ,'@Url.Action("RequerimientoResumenPaging", "Json")'
+                , 80);
+            $("#RequerimientoAnteriorId").data("kendoComboBox").setDataSource(ds);
+        }
+        if ($("#UtApoyoId").length) {
+            ds = Main.getDataSourceKendoGenerico($("#UtApoyoId"),
+                '@Url.Action("MantenedorGenerico", "Json")?idM=@((int) Mantenedor.UnidadTecnica)');
+            $("#UtApoyoId").data("kendoComboBox").setDataSource(ds);
+        }
+    }
+
+    //# sourceURL=PanelOtrosCampos
+</script>
+

@@ -1,0 +1,144 @@
+﻿@using Gedoc.Helpers.Enum
+@using Gedoc.WebApp.Helpers
+@using Newtonsoft.Json
+@model Gedoc.WebApp.Models.DespachoIniciativaModel
+
+@{
+    Layout = null;
+}
+
+
+<h4 class="head-datos-form">Adjuntos</h4>
+<div class="container-fluid">
+
+    <div class="form-row">
+        <div class="col-md-3" style="white-space:nowrap">
+            <label class="label-dato-form">
+                Adjunta documentación<span class="marca-obligatorio" title="Este campo es obligatorio."> *</span>
+            </label>
+        </div>
+        <div class="col-md-2">
+           @(Html.Kendo().RadioButtonFor(m => m.AdjuntaDocumentacion).Label("Sí").Value(true))
+            @(Html.Kendo().RadioButtonFor(m => m.AdjuntaDocumentacion).HtmlAttributes(new { @class = "ml-3" }).Label("No").Value(false))
+
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="col-md-3">
+            <label class="label-dato-form">
+                Cantidad de adjuntos<span class="marca-obligatorio" title="Este campo es obligatorio."> *</span>
+            </label>
+        </div>
+        <div class="col-md-5">
+            @(Html.Kendo().NumericTextBoxFor(model => model.CantidadAdjuntos)
+                .Name("CantidadAdjuntos")
+                .Value(Model.CantidadAdjuntos.GetValueOrDefault(0))
+                .Step(1)
+                .Min(0)
+                .Decimals(0)
+                .Format("0")
+                .HtmlAttributes(new { required = "required" }) )
+            <span class="k-invalid-msg" data-for="CantidadAdjuntos"></span><br />
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="col-md-3">
+            <label class="label-dato-form">
+                Tipos de adjuntos<span class="marca-obligatorio" title="Este campo es obligatorio."> *</span>
+            </label>
+        </div>
+        <div class="col-md-9">
+            <select id="tipoAdjunto" name="TipoAdjunto" multiple required></select>
+            <span class="k-invalid-msg" data-for="TipoAdjunto"></span><br />
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="col-md-3">
+            <label class="label-dato-form">
+                Observaciones de adjuntos
+            </label>
+        </div>
+        <div class="col-md-9">
+            <div class="k-block text-area-out">
+                <div class="text-area-in texto-largo datos-adjuntos" id="pnObservacionAdj" contenteditable="true" maxlength="255"
+                     data-spanleyenda="leyenda-pnObservacionAdj">@Html.Raw(Model.ObservacionesAdjuntos)</div>
+            </div>
+            <span class="help-block-right" id="leyenda-pnObservacionAdj"> </span>
+            <span class="help-block">Indique por ejemplo si hay URL CEDOC, o número de fichero físico. </span>
+
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="col-md-3">
+            <label class="label-dato-form">
+                Soporte<span class="marca-obligatorio" title="Este campo es obligatorio."> *</span>
+            </label>
+        </div>
+        <div class="col-md-9">
+                <select id="soporte" name="Soporte" multiple required></select>
+                <span class="k-invalid-msg" data-for="Soporte"></span><br />
+        </div>
+    </div>
+
+
+</div>
+
+
+<script>
+
+    function inicializaPanelAdjuntoDesp() {
+
+        if ($("#tipoAdjunto").length) {
+            $("#tipoAdjunto").kendoMultiSelect(
+                Main.getMultiSelectConfig($("#tipoAdjunto"),
+                    '@Url.Action("MantenedorGenerico", "Json")?idM=@((int) Mantenedor.TipoDocumento)'
+                    ,"", ""
+                    , @Html.Raw(JsonConvert.SerializeObject(Model.TipoAdjunto)) )
+            );
+        }
+
+        if ($("#soporte").length) {
+            $("#soporte").kendoMultiSelect(
+                Main.getMultiSelectConfig($("#soporte"),
+                    '@Url.Action("MantenedorGenerico", "Json")?idM=@((int) Mantenedor.Soporte)'
+                    ,"", ""
+                    , @Html.Raw(JsonConvert.SerializeObject(Model.Soporte)) )
+            );
+        }
+
+        $("input[name$='AdjuntaDocumentacion'").click(function () {
+            cambiaEstadoAdjuntos();
+        });
+
+        cambiaEstadoAdjuntos();
+    }
+
+
+    function cambiaEstadoAdjuntos() {
+        if (!$("input[name$='AdjuntaDocumentacion'").length) {
+            return;
+        }
+        var desactivar = $("input[name$='AdjuntaDocumentacion']:checked").val() != "True";
+        $(".datos-adjuntos").prop("disabled", desactivar);
+        $(".datos-adjuntos[contenteditable]").attr("contenteditable", !desactivar);
+        $(".datos-adjuntos[contenteditable]").css("background-color", desactivar ? "lightgrey" : "");
+
+        var cantAdjK = $("#CantidadAdjuntos").data("kendoNumericTextBox");
+        if (cantAdjK != undefined) cantAdjK.enable(!desactivar);
+        var tipoAdjK = $("#tipoAdjunto").data("kendoMultiSelect");
+        tipoAdjK.enable(!desactivar);
+        var soporteK = $("#soporte").data("kendoMultiSelect");
+        soporteK.enable(!desactivar);
+
+        if (desactivar) {
+            $('.k-invalid-msg[data-for=TipoAdjunto]').hide();
+            $('.k-invalid-msg[data-for=Soporte]').hide();
+        }
+    }
+
+    //# sourceURL=PanelAdjuntoDesp
+</script>

@@ -1,0 +1,151 @@
+﻿
+
+@{
+    ViewBag.Title = "Mantenedor de Menús";
+}
+
+<script>
+    function onSyncDataSource(e) {
+        this.read();
+    }
+</script>
+
+
+<h4 class="header-level1">@ViewBag.Title</h4>
+
+<div class="div-main">
+    <div class="row">
+        <div class="col-xs-18 col-md-12">
+            @(Html.Kendo().Grid<Gedoc.WebApp.Models.MenuModel>()
+                .Name("grid")
+                .Columns(columns =>
+                {
+                    columns.Bound(c => c.NombrePadre) //.ForeignKey(m=> m.IdMenuPadre, (SelectList)ViewBag.MenusPrimerNivel)
+                        .Title("Padre")
+                        .EditorTemplateName("MenuRaizComboBox")
+                        .Width(220)
+                        .ClientGroupHeaderTemplate("<b>#= value == null ? '[Menú Principal]' : value  #</b>");
+                    columns.Bound(c => c.Nombre);
+                    columns.Bound(c => c.Activo)
+                        .Width(120)
+                        .Title("Activo")
+                        .ClientTemplate("#= boolToText(data.Activo) #");
+                    //.ClientTemplate(
+                    //"# if (Activo == true) { #" +
+                    //"<input type='checkbox' checked disabled/>" +
+                    //"# } else { #" +
+                    //"<input type='checkbox' disabled/>" +
+                    //"# } #"
+                    //);
+                    columns.Bound(c => c.Url);
+                    columns.Bound(c => c.Orden)
+                        .EditorTemplateName("IntegerPositivo")
+                        .Width(140);
+                    columns.Command(command =>
+                    {
+                        command.Edit().Text("Editar");
+                        command.Destroy().Text("Eliminar");
+                        command.Custom("Perfiles").Click("misRolesCustom").IconClass("k-icon k-i-custom");
+                    }).Width(340);
+                })
+                .ToolBar(toolbar =>
+                {
+                    toolbar.Create().Text("Agregar Menú");
+                    toolbar.Excel().Text("Exportar a Excel");
+                })
+                .Excel(excel => excel
+                    .FileName("Menus.xlsx")
+                    .AllPages(true)
+                )
+                .Editable(editable => editable
+                    .Mode(GridEditMode.InLine)
+                    .DisplayDeleteConfirmation("¿Está seguro de borrar el registro?"))
+                .Pageable()
+                .Filterable()
+                .Scrollable(scr => scr.Height("auto"))
+                .Sortable()
+                .Resizable(resize => resize.Columns(true))
+                .Pageable(p => p.AlwaysVisible(true).PageSizes(new int[3] { 10, 50, 100 }).Enabled(true)
+                    .Messages(m => m.ItemsPerPage("registros por página")))
+                .DataSource(dataSource => dataSource
+                    .Ajax()
+                    .Sort(x=>x.Add("Orden").Ascending())
+                    .Model(model =>
+                    {
+                        model.Id(p => p.IdMenu);
+                        model.Field(f => f.IdMenuPadre).DefaultValue(0).Editable(true);
+                    })
+                    .Read(read => read.Action("Menu_Read", "Menu"))
+                    .Create(create => create.Action("Menu_Create", "Menu"))
+                    .Update(update => update.Action("Menu_Update", "Menu"))
+                    .Destroy(destroy => destroy.Action("Menu_Destroy", "Menu"))
+                    .Group(groups => groups.Add(p => p.NombrePadre))
+                    .Events(e => e.Sync("onSyncDataSource"))
+                    .PageSize(50)
+                    .ServerOperation(false)
+                )
+                )
+        </div>
+    </div>
+</div>
+
+<div id="dialog"></div>
+
+@(Html.Kendo()
+    .Dialog()
+    .Name("dlg_DeleteConfirmation")
+    .Modal(true)
+    .Title("Confirmar")
+    .Content("¿Está seguro de borrar el registro?")
+    .Visible(false)
+    .Actions(a =>
+    {
+        a.Add().Text("No").Action("cancelDelete");
+        a.Add().Text("Sí").Action("confirmDelete").Primary(true);
+    })
+    )
+
+
+<script>
+    function misRolesCustom(e) {
+        e.preventDefault();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        var urlRoles = '@Url.Action("MenuRoles", "Rol")' + '?menuId=' + dataItem.IdMenu;
+        $("#dialog").kendoWindow({
+            title: 'Perfiles menú "' + dataItem.Nombre + '"',
+            modal: true,
+            height: 450,
+            width: 500,
+            iframe: true,
+            content: urlRoles
+        });
+        var dialog = $("#dialog").data("kendoWindow");
+        dialog.setOptions({
+            title: 'Perfiles menú "' + dataItem.Nombre + '"'
+        });
+        dialog.center();
+        dialog.open();
+    }
+
+    function confirmDelete(e) {
+        var grid = $("#grid").data("kendoGrid");
+        var tr = $(e.currentTarget).closest("tr");
+        var data = grid.dataItem(tr);
+        grid.dataSource.remove(data);  //prepare a "destroy" request
+        grid.dataSource.sync();
+        $('#dlg_DeleteConfirmation').data("kendoDialog").close();
+    }
+
+    function cancelDelete(e) {
+
+    }
+
+    function boolToText(valor) {
+        if (valor == true) {
+            return "Si";
+        } else {
+            return "No";
+        }
+    }
+
+</script>

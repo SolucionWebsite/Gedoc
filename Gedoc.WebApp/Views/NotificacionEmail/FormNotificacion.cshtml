@@ -1,0 +1,216 @@
+﻿@using Gedoc.Helpers
+@using Gedoc.Helpers.Enum
+@model Gedoc.WebApp.Models.NotificacionEmailModel
+
+@{
+    ViewBag.Title = "Notificaciones";
+    ResultadoOperacion accesoForm = ViewBag.AccesoForm ?? new ResultadoOperacion(1, "OK", null);
+
+    Layout = null; // "~/Views/Shared/_LayoutVacio.cshtml"; // "~/Views/Shared/_Layout.cshtml";
+}
+    @*<link href="~/Content/kendo/2020.1.114/kendo.default-v2.min.css" rel="stylesheet" />*@
+
+<script src="~/Scripts/form.js"></script>
+
+
+<div class="div-main-form">
+
+    <form id="formNotificacion" action="@Url.Action("Save", "NotificacionEmail")" class="form-datos">
+        @Html.AntiForgeryToken()
+
+        @Html.HiddenFor(a => a.Id)
+
+
+        <div class="form-row">
+            <div class="col-md-2">
+                <label class="label-dato-form">
+                    Código<span class="marca-obligatorio" title="Este campo es obligatorio."> *</span>
+                </label>
+            </div>
+            <div class="col-md-6">
+                @Html.TextBoxFor(a => a.Codigo, new { @class = "k-textbox w-100", required = "required" })
+                <span class="k-invalid-msg" data-for="Codigo"></span>
+                <span class="help-block" id="leyenda-codigo">Código único que identifica a la notificación.</span>
+            </div>
+            <div class="offset-md-1 col-md-2">
+                @(Html.Kendo().CheckBoxFor(m => m.Activo)
+                    .Name("Activo")
+                    .Label("Activo") )
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="col-md-2">
+                <label class="label-dato-form">
+                    Asunto<span class="marca-obligatorio" title="Este campo es obligatorio."> *</span>
+                </label>
+            </div>
+            <div class="col-md-10">
+                @Html.TextBoxFor(a => a.Asunto, new { @class = "k-textbox w-100", required = "required" })
+                <span class="k-invalid-msg" data-for="Asunto"></span>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="col-md-2">
+                <label class="label-dato-form">
+                    Mensaje<span class="marca-obligatorio" title="Este campo es obligatorio."> *</span>
+                </label>
+            </div>
+            <div class="col-md-10">
+                @(Html.Kendo().Editor()
+                    .Name("Mensaje")
+                    .HtmlAttributes(new {style = "height:400px", aria_label = "editor", required = "required"})
+                    //.StyleSheets(css => css
+                    //    .Add(Url.Content("~/Content/web/Editor/editorStyles.css"))
+                    //)
+                    .Tools(tools => tools
+                        .Clear()
+                        .Bold().Italic().Underline()
+                        .JustifyLeft().JustifyCenter().JustifyRight()
+                        .InsertUnorderedList().InsertOrderedList()
+                        .Outdent().Indent()
+                        //.CreateLink().Unlink()
+                        .InsertImage()
+                        //.TableEditing()
+                        .FontName()
+                        .FontSize()
+                        .FontColor()
+                    //.BackColor()
+                    )
+                    //.Value(Model.Mensaje)
+                    )
+                <span class="k-invalid-msg" data-for="Mensaje"></span>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="col-md-2">
+                <label class="label-dato-form">
+                    Descripción
+                </label>
+            </div>
+            <div class="col-md-10">
+                <textarea name="Descripcion" rows="6" cols="20" id="tbDescripcion" class="form-control texto-largo" data-spanleyenda="leyenda-pnDescripcion"
+                          data-maxlength="4000" style="width: 100% !important;">@Html.Raw(Model.Descripcion)</textarea>
+
+            </div>
+        </div>
+
+        @if (Model.Codigo.Equals("Notif_Forzar_Prioridad_Req", StringComparison.InvariantCultureIgnoreCase))
+        {
+            <div class="form-row">
+                <div class="col-md-2">
+                    <label class="label-dato-form">
+                        Periodicidad (días)
+                    </label>
+                </div>
+                <div class="col-md-2">
+                    @(Html.Kendo().NumericTextBoxFor(model => model.Periodicidad)
+                        .Name("Periodicidad")
+                        .HtmlAttributes(new { @class = "w-100"})
+                        .Value(Model.Periodicidad.GetValueOrDefault(0))
+                        .Step(1)
+                        .Min(1)
+                        .Max(31)
+                        .Decimals(0)
+                        .Format("0")
+                        )
+                </div>
+            </div>
+        }
+
+        <div class="footer-modal">
+            <div class="form-row">
+                <div class="offset-md-3 col-md-2 text-center">
+                    <button type="button" id="btnGrabaNotif" class="k-primary-blue k-button" onclick="grabaNotif(event);">Guardar</button>
+                </div>
+                <div class="offset-md-2 col-md-2 text-center">
+                    <button type="button" id="btnCancelaNotif" class="k-danger k-button" onclick="cancelaNotif(event);">Cancelar</button>
+                </div>
+            </div>
+        </div>
+
+    </form>
+
+</div>
+
+<script>
+
+    @if (accesoForm.Codigo < 0)
+    {
+        <text>
+    Main.showAlert("@Html.Raw(accesoForm.Mensaje)")
+        .then(function(result) {
+            Main.cierraModal(null, false, "winFormIngreso");
+        });
+        </text>
+    }
+
+    function configValidacionForm() {
+        var container = $("#formNotificacion");
+        kendo.init(container);
+        container.kendoValidator({
+            messages: {
+                required: "Este campo es obligatorio"
+            }
+        });
+    }
+
+    function grabaNotif(e) {
+
+        Main.wait("Grabando...");
+
+        var currentTarget = $(e.currentTarget);
+        var form = $("#formNotificacion");
+
+        var validator = form.data("kendoValidator");
+        if (!validator.validate()) {
+            Main.unwait();
+            Main.showError("Por favor, revise los datos de la página. Hay datos incompletos o erróneos.");
+            return false;
+        }
+
+        //Form.setValueHiddeFieldTextArea("ObservacionesAdjuntos", "pnObservacionAdj");
+
+        var data = $(form).serialize();
+        var url = $(form).attr("action");
+        $.ajax({
+            type: "POST",
+            url: url,
+            data: data
+        }).done(function(response) {
+            Main.unwait();
+            if (response.Codigo) {
+                if (response.Codigo > 0) {
+                    Main.showInfo(response.Mensaje).then(function(result) {
+                        Main.cierraModal(currentTarget, true, "winFormIngreso");
+                    });
+                } else {
+                    Main.showError(response.Mensaje, "Error");
+                }
+            } else {
+                Main.showAlert("Error inesperado al realizar la operación, por favor, vuelva a intentarlo",
+                    "Error");
+            }
+        }).fail(function(error) {
+            Main.unwait();
+            Main.showError("Ha ocurrido un error al realizar la operación, por favor, vuelva a intentarlo.",
+                "Error");
+        });
+    };
+
+    function cancelaNotif(e) {
+        Main.cierraModal($(e.currentTarget), { resultado: false }, "winFormIngreso");
+    };
+
+    $(function() {
+
+        configValidacionForm();
+
+        Form.inicializaForm();
+
+    });
+
+    //# sourceURL=FormNotificacion
+</script>

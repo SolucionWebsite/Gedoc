@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ReferenceGroup xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" ID="a7ea2ef0-ad24-48f7-b0ca-163b30d0e157" xmlns="urn:schemas-microsoft-com:xml-wcfservicemap">
+  <ClientOptions>
+    <GenerateAsynchronousMethods>false</GenerateAsynchronousMethods>
+    <GenerateTaskBasedAsynchronousMethod>true</GenerateTaskBasedAsynchronousMethod>
+    <EnableDataBinding>true</EnableDataBinding>
+    <ExcludedTypes />
+    <ImportXmlTypes>false</ImportXmlTypes>
+    <GenerateInternalTypes>false</GenerateInternalTypes>
+    <GenerateMessageContracts>false</GenerateMessageContracts>
+    <NamespaceMappings />
+    <CollectionMappings />
+    <GenerateSerializableTypes>true</GenerateSerializableTypes>
+    <Serializer>Auto</Serializer>
+    <UseSerializerForFaults>true</UseSerializerForFaults>
+    <ReferenceAllAssemblies>true</ReferenceAllAssemblies>
+    <ReferencedAssemblies />
+    <ReferencedDataContractTypes />
+    <ServiceContractMappings />
+  </ClientOptions>
+  <MetadataSources>
+    <MetadataSource Address="net.tcp://127.0.0.1:8736/gedocetl/mex" Protocol="mex" SourceId="1" />
+  </MetadataSources>
+  <Metadata>
+    <MetadataFile FileName="service.wsdl" MetadataType="Wsdl" ID="b00b8ef0-0b70-489d-bf3f-fb50b1240fe2" SourceId="1" SourceUrl="net.tcp://127.0.0.1:8736/gedocetl/mex" />
+    <MetadataFile FileName="service.xsd" MetadataType="Schema" ID="0c4c3e45-3211-461f-96fc-b6739d3f5681" SourceId="1" SourceUrl="net.tcp://127.0.0.1:8736/gedocetl/mex" />
+    <MetadataFile FileName="service1.xsd" MetadataType="Schema" ID="8319b437-3547-412e-b32b-dd21c5448cd3" SourceId="1" SourceUrl="net.tcp://127.0.0.1:8736/gedocetl/mex" />
+    <MetadataFile FileName="Arrays.xsd" MetadataType="Schema" ID="45f8bcb8-ac2f-4e06-b68b-d70f67bfa391" SourceId="1" SourceUrl="net.tcp://127.0.0.1:8736/gedocetl/mex" />
+    <MetadataFile FileName="Gedoc.Etl.Winsrv.Entidades.xsd" MetadataType="Schema" ID="a88fff60-9fe0-4a3c-a2a5-b39f40e1d62c" SourceId="1" SourceUrl="net.tcp://127.0.0.1:8736/gedocetl/mex" />
+  </Metadata>
+  <Extensions>
+    <ExtensionFile FileName="configuration91.svcinfo" Name="configuration91.svcinfo" />
+    <ExtensionFile FileName="configuration.svcinfo" Name="configuration.svcinfo" />
+  </Extensions>
+</ReferenceGroup>

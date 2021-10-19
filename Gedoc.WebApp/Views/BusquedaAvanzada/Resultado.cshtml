@@ -1,0 +1,229 @@
+﻿@using Gedoc.Helpers
+@using Gedoc.Helpers.Enum
+
+@{
+    Layout = null;
+}
+
+<style>
+    #window_winBAResult {
+        overflow-y: hidden;
+    }
+
+    .wrapper {
+        /*height: 835px;*/
+        margin: 0;
+        padding: 0;
+    }
+
+    /*#tabstrip {
+        float: right;
+        margin-bottom: 20px;
+    }*/
+
+    /*#tabstrip .k-content {
+            height: auto;
+            overflow: auto;
+        }*/
+
+    #tabstrip, #tabstrip .k-content, .k-tabstrip-wrapper {
+        height: 100% !important;
+        padding: 0;
+    }
+
+    /*.specification {
+        margin: 10px 0;
+        padding: 0;
+    }
+
+    .specification dt, dd {
+        max-width: 140px;
+        float: left;
+        margin: 0;
+        padding: 5px 0 8px 0;
+    }
+
+    .specification dt {
+        clear: left;
+        width: 100px;
+        margin-right: 7px;
+        padding-right: 0;
+        opacity: 0.7;
+    }
+
+    .specification:after, .wrapper:after {
+        content: ".";
+        display: block;
+        clear: both;
+        height: 0;
+        visibility: hidden;
+    }*/
+
+</style>
+
+<div class="container-fluid-no h-100" id="divResultadoBusquedaAvanzada" style="padding:0;">
+    @*<div class="wrapper">*@
+        <div id="tabstrip">
+            <ul>
+                <li class="k-state-active i">Ingresos</li>
+                <li class="d">Despachos</li>
+                <li class="di">Despachos Iniciativas</li>
+                <li class="b">Bitácoras</li>
+            </ul>
+        </div>
+    @*</div>*@
+</div>
+
+<script src="~/Scripts/accionesbandeja.js"></script>
+<script>
+
+    kendo.culture("es-ES"); // Tiene el formato de fecha dd/MM/yyyy q es el q se usa en la aplicación, la cultura es-CL tiene formato dd-MM-yyyy
+
+    $(function () {
+        //$(".k-widget.k-window").css("top", "10px");
+        //$(".k-widget.k-window").css("height", "940px");
+        $(".k-window-content.k-content").css("padding", "0");
+        $(".k-content.k-state-active").css("diplay", "table");
+        $(".k-window-titlebar").css("border-color", "rgba(255,255,255,0)");
+
+
+        kendo.ui.progress($("#divResultadoBusquedaAvanzada"), true);
+
+        var ts = $("#tabstrip").kendoTabStrip({
+            animation: { open: { effects: "fadeIn" } },
+            contentUrls: [
+                '@(Url.Action("IngresosTab"))?@(Html.Raw(Request.QueryString.ToString()))',
+                '@(Url.Action("DespachosTab"))?@(Html.Raw(Request.QueryString.ToString()))',
+                '@(Url.Action("DespachosIniciativasTab"))?@(Html.Raw(Request.QueryString.ToString()))',
+                '@(Url.Action("BitacorasTab"))?@(Html.Raw(Request.QueryString.ToString()))'
+            ]
+        }).data('kendoTabStrip');
+
+        if(@(Request["I"])==0)
+            $("#tabstrip li.i").remove();
+        if(@(Request["D"])==0)
+            $("#tabstrip li.d").remove();
+        if(@(Request["DI"])==0)
+            $("#tabstrip li.di").remove();
+        if(@(Request["B"])==0)
+            $("#tabstrip li.b").remove();
+
+        // $("#tabstrip").kendoTabStrip().data("kendoTabStrip").select(0);
+        ts.select(0);
+
+        kendo.ui.progress($("#divResultadoBusquedaAvanzada"), false);
+
+        //$(".k-button.k-button-icontext.k-grid-B").html('<img width="20" height="20" src="Content/images/Icono-Bitacora.png" title="" />');
+        //$(".k-button.k-button-icontext.k-grid-B").attr('role','');
+        //$(".k-button.k-button-icontext.k-grid-B").attr('class','');
+    });
+
+    function qs(key) {
+        key = key.replace(/[*+?^$.\[\]{}()|\\\/]/g, "\\$&"); // escape RegEx meta chars
+        var match = location.search.match(new RegExp("[?&]" + key + "=([^&]+)(&|$)"));
+        return match && decodeURIComponent(match[1].replace(/\+/g, " "));
+    }
+
+//    function buildAccionBitacora(Id, numeroIngreso) {
+    function buildAccionBitacora(e) {
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        var accion = 'BI';
+        var titulo = 'Bitácora ' + numeroIngreso;
+        var hint = numeroIngreso;
+
+        var acc = "";
+            acc = '<a href="#" onclick="ejecutaAccionBA(' +
+                Id +
+                ', \'' + accion + '\'' +
+                ', \'' + titulo + ' - ' + numeroIngreso + '\', \'' +
+                numeroIngreso + '\'); return false;"><img width="20" height="20" src="Content/images/Icono-Bitacora.png" title="' +
+                hint +
+                '" /></a>';
+
+        return acc;
+    }
+    
+    function buildAccionBitacora2(e) {
+        var acc = '<div ><img width="20" height="20" src="Content/images/Icono-Bitacora.png" title=""/></div>';
+
+        return acc;
+    }
+
+    function accionBitacora(e) {
+        e.preventDefault();
+
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        ejecutaAccionBA(dataItem.Id, 'BI', 'Bitácora ' + dataItem.DocumentoIngreso, dataItem.DocumentoIngreso);
+    }
+
+    function buildLinkAdjuntos(id, numeroIngreso, texto) {
+        if (!texto)
+            texto = "0";
+        var accion = 'AD';
+        var titulo = 'Adjuntos ' + numeroIngreso;
+        var hint = numeroIngreso;
+
+        var acc = "";
+        acc = '<a href="javascript:void" class="text-center enlace-grilla" onclick="ejecutaAccionBA(' +
+            id +
+            ', \'' + accion + '\'' +
+            ', \'' + titulo + ' - ' + numeroIngreso + '\', \'' +
+            numeroIngreso + '\'); return false;">' + texto+'</a>';
+
+        return acc;
+    }
+
+    function buildLinkOficio(Id, Text, esDespInic) {
+
+        var acc = "";
+        if (esDespInic) {
+            acc = '<a target="_blank" href="@Url.Action("GetArchivo", "DespachoInic")?idDespacho=' + Id + '" class="text-center enlace-grilla">' + Text + '</a>';
+        } else {
+            acc = '<a target="_blank" href="@Url.Action("GetArchivo", "Despacho")?idDespacho=' + Id + '" class="text-center enlace-grilla">' + Text + '</a>';
+        }
+
+        return acc;
+    }
+
+   function ejecutaAccionBA(idIngreso, idAccion, titulo, docIngreso) {
+        if (idAccion == "BI") { // GRILLA BITACORAS
+
+            var result = Main.muestraVentanaModal(
+                titulo,
+                '@Url.Action("BitacorasIngresoForm", "Bitacora")' +
+                    '?idAccion=' + idAccion + '&idBitacora=0&idIngreso=' + idIngreso + '&idBandeja=-5',
+                null,
+                "",
+                false,
+                "winBABI");
+
+            result.then(function (result) {
+                if (result == true || result.Resultado == true || idAccion == "BI") {
+
+                } else {
+                    // hubo error o se canceló la acción, no se hace nada
+                }
+            });
+        } else if (idAccion == "AD") { // ADJUNTOS
+
+            var result = Main.muestraVentanaModal(
+                titulo,
+                '@Url.Action("AdjuntosIngresoForm", "Adjunto")' +
+                '?idIngreso=' + idIngreso + '&idBandeja=7',
+                "550px",
+                "250px",
+                false,
+                "winBABI");
+            result.then(function (result) {
+                if (result == true || result.Resultado == true || idAccion == "AD") {
+
+                } else {
+                    // hubo error o se canceló la acción, no se hace nada
+                }
+            });
+        }
+    }
+
+    //# sourceURL=BusqudaAvanzadaResultados
+
+</script>

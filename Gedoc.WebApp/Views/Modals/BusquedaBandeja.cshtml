@@ -1,0 +1,353 @@
+﻿@using Gedoc.Helpers.Enum
+
+@{
+    Layout = null;
+}
+
+<script>
+
+    function comboValueMapper(options, _url) {
+        $.ajax({
+            url: _url,
+            type: "POST",
+            data: $.param({ ids: options.value, cerrado: false }, true),
+            success: function (data) {
+                if (data.Resultado && data.Resultado.Codigo < 0) {
+                    Main.showError(data.Resultado.Mensaje);
+                } else {
+                    var data = data.Data && data.Data.length > 0 ? data.Data[0] : null;
+                    options.success(data);
+                }
+            }
+        });
+    }
+
+    function comboReqValueMapper(options) {
+        comboValueMapper(options, "@Url.Action("RequerimientoResumenByIds", "Json")");
+    }
+
+    var validator;
+    $(function () {
+        validator = $("#formBusquedaBandeja").kendoValidator({
+            rules: {
+                fechaCorrecta: function (input) {
+                    if (input.is("[data-role=datepicker]")) {
+                        return input.data("kendoDatePicker").value();
+                    } else {
+                        return true;
+                    }
+                },
+                required: function (input) {
+                    if (input.is("[name=utBusqBand]") || input.is("[name=estadoBusqBand]")) {
+                        return $.trim(input.val()) !== "";
+                    } else {
+                        return true;
+                    }
+                }
+
+            },
+            messages:
+            {
+                required: "Este campo es obligatorio",
+                fechaCorrecta: "Fecha incorrecta"
+            }
+        }).data("kendoValidator");
+
+        $("#fechaDesdeBusqBand").kendoDatePicker({
+            max: new Date(),
+            format: Main.formatoFecha,
+            //dateInput: true,
+            culture: "es-ES"
+        });
+        Form.setDateInputLang($("#fechaDesdeBusqBand"));
+
+        $("#fechaHastaBusqBand").kendoDatePicker({
+            max: new Date(),
+            format: Main.formatoFecha,
+            //dateInput: true,
+            culture: "es-ES"
+        });
+        Form.setDateInputLang($("#fechaHastaBusqBand"));
+
+        // Combo de Unidad Técnica
+        $("#utBusqBand").kendoComboBox({
+            index: -1,
+            dataTextField: "Titulo",
+            dataValueField: "Id",
+            filter: "contains",
+            dataSource: {
+                type: "aspnetmvc-ajax",
+                transport: {
+                    read: {
+                        url: "@(Url.Action("UnidadTecnicaBusqueda", "Home", new { idBandeja = ViewBag.IdBandeja } ))",
+                        dataType: "jsonp"
+                    },
+                    cache: true
+                },
+                schema: {
+                    data: "Data",
+                    total: "Total"
+                }
+            },
+            //dataBound: function (e) {
+            //    if (e.sender.dataSource.data().length > 0 && $("#busqUnidadTecnica").val()!="") {
+            //        var dataitem = e.sender.dataSource.data().find(di => di.Id === parseInt($("#busqUnidadTecnica").val()));
+            //        if (dataitem)
+            //        {
+            //            e.sender.value(dataitem.Title);
+            //            e.sender.trigger("change");
+            //            //$("#busqUnidadTecnica").val("");
+            //        }
+            //    }
+            //},
+            messages: Main.getMensajeCombobox(),
+            //placeholder: "Seleccione un DOcumento de Ingreso",
+            //minLength: 2,
+            //enforceMinLength: true,
+        });
+
+        // Combo de Estado
+        $("#estadoBusqBand").kendoComboBox({
+            index: -1,
+            dataTextField: "Title",
+            dataValueField: "Id",
+            filter: "contains",
+            dataSource: {
+                type: "aspnetmvc-ajax",
+                transport: {
+                    read: {
+                        url: "@(Url.Action("EstadoBusqueda", "Home", new { idBandeja = ViewBag.IdBandeja } ))",
+                        dataType: "jsonp"
+                    },
+                    cache: true
+                },
+                schema: {
+                    data: "Data",
+                    total: "Total"
+                }
+            },
+            //dataBound: function (e) {
+            //    if (e.sender.dataSource.data().length > 0 && $("#busqEstado").val()!="") {
+            //        var dataitem = e.sender.dataSource.data().find(di => di.Id === parseInt($("#busqEstado").val()));
+            //        if (dataitem)
+            //        {
+            //            e.sender.value(dataitem.Title);
+            //            e.sender.trigger("change");
+            //            //$("#busqEstado").val("");
+            //        }
+            //    }
+            //},
+            messages: Main.getMensajeCombobox(),
+            //placeholder: "Seleccione un DOcumento de Ingreso",
+            //minLength: 2,
+            //enforceMinLength: true,
+        });
+
+    });
+
+    function convertValues(value) {
+        var data = {};
+
+        value = $.isArray(value) ? value : [value];
+
+        for (var idx = 0; idx < value.length; idx++) {
+            data["values[" + idx + "]"] = value[idx];
+        }
+
+        return data;
+    }
+
+    function buscarDatosBandeja(e) {
+        if (validator.validate()) {
+            $("#busqDocumentoIngreso").val($("#documentoBusqBand").data("kendoComboBox").value());
+            $("#busqUnidadTecnica").val($("#utBusqBand").data("kendoComboBox").value());
+            $("#busqEstado").val($("#estadoBusqBand").data("kendoComboBox").value());
+            $("#busqFechaDesde").val($("#fechaDesdeBusqBand").val());
+            $("#busqFechaHasta").val($("#fechaHastaBusqBand").val());
+
+            Main.cierraModal($(e.currentTarget), {resultado: true});
+        }
+    }
+
+    function cancelarBusquedaBandeja(e) {
+        Main.cierraModal($(e.currentTarget), {resultado: false});
+    }
+
+    function limpiarBusquedaBandeja(e) {
+        $("#utBusqBand").data("kendoComboBox").value("");
+        $("#estadoBusqBand").data("kendoComboBox").value("");
+        $("#documentoBusqBand").data("kendoComboBox").value("");
+        $("#documentoBusqBand").data("kendoComboBox").dataSource.query({
+            sort: { field: "Title", dir: "asc" },
+            page: 1,
+            pageSize: 80
+        });
+        $("#fechaDesdeBusqBand").val("");
+        $("#fechaHastaBusqBand").val("");
+
+        $("#busqDocumentoIngreso").val("");
+        $("#busqUnidadTecnica").val("");
+        $("#busqEstado").val("");
+        $("#busqFechaDesde").val("");
+        $("#busqFechaHasta").val("");
+
+        $("#gridBandeja").data("kendoGrid").dataSource.read();
+        $("#gridBandeja").data("kendoGrid").dataSource.page(0);
+
+        validator.hideMessages();
+        docIngOnChange();
+    }
+
+    function docIngOnChange() {
+        var value = $("#documentoBusqBand").data("kendoComboBox").value();
+
+        var habilitar = value == null || value.trim() == "";
+
+        $("#fechaDesdeBusqBand").data("kendoDatePicker").enable(habilitar);
+        $("#fechaHastaBusqBand").data("kendoDatePicker").enable(habilitar);
+        $("#utBusqBand").data("kendoComboBox").enable(habilitar);
+        $("#estadoBusqBand").data("kendoComboBox").enable(habilitar);
+
+        if (!habilitar) {
+            $("#fechaDesdeBusqBand").data("kendoDatePicker").value(null);
+            $("#fechaHastaBusqBand").data("kendoDatePicker").value(null);
+            $("#utBusqBand").data("kendoComboBox").value(null);
+            $("#estadoBusqBand").data("kendoComboBox").value(null);
+        }
+    }
+
+    //$(function () {
+    //    $(".k-widget.k-window").css("top", "250px");
+
+    //    // Se restauran los filtro seleccionado en la búsqueda previa
+    //    $("#documentoBusqBand").data("kendoComboBox").value($("#busqDocumentoIngreso").val());
+    //    $("#utBusqBand").data("kendoComboBox").value($("#busqUnidadTecnica").val());
+    //    $("#estadoBusqBand").data("kendoComboBox").value($("#busqEstado").val());
+
+    //    $("#fechaDesdeBusqBand").data("kendoDatePicker").value($("#busqFechaDesde").val());
+    //    $("#fechaDesdeBusqBand").data("kendoDatePicker").trigger("change");
+    //    $("#fechaHastaBusqBand").data("kendoDatePicker").value($("#busqFechaHasta").val());
+    //    $("#fechaHastaBusqBand").data("kendoDatePicker").trigger("change");
+
+    //});
+
+    //# sourceURL=BusquedaBandeja
+</script>
+
+<!-- CUERPO DE FORMULARIO DE BUSQUEDA EN BANDEJA DE ENTRADA -->
+<div class="container-fluid" id="formBusquedaBandeja">
+
+    <div class="form-row" id="trDocumentoIngreso">
+        <div class="col-md-4 text-right">
+            <label class="label-dato-form">
+                Documento de Ingreso
+            </label>
+        </div>
+        <div class="col-md-8">
+            @(Html.Kendo().ComboBox()
+                .Name("documentoBusqBand")
+                .DataTextField("Titulo")
+                .DataValueField("Id")
+                .Filter("contains")
+                .HtmlAttributes(new Dictionary<string, object> { { "class", "w-100" } })
+                .Height(520)
+                .Virtual(v => v.ItemHeight(26).ValueMapper("comboReqValueMapper").MapValueTo("dataItem"))
+                .Events(ev=>ev.Change("docIngOnChange"))
+                .NoDataTemplate("No se encontraron datos.")
+                .Messages(m => m.Clear("limpiar"))
+                )
+            @*<input id="documentoBusqBand" name="DocumentoBusqBand" class="w-100" />*@
+        </div>
+    </div>
+    <div class="form-row">
+        <div class="col-md-4 text-right">
+            <label class="label-dato-form">
+                Fecha Desde<span class="marca-obligatorio" title="Este campo es obligatorio."> *</span>
+            </label>
+        </div>
+        <div class="col-md-8">
+            <input id="fechaDesdeBusqBand" name="FechaDesdeBusqBand" @*title="Fecha de Ingreso Desde"*@
+                   @*pattern="\d+\/\d+\/\d+" validationMessage="Ingrese una fecha correcta"*@
+                   required />
+            <span class="k-invalid-msg" data-for="FechaDesdeBusqBand"></span>
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="col-md-4 text-right">
+            <label class="label-dato-form">
+                Fecha Hasta<span class="marca-obligatorio" title="Este campo es obligatorio."> *</span>
+            </label>
+        </div>
+        <div class="col-md-8">
+            <input id="fechaHastaBusqBand" name="FechaHastaBusqBand" title="Fecha de Ingreso Hasta"
+                   @*pattern="\d+\/\d+\/\d+" validationMessage="Ingrese una fecha correcta"*@
+                   required />
+            <span class="k-invalid-msg" data-for="FechaHastaBusqBand"></span>
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="col-md-4 text-right">
+            <label class="label-dato-form">
+                Unidad Técnica<span class="marca-obligatorio" title="Este campo es obligatorio."> *</span>
+            </label>
+        </div>
+        <div class="col-md-8">
+            <input id="utBusqBand" name="utBusqBand" class="w-100" />
+        </div>
+    </div>
+
+    <div class="form-row">
+
+        <div class="col-md-4 text-right">
+            <label class="label-dato-form">
+                Estado<span class="marca-obligatorio" title="Este campo es obligatorio."> *</span>
+            </label>
+        </div>
+        <div class="col-md-8">
+            <input id="estadoBusqBand" name="estadoBusqBand" class="w-100" />
+        </div>
+    </div>
+
+    <div class="footer-modal">
+        <div class="form-row">
+            <div class="offset-md-3 col-md-2 text-center">
+                <button type="button" id="btnBuscaBandeja" class="k-primary-blue k-button" onclick="buscarDatosBandeja(event);">Aceptar</button>
+            </div>
+            <div class="col-md-2 text-center">
+                <button type="button" id="btnCancelaBusquedaBandeja" class="k-danger k-button" onclick="cancelarBusquedaBandeja(event);">Cancelar</button>
+            </div>
+            <div class="offset-md-1 col-md-4 text-center">
+                <button type="button" id="btnLimpiaBusquedaBandeja" class="k-primary-green k-button" onclick="limpiarBusquedaBandeja(event);">Limpiar campos</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(function () {
+        var ds;
+        if ($("#documentoBusqBand").length) {
+            ds = Main.getDataSourceKendoGenericoVirtual(
+                $("#documentoBusqBand")
+                , '@Url.Action("RequerimientoResumenPaging", "Json")'
+                , 80);
+            $("#documentoBusqBand").data("kendoComboBox").setDataSource(ds);
+        }
+
+        $(".k-widget.k-window").css("top", "250px");
+
+        // Se restauran los filtro seleccionado en la búsqueda previa
+        $("#documentoBusqBand").data("kendoComboBox").value($("#busqDocumentoIngreso").val());
+        $("#utBusqBand").data("kendoComboBox").value($("#busqUnidadTecnica").val());
+        $("#estadoBusqBand").data("kendoComboBox").value($("#busqEstado").val());
+
+        $("#fechaDesdeBusqBand").data("kendoDatePicker").value($("#busqFechaDesde").val());
+        $("#fechaDesdeBusqBand").data("kendoDatePicker").trigger("change");
+        $("#fechaHastaBusqBand").data("kendoDatePicker").value($("#busqFechaHasta").val());
+        $("#fechaHastaBusqBand").data("kendoDatePicker").trigger("change");
+    });
+
+    //# sourceURL=BusquedaBandeja2
+</script>

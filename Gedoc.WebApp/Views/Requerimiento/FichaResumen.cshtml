@@ -1,0 +1,970 @@
+﻿
+@using System.Globalization
+@using Gedoc.Helpers
+@using Gedoc.Helpers.Dto
+@using Gedoc.Helpers.Enum
+@using Gedoc.WebApp.Models
+@model Gedoc.Helpers.Dto.RequerimientoDto
+
+@{
+    ViewBag.Title = "Ficha Resumen";
+    Layout = null; //           ESTO    "~/Views/Shared/_LayoutVacio.cshtml"; //
+    ResultadoOperacion resultado = ViewBag.Resultado ?? new ResultadoOperacion(1, "", null);
+    List<LogSistemaDto> logReq = ViewBag.LogReq ?? new List<LogSistemaDto>();
+    var logNuevo = logReq.FirstOrDefault(l => l.Flujo == "NUEVO") ?? new LogSistemaDto();
+    var logIngCtral = logReq.FirstOrDefault(l => l.Flujo == "INGRESOCENTRAL") ?? new LogSistemaDto();
+    var logAsign = logReq.FirstOrDefault(l => l.Flujo == "ASIGNACIONUT" && (l.Accion == "ENVIAR_PRIORIZACION" || l.Accion == "ENVIAR_ASIGN_TEMPORAL")) ?? new LogSistemaDto();
+    var logPrio = (logReq.FirstOrDefault(l => (l.Flujo == "PRIORIZACION" && l.Accion == "ENVIAR_UT") || (l.Flujo == "ASIGNACIONUT" && l.Accion == "ENVIAR_ASIGN_TEMPORAL"))
+        // TODO: eliminar la siguiente condición. En un momento durante el desarrollo esta condición se cumplía cdo se envía a asignación temporal
+        // pero esto se corrigió y la condición anterior es la q se cumple 
+        ?? logReq.FirstOrDefault(l => l.Flujo == "ASIGNACIONUT" && l.Accion == "ENVIAR_PRIORIZACION" && l.EstadoId == (int)EstadoIngreso.AsignacionTemporal))
+        ?? new LogSistemaDto();
+    var logAsignProf = logReq.FirstOrDefault(l => l.Flujo == "ASIGNACIONPROFUT") ?? new LogSistemaDto();
+    var logReasign = logReq.FirstOrDefault(l => l.Flujo == "REASIGNACIONUT") ?? new LogSistemaDto();
+
+}
+
+
+
+
+<style>
+
+    .ficha {
+        font-size: 0.9em;
+    }
+
+    .k-panelbar .k-item {
+        border: 1px solid lightgrey !important;
+    }
+
+    .k-panelbar {
+        background-color: white;
+        border: 0px;
+    }
+
+    .data-header-ficha {
+        margin-top: 10px !important;
+    }
+
+    .panel-datos {
+        font-size: 0.8em;
+    }
+
+    .label-dato {
+        width: 100%;
+        display: inline-block;
+        font-size: 100% !important;
+        font-weight: bold;
+        margin-bottom: 2px;
+        color: white;
+        white-space: normal;
+    }
+
+    .k-link.k-header {
+        background-color: azure !important;
+    }
+
+    .empty-grid {
+        padding: 1em;
+        /*line-height: 3em;*/
+        width: 100%;
+        font-weight: bold;
+    }
+
+    .gridDatos {
+        font-size: 0.85em;
+    }
+
+    .gridDatos .k-grid-content .k-alt {
+        background-color: #EFF3FB; /* specify the alternate background-color */
+    }
+
+    .gridDatos .k-grid-header .k-header {
+        background-color: #ebe8e8;
+    }
+
+    .card-header {
+        padding: 3px !important;
+        font-weight: bold;
+        color: white;
+    }
+</style>
+
+<script>
+    @if (resultado.Codigo < 0)
+    {
+        <text>
+    Main.showAlert("@Html.Raw(resultado.Mensaje)")
+        .then(function (result) {
+            Main.cierraModal(null, false, "winFormFichaIngRes");
+        });
+        </text>
+    }
+
+    var onSelect = function (e) {
+        var header = $(e.item).find("span.k-state-selected");
+        header.removeClass("k-state-selected"); // evitar el color del header al seleccionarlo
+        header.blur(); // .focusout();
+    };
+
+    $(function () {
+        Main.wait("", "#pnAdjuntos");
+        Main.wait("", "#pnDespachos");
+        Main.wait("", "#pnBitacoras");
+
+        $("#okImgAdj").hide();
+        $("#cancelImgAdj").hide();
+        $("#okImgDesp").hide();
+        $("#cancelImgDesp").hide();
+        $("#okImgBit").hide();
+        $("#cancelImgBit").hide();
+
+        var winResK = Main.kendoWin["winFormFichaIngRes"];
+        if (winResK) winResK.maximize();
+
+    });
+
+    function extraDataGrillaDespacho() {
+        return { Take: 100, Dato: "@Model.Id" }
+    }
+
+    function extraDataGrillaAdjunto() {
+        return {
+            reqId: "@Model.Id"
+        };
+    }
+
+    function extraDataGrillaBitacora() {
+        return {
+            reqId: "@Model.Id"
+        };
+    }
+
+    function buildUrlDescargaDesp(idDespacho, idEstado)
+    {
+        var enlace = "@Url.Action("GetArchivo", "Despacho")" + "?idDespacho=" + idDespacho;
+        enlace = '<a href="' + enlace + '"  class="k-button mr-1" title="Descargar"><span class="k-icon k-i-download"></span></a>';
+
+        var onclick = idEstado == @((int)EstadoDespacho.Despachado)
+            ? 'Main.showAlert(\'Atención. El documento ya se encuentra en estado Despacho.\'); return false;'
+            : 'deleteDespacho(\'' + idDespacho + '\'); return false;';
+        enlace += '<button class="k-button" onclick="' + onclick + '" title="Eliminar" type="button" data-role="button" role="button"><span class="k-icon k-i-trash"></span></button>';
+
+        enlace = '<div style="display: inline-flex;">' + enlace + '</div>';
+
+        return enlace;
+    }
+
+    function buildUrlDescargaAdj(idAdjunto, urlArchivo)
+    {
+        var enlace = "";
+        if (urlArchivo) {
+            enlace = "@Url.Action("GetArchivo", "Adjunto")" + "?idAdjunto=" + idAdjunto;
+            enlace = '<a href="' + enlace + '"  class="k-button" title="Descargar"><span class="k-icon k-i-download"></span></a>';
+        }
+
+        if (idAdjunto) {
+            enlace += '<button class="k-button" onclick="deleteAdjunto(' + idAdjunto + ')" title="Eliminar" type="button" data-role="button" role="button"><span class="k-icon k-i-trash"></span></button>';
+        }
+        enlace = '<div style="display: inline-flex;">' + enlace + '</div>';
+        return enlace;
+    }
+
+    function buildUrlDescargaBit(idBitacora, urlArchivo, nombreArchivo)
+    {
+        var enlace = "";
+        if (urlArchivo && nombreArchivo) {enlace = "@Url.Action("GetArchivo", "Bitacora")" + "?idBitacora=" + idBitacora;
+            enlace = '<a href="' + enlace + '"  class="k-button mr-1" title="Descargar"><span class="k-icon k-i-download"></span></a>';
+        }
+        enlace += '<button class="k-button" onclick="deleteBitacora(' + idBitacora + ')" title="Eliminar" type="button" data-role="button" role="button"><span class="k-icon k-i-trash"></span></button>';
+
+        enlace = '<div style="display: inline-flex;">' + enlace + '</div>';
+        return enlace;
+    }
+
+    function resultGrillaAdj(e) {
+        Main.unwait("#pnAdjuntos");
+        var ok = e.response.Data && e.response.Data.length ? true : false;
+        $("#okImgAdj").toggle(ok);
+        $("#cancelImgAdj").toggle(!ok);
+    }
+
+    function resultGrillaDesp(e) {
+        Main.unwait("#pnDespachos");
+        var ok = e.response.Data && e.response.Data.length ? true : false;
+        $("#okImgDesp").toggle(ok);
+        $("#cancelImgDesp").toggle(!ok);
+    }
+
+    function resultGrillaBit(e) {
+        Main.unwait("#pnBitacoras");
+        var ok = e.response.Data && e.response.Data.length ? true : false;
+        $("#okImgBit").toggle(ok);
+        $("#cancelImgBit").toggle(!ok);
+    }
+
+    function deleteBitacora(idBitacora) {
+        Main.showConfirm("¿Desea eliminar la Bitácora?", "Eliminar Bitácora")
+            .then(function(isOk) {
+                if (isOk) {
+                    kendo.ui.progress($("#gridBitacorasIngreso"), true);
+                    $.ajax({
+                        type: "POST",
+                        url: '@Url.Action("BitacoraEliminar", "Bitacora")',
+                        contentType: "application/json; charset=utf-8",
+                        data: JSON.stringify({
+                            id: idBitacora
+                        }),
+                        dataType: "json",
+                        success: function (data) {
+                            kendo.ui.progress($("#gridBitacorasIngreso"), false);
+                            Main.showInfo(data.Mensaje);
+                            var gridK = $("#gridBitacorasIngreso").data("kendoGrid");
+                            if (gridK) {
+                                gridK.dataSource.read();
+                            }
+                        },
+                        error: function (data) {
+                            kendo.ui.progress($("#gridBitacorasIngreso"), false);
+                            Main.showError("Ha ocurrido un error inesperado al eliminar la bitácora.");
+                        }
+                    });
+                }
+            });
+    }
+
+    function deleteDespacho(idDespacho) {
+        Main.showConfirm("¿Desea eliminar el Despacho?", "Eliminar Despacho")
+            .then(function (isOk) {
+                if (isOk) {
+                    kendo.ui.progress($("#gridDespachosIngreso"), true);
+                    $.ajax({
+                        type: "POST",
+                        url: '@Url.Action("EliminarDespacho", "Despacho")',
+                        contentType: "application/json; charset=utf-8",
+                        data: JSON.stringify({
+                            id: idDespacho
+                        }),
+                        dataType: "json",
+                        success: function (data) {
+                            kendo.ui.progress($("#gridDespachosIngreso"), false);
+                            Main.showInfo(data.Mensaje);
+                            var gridK = $("#gridDespachosIngreso").data("kendoGrid");
+                            if (gridK) {
+                                gridK.dataSource.read();
+                            }
+                        },
+                        error: function (data) {
+                            kendo.ui.progress($("#gridDespachosIngreso"), false);
+                            Main.showError("Ha ocurrido un error inesperado al eliminar el despacho.");
+                        }
+                    });
+                }
+            });
+    }
+
+    function deleteAdjunto(idAdjunto) {
+        Main.showConfirm("¿Desea eliminar el Adjunto?", "Eliminar Adjunto")
+            .then(function (isOk) {
+                if (isOk) {
+                    var eliminado = [];
+                    eliminado.push(idAdjunto);
+                    kendo.ui.progress($("#gridAdjuntosIngreso"), true);
+                    $.ajax({
+                        type: "POST",
+                        url: '@Url.Action("EliminaAdjunto", "Adjunto")',
+                        contentType: "application/json; charset=utf-8",
+                        data: JSON.stringify({
+                            Adjuntos_Ids: eliminado
+                        }),
+                        dataType: "json",
+                        success: function (data) {
+                            kendo.ui.progress($("#gridAdjuntosIngreso"), false);
+                            if (data == 1) {
+                                Main.showInfo("Adjunto eliminado");
+                                var gridK = $("#gridAdjuntosIngreso").data("kendoGrid");
+                                if (gridK) {
+                                    gridK.dataSource.read();
+                                }
+                            } else {
+                                Main.showError("Ha ocurrido un error al eliminar el adjunto.");
+                            }
+                        },
+                        error: function (data) {
+                            kendo.ui.progress($("#gridAdjuntosIngreso"), false);
+                            Main.showError("Ha ocurrido un error inesperado al eliminar el adjunto.");
+                        }
+                    });
+                }
+            });
+    }
+
+
+    //# sourceURL=FichaResumen
+</script>
+@*}*@
+
+
+<div class="container-fluid ficha">
+
+
+    <!-- ******* PANEL DOCUMENTO *********** -->
+    <div class="row">
+        <div class="col-md-1  text-right">
+            <span class="k-icon k-i-check-outline k-icon-32" style="color: limegreen;"></span>
+        </div>
+
+        <div class="col-md-7">
+            <div class="card">
+                <div class="card-header bg-primary">Documento de ingreso: @Model.DocumentoIngreso</div>
+                <div class="card-body panel-datos">
+                    <div class="row">
+                        <div class="col-md-12 text-center">
+                            <span class="badge badge-warning label-dato">
+                                Fecha de Ingreso: @Model.FechaIngreso.ToString(GeneralData.FORMATO_FECHA_LARGO, CultureInfo.InvariantCulture)
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12 text-center">
+                            <span class="badge badge-warning label-dato">
+                                Tipo de trámite: @Model.TipoTramiteTitulo
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12 text-center">
+                            <span class="badge badge-warning label-dato">
+                                Canal de llegada del trámite: @Model.CanalLlegadaTramiteTitulo
+                            </span>
+                        </div>
+
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12 text-center">
+                            <span class="badge badge-warning label-dato">
+                                Tipo de documento: @Model.TipoDocumentoTitulo
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12 text-center">
+                            <span class="badge badge-warning label-dato">
+                                Tipo de ingreso: @Model.TipoIngreso
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12 text-center">
+                            <span class="badge badge-warning label-dato">
+                                Fecha de documento: @Model.FechaDocumento.ToString(GeneralData.FORMATO_FECHA_CORTO, CultureInfo.InvariantCulture)
+                            </span>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+
+        <div class="col-md-3">
+            <span class="k-icon k-i-user"> </span>Creación solicitud: @(!string.IsNullOrWhiteSpace(Model.CreadoPor) ? Model.CreadoPor : logNuevo.Usuario)
+        </div>
+
+    </div>
+
+    <!-- ******* PANEL PROYECTO *********** -->
+    <div class="row mt-3">
+        <div class="col-md-1  text-right">
+            <span class="k-icon k-i-check-outline k-icon-32" style="color: limegreen;"></span>
+            @*<span class="k-icon k-i-cancel k-icon-32" style="color: red;" id="cancelImgProy"></span>*@
+        </div>
+
+        <div class="col-md-7">
+            <div class="card">
+                <div class="card-header bg-primary">Proyecto</div>
+                <div class="card-body panel-datos">
+
+                    <div class="row">
+                        <div class="col-md-12 text-center">
+                            <span class="badge badge-warning label-dato">
+                                Nombre de proyeto o programa: @Model.NombreProyectoPrograma
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12 text-center">
+                            <span class="badge badge-warning label-dato">
+                                Número de caso: @Model.CasoId
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12 text-center">
+                            <span class="badge badge-warning label-dato">
+                                Nombre de caso: @Model.CasoTitulo
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12 text-center">
+                            <span class="badge badge-warning label-dato">
+                                Materia: @Model.Materia
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12 text-center">
+                            <span class="badge badge-warning label-dato">
+                                Etiqueta: @Model.EtiquetaTitulos
+                            </span>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ******* PANEL MONUMENTO NACIONAL *********** -->
+    <div class="row mt-3">
+        <div class="col-md-1  text-right">
+            <span class="k-icon k-i-check-outline k-icon-32" style="color: limegreen;"></span>
+            @*<span class="k-icon k-i-cancel k-icon-32" style="color: red;" id="cancelImgMn"></span>*@
+        </div>
+
+        <div class="col-md-7">
+            <div class="card">
+                <div class="card-header bg-primary">Monumento Nacional</div>
+                <div class="card-body panel-datos">
+
+                    <div class="row">
+                        <div class="col-md-12 text-center">
+                            <span class="badge badge-warning label-dato">
+                                Categoría de monumento nacional: @(Model.MonumentoNacional?.CategoriaMonumentoNacCod)
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12 text-center">
+                            <span class="badge badge-warning label-dato">
+                                Código de Monumento Nacional: @(Model.MonumentoNacional?.CodigoMonumentoNac)
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12 text-center">
+                            <span class="badge badge-warning label-dato">
+                                Denominación oficial: @(Model.MonumentoNacional?.DenominacionOficial)
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12 text-center">
+                            <span class="badge badge-warning label-dato">
+                                Otras denominaciones: @(Model.MonumentoNacional?.OtrasDenominaciones)
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12 text-center">
+                            <span class="badge badge-warning label-dato">
+                                Nombre o uso actual: @(Model.MonumentoNacional?.NombreUsoActual)
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12 text-center">
+                            <span class="badge badge-warning label-dato">
+                                Dirección monumento nacional: @(Model.MonumentoNacional?.DireccionMonumentoNac)
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12 text-center">
+                            <span class="badge badge-warning label-dato">
+                                Referencia de localización o localidad: @(Model.MonumentoNacional?.ReferenciaLocalidad)
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12 text-center">
+                            <span class="badge badge-warning label-dato">
+                                Región: @(Model.MonumentoNacional?.RegionTitulo)
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12 text-center">
+                            <span class="badge badge-warning label-dato">
+                                Provincia: @(Model.MonumentoNacional?.ProvinciaTitulo)
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12 text-center">
+                            <span class="badge badge-warning label-dato">
+                                Comuna: @(Model.MonumentoNacional?.ComunaTitulo)
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12 text-center">
+                            <span class="badge badge-warning label-dato">
+                                Rol SII propiedad: @(Model.MonumentoNacional?.RolSii)
+                            </span>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ******* PANEL INGRESO CENTRAL *********** -->
+    <div class="row mt-3">
+        <div class="col-md-1  text-right">
+            @if (logIngCtral.Id > 0)
+            {
+                <span class="k-icon k-i-check-outline k-icon-32" style="color: limegreen;" id="okImgIngCtral"></span>
+            }
+            else
+            {
+                <span class="k-icon k-i-cancel k-icon-32" style="color: red;" id="cancelImgIngCtral"></span>
+            }
+        </div>
+
+        <div class="col-md-7">
+            <div class="card">
+                <div class="card-header bg-primary">Ingreso Central</div>
+                <div class="card-body panel-datos">
+
+                </div>
+            </div>
+
+        </div>
+
+        <div class="col-md-3">
+            <span class="k-icon k-i-user"> </span>Modificación Ingreso Central: @logIngCtral.Usuario
+        </div>
+    </div>
+
+    <!-- ******* PANEL ASIGNACIÓN *********** -->
+    <div class="row mt-3">
+        <div class="col-md-1  text-right">
+            @if (logAsign.Id > 0 || Model.UtAsignadaId.GetValueOrDefault(0) > 0)
+            {
+                <span class="k-icon k-i-check-outline k-icon-32" style="color: limegreen;" id="okImgAsign"></span>
+            }
+            else
+            {
+                <span class="k-icon k-i-cancel k-icon-32" style="color: red;" id="cancelImgAsign"></span>
+            }
+        </div>
+
+        <div class="col-md-7">
+            <div class="card">
+                <div class="card-header bg-primary">Asignación</div>
+                <div class="card-body panel-datos">
+
+                    <div class="row">
+                        <div class="col-md-12 text-center">
+                            <span class="badge badge-warning label-dato">
+                                Unidad Técnica Asignada: @Model.UtAsignadaTitulo
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12 text-center">
+                            <span class="badge badge-warning label-dato">
+                                Unidad Técnica en copia: @Model.UtCopiaTitulos
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12 text-center">
+                            <span class="badge badge-warning label-dato">
+                                Fecha de asignación UT: @(Model.AsignacionUt.HasValue ? Model.AsignacionUt.Value.ToString(GeneralData.FORMATO_FECHA_LARGO, CultureInfo.InvariantCulture) : "")
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12 text-center">
+                            <span class="badge badge-warning label-dato">
+                                Responsable de UT: @Model.ResponsableNombre
+                            </span>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+
+        <div class="col-md-3">
+            <span class="k-icon k-i-user"> </span>Modificación asignación: @logAsign.Usuario
+        </div>
+    </div>
+
+    <!-- ******* PANEL PRIORIZACIÓN *********** -->
+    <div class="row mt-3">
+        <div class="col-md-1  text-right">
+            @if (logPrio.Id > 0 || !string.IsNullOrWhiteSpace(Model.PrioridadCod))
+            {
+                <span class="k-icon k-i-check-outline k-icon-32" style="color: limegreen;" id="okImgPrio"></span>
+            }
+            else
+            {
+                <span class="k-icon k-i-cancel k-icon-32" style="color: red;" id="cancelImgPrio"></span>
+            }
+        </div>
+
+        <div class="col-md-7">
+            <div class="card">
+                <div class="card-header bg-primary">Priorización</div>
+                <div class="card-body panel-datos">
+
+                    <div class="row">
+                        <div class="col-md-12 text-center">
+                            <span class="badge badge-warning label-dato">
+                                Plazo (días): @Model.Plazo
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12 text-center">
+                            <span class="badge badge-warning label-dato">
+                                Prioridad del requerimiento: @Model.PrioridadTitulo
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12 text-center">
+                            <span class="badge badge-warning label-dato">
+                                Solicitante de urgencia: @Model.SolicitanteUrgenciaNombre
+                            </span>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+
+        <div class="col-md-3">
+            <span class="k-icon k-i-user"> </span>Modificación priorización: @logPrio.Usuario
+        </div>
+    </div>
+
+    <!-- ******* PANEL ASIGNACIÓN PROFESIONAL UT *********** -->
+    <div class="row mt-3">
+        <div class="col-md-1  text-right">
+            @if (logAsignProf.Id > 0)
+            {
+                <span class="k-icon k-i-check-outline k-icon-32" style="color: limegreen;" id="okImgAsignProf"></span>
+            }
+            else
+            {
+                <span class="k-icon k-i-cancel k-icon-32" style="color: red;" id="cancelImgAsignProf"></span>
+            }
+        </div>
+
+        <div class="col-md-7">
+            <div class="card">
+                <div class="card-header bg-primary">Asignación Profesional UT</div>
+                <div class="card-body panel-datos">
+
+                    <div class="row">
+                        <div class="col-md-12 text-center">
+                            <span class="badge badge-warning label-dato">
+                                Profesional en UT: @Model.ProfesionalNombre
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12 text-center">
+                            <span class="badge badge-warning label-dato">
+                                Fecha de asignación profesional UT: @(Model.AsignacionResponsable.HasValue ? Model.AsignacionResponsable.Value.ToString(GeneralData.FORMATO_FECHA_LARGO, CultureInfo.InvariantCulture) : "")
+                            </span>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+
+        <div class="col-md-3">
+            <span class="k-icon k-i-user"> </span> Modificación asignación profesional: @logAsignProf.Usuario
+        </div>
+    </div>
+
+    <!-- ******* PANEL REASIGNACIÓN *********** -->
+    <div class="row mt-3">
+        <div class="col-md-1  text-right">
+            @if (logReasign.Id > 0)
+            {
+                <span class="k-icon k-i-check-outline k-icon-32" style="color: limegreen;" id="okImgReasign"></span>
+            }
+            else
+            {
+                <span class="k-icon k-i-cancel k-icon-32" style="color: red;" id="cancelImgReasign"></span>
+            }
+        </div>
+
+        <div class="col-md-7">
+            <div class="card">
+                <div class="card-header bg-primary">Reasignación</div>
+                <div class="card-body panel-datos">
+
+                    <div class="row">
+                        <div class="col-md-12 text-center">
+                            <span class="badge badge-warning label-dato">
+                                Unidad Técnica reasignada:  @*TODO: agregar campo a la vista en bd y al dto*@
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12 text-center">
+                            <span class="badge badge-warning label-dato">
+                                Unidad Técnica en copia: @Model.UtCopiaTitulos
+                            </span>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+
+        <div class="col-md-3">
+            <span class="k-icon k-i-user"> </span>Modificación reasignación: @logReasign.Usuario
+        </div>
+    </div>
+
+    <!-- ******* PANEL DESPACHOS *********** -->
+    <div class="row mt-3">
+        <div class="col-md-1  text-right">
+            <span class="k-icon k-i-check-outline k-icon-32" style="color: limegreen;" id="okImgDesp"></span>
+            <span class="k-icon k-i-cancel k-icon-32" style="color: red;" id="cancelImgDesp"></span>
+        </div>
+
+        <div class="col-md-7">
+            <div class="card">
+                <div class="card-header bg-primary">Despachos</div>
+                <div class="card-body panel-datos" id="pnDespachos">
+
+
+                    @(Html.Kendo().DataSource<DespachoModel>()
+                                    .Name("dataSourceGridDesp")
+                                    .Ajax(dataSource => dataSource
+                                        .Read(read =>
+                                        {
+                                            read.Action("DespachosIngreso", "Despacho")
+                                                .Type(HttpVerbs.Post)
+                                                .Data("extraDataGrillaDespacho");
+                                        })
+                                        .PageSize(100)
+                                        .Events(a => a.RequestEnd("resultGrillaDesp"))
+                                    )
+                                    )
+                    @(Html.Kendo().Grid<DespachoModel>()
+                                    .Name("gridDespachosIngreso")
+                                    .HtmlAttributes(new { @class= "gridDatos" })
+                                    .EnableCustomBinding(true)
+                                    .DataSource("dataSourceGridDesp")
+                                    .Scrollable(scr => scr.Height("auto"))
+                                    .Pageable(p => p.AlwaysVisible(false).PageSizes(new int[3] {10, 50, 100}).Enabled(true))
+                                    .Sortable()
+                                    .Navigatable()
+                                    .NoRecords(x => x.Template("<div class='empty-grid'>No existen Despachos asociados al presente ingreso.</div>"))
+                                    .Columns(columns =>
+                                    {
+                                        columns.Bound(c => c.Id)
+                                            .Title("<center>Descargar</center>")
+                                            .Width(100)
+                                            .ClientTemplate("#=buildUrlDescargaDesp(data.Id)#");
+                                        columns.Bound(c => c.NumeroDespacho)
+                                            .Title("<center>Número del <br/>Oficio</center>");
+                                        columns.Bound(c => c.FechaEmisionOficio)
+                                            .Title("<center>Fecha Emisión <br/>Oficio</center>")
+                                            .Format(GeneralData.FORMATO_FECHA_CORTO_GRID);
+                                        columns.Bound(c => c.RemitenteNombre)
+                                            .Title("<center>Destinatario</center>");
+                                        columns.Bound(c => c.RemitenteInstitucion)
+                                            .Title("<center>Institución</center>");
+                                        columns.Bound(c => c.Materia)
+                                            .Title("<center>Materia</center>")
+                                            .ClientTemplate("<span title='#:data.Materia#'> #=Main.acortaTexto(data.Materia, 100)#" + "</span>");
+                                        columns.Bound(c => c.EstadoDespachoTitulo)
+                                            .Title("<center>Estado <br/>Despacho</center>");
+                                        columns.Bound(c => c.ProveedorDespachoTitulo)
+                                            .Title("<center>Proveedor <br/>Despacho</center>");
+
+                                    })
+                                    )
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ******* PANEL BITÁCORAS *********** -->
+    <div class="row mt-3">
+        <div class="col-md-1  text-right">
+            <span class="k-icon k-i-check-outline k-icon-32" style="color: limegreen;" id="okImgBit"></span>
+            <span class="k-icon k-i-cancel k-icon-32" style="color: red;" id="cancelImgBit"></span>
+        </div>
+
+        <div class="col-md-7">
+            <div class="card">
+                <div class="card-header bg-primary">Bitácoras</div>
+                <div class="card-body panel-datos" id="pnBitacoras">
+                    @(Html.Kendo().DataSource<BitacoraModel>()
+                                    .Name("dataSourceGridBit")
+                                    .HtmlAttributes(new { @class= "gridDatos" })
+                                    .Ajax(dataSource => dataSource
+                                        .Read(read =>
+                                        {
+                                            read.Action("BitacorasIngreso", "Bitacora")
+                                                .Type(HttpVerbs.Post)
+                                                .Data("extraDataGrillaBitacora");
+                                        })
+                                        .PageSize(100)
+                                        .ServerOperation(false)
+                                        .Events(a => a.RequestEnd("resultGrillaBit"))
+                                    )
+                                    )
+                    @(Html.Kendo().Grid<BitacoraModel>()
+                                    .Name("gridBitacorasIngreso")
+                                    .DataSource("dataSourceGridBit")
+                                    .Scrollable(scr => scr.Height("auto"))
+                                    .Pageable(p => p.AlwaysVisible(false).PageSizes(new int[3] { 10, 50, 100 }).Enabled(true).Info(true))
+                                    .Sortable()
+                                    .Navigatable()
+                                    .NoRecords(x => x.Template("<div class='empty-grid'>No existen Bitácoras asociados al presente ingreso.</div>"))
+                                    .Columns(columns =>
+                                    {
+                                        columns.Bound(c => c.Id)
+                                            .Title("<center>Acción</center>")
+                                            .ClientTemplate("#=buildUrlDescargaBit(data.Id, data.UrlArchivo, data.NombreArchivo)#");
+                                        columns.Bound(c => c.TipoContenido)
+                                            .Title("<center>Tipo</center>");
+                                        columns.Bound(c => c.UsuarioCreacionNombresApellidos)
+                                            .Title("<center>Creado por</center>");
+                                        columns.Bound(c => c.ObsAcuerdoComentario)
+                                            .Title("<center>Observaciones</center>");
+                                        columns.Bound(c => c.Fecha)
+                                            .Title("<center>Fecha de carga</center>")
+                                            .Format(GeneralData.FORMATO_FECHA_CORTO_GRID);
+                                        ;
+
+                                    })
+                                    )
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ******* PANEL ADJUNTOS *********** -->
+    <div class="row mt-3">
+        <div class="col-md-1  text-right">
+            <span class="k-icon k-i-check-outline k-icon-32" style="color: limegreen;" id="okImgAdj"></span>
+            <span class="k-icon k-i-cancel k-icon-32" style="color: red;" id="cancelImgAdj"></span>
+        </div>
+
+        <div class="col-md-7">
+            <div class="card">
+                <div class="card-header bg-primary">Adjuntos</div>
+                <div class="card-body panel-datos" id="pnAdjuntos">
+
+                    @(Html.Kendo().DataSource<AdjuntoModel>()
+                        .Name("dataSourceGridAdj")
+                        .HtmlAttributes(new { @class= "gridDatos" })
+                        .Ajax(dataSource => dataSource
+                            .Read(read =>
+                            {
+                                read.Action("AdjuntosIngreso", "Adjunto")
+                                    .Type(HttpVerbs.Post)
+                                    .Data("extraDataGrillaAdjunto");
+                            })
+                            .PageSize(100)
+                            .ServerOperation(false)
+                            .Events(a => a.RequestEnd("resultGrillaAdj"))
+                        )
+                        )
+                    @(Html.Kendo().Grid<AdjuntoModel>()
+                        .Name("gridAdjuntosIngreso")
+                        .DataSource("dataSourceGridAdj")
+                        .Scrollable(scr => scr.Height("auto"))
+                        .Pageable(p => p.AlwaysVisible(false).PageSizes(new int[3] { 10, 50, 100 }).Enabled(true).Info(true))
+                        .Sortable()
+                        .Navigatable()
+                        .NoRecords(x => x.Template("<div class='empty-grid'>No existen Adjuntos asociados al presente ingreso.</div>"))
+                        .Columns(columns =>
+                        {
+                            columns.Bound(c => c.Id)
+                                .Title("<center>Acción</center>")
+                                .ClientTemplate("#=buildUrlDescargaAdj(data.Id, data.UrlArchivo)#");
+                            columns.Bound(c => c.UsuarioCreacionNombresApellidos)
+                                .Title("<center>Creado por</center>");
+                            columns.Bound(c => c.NombreArchivo)
+                                .Title("<center>Nombre Archivo</center>");
+                            columns.Bound(c => c.OrigenAdjunto)
+                                .Title("<center>Origen de adjunto</center>");
+                            columns.Bound(c => c.FechaCarga)
+                                .Title("<center>Fecha de carga</center>")
+                                .Format(GeneralData.FORMATO_FECHA_CORTO_GRID);
+                            ;
+
+                        })
+                        )
+
+                </div>
+            </div>
+
+        </div>
+        
+        <div class="col-md-4 pl-5 pt-5">
+
+            <span class="k-icon k-i-check-outline k-icon-32" style="color: limegreen;"></span> <span style="color: limegreen;">Etapa Ejecutada</span>
+            <br/>
+            <span class="k-icon k-i-cancel k-icon-32" style="color: red;" id="cancelImgProy"></span><span style="color: red;">Etapa por Ejecutar o Sin Movimientos</span>
+        </div>
+
+    </div>
+
+</div>
+
+

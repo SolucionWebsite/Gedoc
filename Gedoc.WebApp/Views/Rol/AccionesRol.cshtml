@@ -1,0 +1,96 @@
+﻿@using Gedoc.Repositorio.Model;
+@model IEnumerable<Gedoc.Helpers.Dto.AccionBandejaDto>
+
+@{
+    ViewBag.Title = "Acciones Roles";
+    Layout = "~/Views/Shared/_LayoutVacio.cshtml";
+}
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+    
+    <div class="form-horizontal">
+        <div class="form-group">
+            <div class="col-md-offset-2 col-md-10">
+                <ul id="itemList" class="fieldist">
+                    @foreach (var item in Model.ToList())
+                    {
+                        <li>@(Html.Kendo().CheckBox().Name(item.Id.ToString()).Checked(item.Activo).Label(item.Titulo))</li>
+                    }
+                </ul>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-md-offset-2 col-md-10">
+                @(Html.Kendo().Button()
+                    .Name("saveButton")
+                    .HtmlAttributes(new { type = "button", @class = "k-primary" })
+                    .Events(events => events.Click("onClick"))
+                    .Content("Guardar"))
+            </div>
+        </div>
+    </div>
+}
+<style>
+    .fieldist {
+        margin: 0 0 -1em;
+        padding: 0;
+    }
+
+    .fieldist li {
+        list-style: none;
+        padding-bottom: 1em;
+    }
+</style>
+<script>
+    $(document).ready(function () {
+        
+    });
+
+    function onClick() {
+        $("#saveButton").kendoButton();
+        var button = $("#saveButton").data("kendoButton");
+        button.enable(false);
+        var jsonData = ReadCheckBoxRoles();
+        var dataObject = JSON.stringify({
+            'rolId': @Request.Params["IdRol"],
+            'acciones': jsonData
+        });
+        if (jsonData.length > 0) {
+            $.ajax({
+                url: '@Url.Action("GuardarAccionesRol")',
+                type: "POST",
+                data: dataObject,
+                contentType: "application/json",
+                dataType: "json",
+                success: function (data) {
+                    if (data && data.Codigo > 0) {
+                         Main.showAlert(data.Mensaje);
+                    } else {
+                        Main.showError(data.Mensaje);
+                    }
+                    button.enable(true);
+                },
+                error: errorFunc
+            });
+        }
+        
+    }
+
+    function ReadCheckBoxRoles() {
+        var jsonData = [];
+        var ul = $("#itemList");
+        var lis = ul.find('li');
+        lis.each(function (index) {
+            var input = $(this).get(0).childNodes[0];
+            var label = $(this).get(0).childNodes[1];
+            jsonData.push({ "Id": input.id, "Titulo": label.textContent,  "Activo": input.checked });
+        });
+        return jsonData;
+    }
+
+    function errorFunc(e) {
+    }
+    
+</script>

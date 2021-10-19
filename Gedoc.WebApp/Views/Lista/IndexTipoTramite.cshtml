@@ -1,0 +1,172 @@
+﻿@using Gedoc.Helpers
+@using Gedoc.Helpers.Dto
+@using Gedoc.Helpers.Enum
+@using Gedoc.WebApp.Models
+
+@{
+    ViewBag.Title = "Mantenedor de Tipo de Trámite";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<script src="~/Scripts/accionesbandeja.js"></script>
+
+<style>
+    /*Sin esto no se muestra en el pager del grid  el combo de cantidad de registros a mostrar ni
+    el texto de "Elementos mostrados X de T" a pesar de q aparentemente esta bien configurado para q se muestre*/
+    #gridTipoTram .k-pager-sizes.k-label,
+    #gridTipoTram .k-pager-info.k-label {
+        display: flex !important;
+    }
+
+    #gridTipoTram {
+        font-size: 0.8em;
+    }
+</style>
+
+<script>
+
+</script>
+
+<h4 class="header-level1">@ViewBag.Title</h4>
+
+<div class="div-main">
+
+
+    @(Html.Kendo().DataSource<TipoTramiteDto>()
+            .Name("dataSourceGridTipoTram")
+            .Ajax(dataSource => dataSource
+                .Read(read =>
+                {
+                    read.Action("GetTipoTramiteAll", "Lista")
+                        .Type(HttpVerbs.Post);
+                })
+                .ServerOperation(false)
+                .PageSize(10)
+            )
+            )
+    @(Html.Kendo().Grid<TipoTramiteDto>()
+            .Name("gridTipoTram")
+            .HtmlAttributes(new { @class = "w-100 k-grid-alternate" })
+            .DataSource("dataSourceGridTipoTram")
+            .Scrollable(scr => scr.Height("auto"))
+            .Pageable(p => p.AlwaysVisible(true).PageSizes(new int[3] { 10, 50, 100 }).Enabled(true).Info(true)
+                .Messages(m => m.ItemsPerPage("registros por página")))
+            .Sortable()
+            .Navigatable()
+            .ToolBar(toolbar =>
+            {
+                toolbar.Search();
+                toolbar.Custom()
+                    .HtmlAttributes ( new { onclick= "nuevoTipoTram(); return false;" } )
+                    .Name("NuevoTipoTram")
+                        .Text("Agregar nuevo elemento")
+                        .IconClass("k-icon k-i-plus-outline")
+                        .Url("#")
+                        ;
+            })
+            .Columns(columns =>
+            {
+                columns.Bound(c => c.Codigo)
+                    .Width(150)
+                    .Title("<center>Código<span class='k-icon k-i-kpi' style='color: lightgray;'></span></center>");
+                columns.Bound(c => c.Titulo)
+                    //.Width(250)
+                    .Title("<center>Descripción corta<span class='k-icon k-i-kpi' style='color: lightgray;'></span></center>");
+                columns.Bound(c => c.PrioridadTitulo)
+                    .Width(150)
+                    .Title("<center>Priorización<span class='k-icon k-i-kpi' style='color: lightgray;'></span></center>");
+                columns.Bound(c => c.UnidadTecnicaTitulo)
+                    .Width(200)
+                    .Title("<center>Unidad Técnica</center>");
+                columns.Bound(c => c.EstadoRequerimientoTitulo)
+                    .Width(200)
+                    .Title("<center>Estado</center>");
+                columns.Bound(c => c.EtapaRequerimientoTitulo)
+                    .Width(150)
+                    .Title("<center>Etapa</center>");
+                columns.Bound(c => c.Id)
+                    .Width(120)
+                    .Title("<center>Acción</center>")
+                    .Sortable(false)
+                    .ClientTemplate("#= buildAccionesTipoTram(data.Id, data.Titulo) #");
+
+            })
+            )
+
+
+</div>
+
+<script>
+    $(function () {
+        $(".k-grid-search input").prop("placeholder", "Buscar...");
+        $(".k-grid-search input").prop("title", "Buscar...");
+    });
+
+    function refrescaGridTipoTram() {
+        var gridK = $("#gridTipoTram").data("kendoGrid");
+        if (gridK) {
+            gridK.dataSource.read();
+        }
+    }
+
+    function buildAccionesTipoTram(idUt, titulo) {
+        var enlace = "";
+        var btn = "<button class='k-button mr-1' onclick='editarTipoTram(\"" + idUt +
+            "\")' title='Editar' type='button' data-role='button' role='button'><span class='k-icon k-i-edit'></span></button>";
+        enlace += btn;
+        btn = "<button class='k-button' id='btnDelUt" + idUt +
+            "' onclick='eliminarTipoTram(\"" + idUt + "\", \"" + titulo +
+            "\")' title='Eliminar' type='button' data-role='button' role='button'><span class='k-icon k-i-trash'></span></button>";
+        enlace += btn;
+
+        enlace = '<div style="display: inline-flex;">' + enlace + '</div>';
+        return enlace;
+    }
+
+    function nuevoTipoTram() {
+        Acciones.ejecutaAccionNuevaVentana("Nuevo Tipo de Trámite",
+            '@Url.Action("FormTipoTramite")' + '?utId=0'
+            , 600, '', "BITA", refrescaGridTipoTram);
+    }
+
+    function editarTipoTram(idUt) {
+        Acciones.ejecutaAccionNuevaVentana("Editar Tipo de Trámite",
+            '@Url.Action("FormTipoTramite")' + '?utId=' + idUt
+            , 600, '', "BITA", refrescaGridTipoTram);
+    }
+
+    function eliminarTipoTram(idUt, titulo) {
+        var btnEliminar = "#btnDelUt" + idUt;
+        Main.showConfirm("Se va a eliminar el Tipo de Trámite: " + titulo + ", ¿desea continuar?", "Eliminar registro", true)
+            .then(function (esOk) {
+                if (esOk) {
+                    Main.wait("", btnEliminar);
+                    var url = "@Url.Action("EliminaTipoTramite")?utId=" + idUt;
+                    $.ajax({
+                        type: "POST",
+                        url: url
+                        //dataType: "json",
+                    }).done(function(response) {
+                        Main.unwait(btnEliminar);
+                        if (response.Codigo) {
+                            refrescaGridTipoTram();
+                            if (response.Codigo > 0) {
+                                Main.showInfo(response.Mensaje, "Registro eliminado");
+                            } else {
+                                Main.showError(response.Mensaje, "Error");
+                            }
+                        } else {
+                            Main.showError("Error inesperado al realizar la operación, por favor, vuelva a intentarlo",
+                                "Error");
+                        }
+                    }).fail(function(error) {
+                        Main.unwait(btnEliminar);
+                        Main.showError("Ha ocurrido un error al realizar la operación, por favor, vuelva a intentarlo.",
+                            "Error");
+                    });
+                }
+            });
+    }
+
+
+
+</script>

@@ -1,0 +1,229 @@
+﻿@using Gedoc.Helpers
+@using Gedoc.Helpers.Enum
+@using Gedoc.WebApp.Models
+@model Gedoc.WebApp.Models.AdjuntoModel
+
+@{
+    Culture = "es-ES";
+    ViewBag.Title = "Solicitantes de Urgencia";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<script src="~/Scripts/form.js"></script>
+
+
+@Html.Partial("~/Views/Partial/TemplateTagMultiselect.cshtml", Model)
+<script>
+    function EditarSolicitanteUrgencia(e) {
+        e.preventDefault();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        var result = Main.muestraVentanaModal(
+            "Editar Solicitante de Urgencia",
+            '@Url.Action("EditarSolicitanteUrgencia", "Usuario")?Id=' + dataItem.Id,
+            "500px",
+            "40vp",
+            undefined,
+            "winFormSdU"); //, "80%", "90%");
+        result.then(function(result) {
+            if (result) {
+                $('#gridSolicitanteUrgencia').data('kendoGrid').dataSource.read();
+                //muestraDatosSolicitanteUrgencia(result);
+                //$("#DestinatarioId").data("kendoComboBox").value(result.Id);
+                //setTimeout(function() {
+                //    $("#DestinatarioId").data("kendoComboBox").dataSource.read();
+                //}, 50);
+            }
+        });
+    }
+
+    function DesactivarSolicitanteUrgencia(e) {
+        e.preventDefault();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+
+        Main.showConfirm("¿Está seguro que desea eliminar el elemento?", "Eliminar", true).then(function (isOk) {
+            if (!isOk) return false;
+            $.ajax({
+                url: '@Url.Action("DesactivarSolicitanteUrgencia")',
+                type: "POST",
+                async: false,
+                data: { Id: dataItem.Id },
+                success: function (data) {
+                    if (data && data.Codigo > 0) {
+                        Main.showAlert(data.Mensaje);
+                        $('#gridSolicitanteUrgencia').data('kendoGrid').dataSource.read();
+                        $("#gridSolicitanteUrgencia").data("kendoGrid").dataSource.page(0);
+                    }
+                    else{
+                        Main.showError(data.Mensaje || "Ocurrió un error al eliminar el elemento. Intente nuevamente.");
+                    }
+                },
+                error: function (data) {
+                     Main.showAlert('Ocurrió un error...');
+                }
+            });
+
+            Main.cierraModal($(e.currentTarget), { resultado: true });
+        }, function () {
+            //Main.cierraModal($(e.currentTarget), { resultado: true });
+        });
+    }
+
+    function NuevoSolicitanteUrgencia() {
+        var result = Main.muestraVentanaModal(
+            "Nuevo Solicitante de Urgencia",
+            '@Url.Action("NuevoSolicitanteUrgencia", "Usuario")',
+            "500px",
+            "40vp",
+            undefined,
+            "winFormSdU"); //, "80%", "90%");
+        result.then(function(result) {
+            if (result) {
+                // Main.showAlert("Elemento agregado exitosamente.");
+                $('#gridSolicitanteUrgencia').data('kendoGrid').dataSource.read();
+                $("#gridSolicitanteUrgencia").data("kendoGrid").dataSource.page(0);
+            }
+        });
+    }
+
+    function formateaBotones(e) {
+        botonEditarSolicitanteUrgencia(e);
+        botonDesactivarSolicitanteUrgencia(e);
+    }
+
+    function botonEditarSolicitanteUrgencia(e) {
+        $(".k-grid-editarSolicitanteUrgencia").each(function () {
+            $(this).removeClass("k-button");
+            $(this).removeClass("k-button-icontext");
+            $(this).attr("href", null);
+            $(this).css("cursor", "pointer");
+            $(this).html('<img width="20" height="20" src="Content/images/Icono-Editar.png" />');
+        });
+    }
+
+    function botonDesactivarSolicitanteUrgencia(e) {
+        $(".k-grid-desactivarSolicitanteUrgencia").each(function () {
+            $(this).removeClass("k-button");
+            $(this).removeClass("k-button-icontext");
+            $(this).attr("href", null);
+            $(this).css("cursor", "pointer");
+            $(this).css("margin-left", "20px");
+            $(this).html('<img width="20" height="20" src="Content/images/Icono-Eliminar.png" />');
+        });
+    }
+
+</script>
+<style>
+    #gridSolicitanteUrgencia {
+        font-size: 13px;
+    }
+
+        #gridSolicitanteUrgencia td {
+            line-height: 1.1em;
+        }
+
+        #gridSolicitanteUrgencia .k-grid-header .k-header .k-link {
+            height: auto;
+        }
+
+        #gridSolicitanteUrgencia .k-grid-header .k-header {
+            white-space: normal;
+        }
+
+        #gridSolicitanteUrgencia .k-grid-header th > .k-link > .k-icon {
+            float: right;
+        }
+
+        #gridSolicitanteUrgencia .k-grid-toolbar > span {
+            float: left !important;
+        }
+
+        #gridSolicitanteUrgencia .k-grid-toolbar > button {
+            float: left !important;
+        }
+</style>
+<h4 class="mb-2">Solicitantes de Urgencia</h4>
+<div class="container-fluid-no">
+    <form id="formSolicitanteUrgencia" class="form-datos">
+
+        <div class="form-row">
+            <div class="col-md-10">
+
+            </div>
+            <div class="col-md-1" style="float:right">
+                <input type="button" onclick="NuevoSolicitanteUrgencia();" class="btn btn-primary" value="Agregar nuevo elemento" />
+            </div>
+        </div>
+
+        <div id="divGrillaSdU">
+            <div class="form-row">
+                <div class="col-md-12">
+                    @(Html.Kendo().Grid<Gedoc.Helpers.Dto.UsuarioDto>()
+                          .Name("gridSolicitanteUrgencia")
+                          .Columns(columns =>
+                          {
+                              //columns.Bound(c => c.Id)
+                              //    .Title("<center><input type='checkbox' /></center>")
+                              //    .HeaderTemplate("<center><input type='checkbox' id='header-chb' class='k-checkbox header-checkbox'><label class='k-checkbox-label' for='header-chb'></label></center>")
+                              //    .Width(40)
+                              //    .ClientTemplate("<center><input type='checkbox' id='adj#=Id#' class='k-checkbox row-checkbox' /><label class='k-checkbox-label' for='adj#=Id#'></label></center>")
+                              //    .Sortable(false)
+                              //    .Filterable(false);
+                              columns.Command(c => { /*c.Custom("editarSolicitanteUrgencia").Click("EditarSolicitanteUrgencia");*/c.Custom("desactivarSolicitanteUrgencia").Click("DesactivarSolicitanteUrgencia"); })
+                                  .Title("Acciones")
+                                  .Width(20)
+                                  .HeaderHtmlAttributes(new { style = "text-align:center;" })
+                                  .HtmlAttributes(new { style = "text-align:center;" });
+
+                              columns.Bound(c => c.NombresApellidos).Width(180).Title("Nombre");
+                          })
+                          .HtmlAttributes(new { style = "height: 680px; display:table;", @class = "grilla-datos" })
+                          //.ToolBar(t => t.Search())
+                          //.Editable(editable=>editable.Mode(GridEditMode.PopUp))
+                          .Events(e => e.DataBound("formateaBotones"))
+                          .Pageable(pager => pager.AlwaysVisible(true).PageSizes(new List<object> { 10, 30, 100, 250 }))
+                          .Sortable(sortable =>
+                          {
+                              sortable.SortMode(GridSortMode.SingleColumn);
+
+                          })
+                          .Resizable(resize => resize.Columns(true))
+                          .Scrollable()
+                          .DataSource(dataSource => dataSource
+                              .Ajax()
+                              .ServerOperation(false)
+                              //.Model(model =>
+                              //{
+                              //    model.Id(u => u.Id);
+                              //    model.Field(u => u.Id).Editable(false);
+                              //})
+                              .Read(read => read.Action("GridSolicitanteUrgencia_Read", "Usuario"))
+                              .Model(m => m.Id(id => id.Id))
+                              .PageSize(30)
+                          )
+                     )
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+<script>
+    function consultar() {
+        $('#gridSolicitanteUrgencia').data('kendoGrid').dataSource.read();
+        $("#gridSolicitanteUrgencia").data("kendoGrid").dataSource.page(0);
+    }
+
+    $(document).ready(function () {
+        $("#gridSolicitanteUrgencia th.k-header a.k-link").each(function () {
+            var colText = $(this).html();
+            var newText = colText + '<span class="k-icon k-i-kpi" style="color: lightgray;"></span>';
+            $(this).html(newText);
+        });
+
+        $('body :not(script)').contents().filter(function () {
+            return this.nodeType === 3;
+        }).replaceWith(function () {
+            return this.nodeValue.replace('items per page', 'elementos por página');
+        });
+    });
+
+</script>

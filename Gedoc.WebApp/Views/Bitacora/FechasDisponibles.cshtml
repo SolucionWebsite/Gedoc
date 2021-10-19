@@ -1,0 +1,124 @@
+﻿@using Gedoc.Helpers
+@using Gedoc.Helpers.Dto
+@using Gedoc.WebApp.Models
+
+@{
+    Layout = null; // "~/Views/Shared/_LayoutVacio.cshtml";
+    ViewBag.Title = "Fechas Disponibles";
+}
+
+<style>
+    .k-grid {
+        font-size: 0.8em;
+    }
+</style>
+
+<script src="~/Scripts/form.js"></script>
+
+<script>
+    function changeAnno(e) {
+        var gridK = $("#gridFechasDisponibles").data("kendoGrid");
+        if (gridK) {
+            setTimeout(function() {
+                gridK.dataSource.read();
+            }, 50);
+        }
+        
+    }
+
+    function extraDataGrillaFechas() {
+        var anno = $("#Anno").data("kendoDropDownList").value();
+        return {
+            tipoBitacoraId: '@ViewBag.TipoBit',
+            anno: anno
+        };
+    }
+    
+    function seleccionarFecha(e, fecha) {
+        Main.cierraModal($(e.currentTarget), { resultado: fecha }, "winFechasDisp");
+    }
+
+    //# sourceURL=FechasDisponibles2
+</script>
+
+<div class ="mb-3">
+    <label for="Anno">Año </label>
+    @(Html.Kendo().DropDownList()
+        .Name("Anno")
+        .DataTextField("Titulo")
+        .DataValueField("Id")
+        .DataSource(source =>
+        {
+            source
+                .Custom()
+                .Schema(schema => schema.Data("Data"))
+                .Transport(transport =>
+                {
+                    transport.Read(read =>
+                    {
+                        read.Action("CalendarioBitacoraAnnos", "Bitacora", new {tipoBitacoraId = ViewBag.TipoBit})
+                            .Type(HttpVerbs.Post);
+                    });
+                });
+        })
+        .Events(e => e.Change("changeAnno"))
+        //.SelectedIndex(0)
+        .Value(DateTime.Now.Year.ToString())
+        )
+</div>
+
+<div>
+    <label>Fecha Disponible</label>
+    @(Html.Kendo().DataSource<BitacoraModel>()
+        .Name("dataSourceGridFechasDisp")
+        .Ajax(dataSource => dataSource
+            .Read(read =>
+            {
+                read.Action("CalendarioBitacoraByTipo", "Bitacora")
+                    .Type(HttpVerbs.Post)
+                    .Data("extraDataGrillaFechas");
+            })
+            .ServerOperation(false)
+            .PageSize(10)
+        )
+        )
+
+    @(Html.Kendo().Grid<CalendarioBitacoraDto>()
+        .Name("gridFechasDisponibles")
+        .DataSource("dataSourceGridFechasDisp")
+        .Scrollable(scr => scr.Height("auto"))
+        .Pageable(p => p.AlwaysVisible(true).PageSizes(new int[3] { 10, 50, 100 }).Enabled(true))
+        .Sortable()
+        .Navigatable()
+        .Search( s => { s.Field(f => f.Anno).Field(f => f.TipoBitacoraTitulo).Field(f => f.FechaStr); })
+        .ToolBar(t => t.Search())
+        .Columns(columns =>
+        {
+            columns.Bound(c => c.Fecha)
+                .Width(130)
+                .HtmlAttributes(new { @class = "text-center"})
+                .Title("<center><strong>Fecha</strong></center>")
+                .Format(GeneralData.FORMATO_FECHA_CORTO_GRID);
+            columns.Bound(c => c.Id)
+                .HtmlAttributes(new { @class = "text-center" })
+                .Title("<center><strong>Seleccionar</strong></center>")
+                .Width(100)
+                .ClientTemplate("<a href='' onclick='seleccionarFecha(event, \"#=kendo.toString(Fecha,'dd/MM/yyyy')#\");return false;'  class='text-center enlace-grilla'>Seleccionar</a>");
+
+        })
+        )
+
+
+</div>
+
+
+<script>
+
+    $(function () {
+        $(".k-grid-search input").prop("placeholder", "Buscar...");
+        $(".k-grid-search input").prop("title", "Buscar...");
+    });
+
+    //# sourceURL=FechasDisponibles
+
+</script>

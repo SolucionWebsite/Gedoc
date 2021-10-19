@@ -1,0 +1,400 @@
+﻿@using System.Globalization
+@using Gedoc.Helpers.Enum
+@using Gedoc.Helpers
+@model Gedoc.WebApp.Models.RequerimientoModel
+
+@{
+    Layout = null;
+    Dictionary<CampoIngreso, AspectoCampo> accesoCampos = ViewBag.AccesoCampos;
+    FlujoIngreso form = ViewBag.Form;
+    var utTransparenciaId =  WebConfigValues.Ut_Transparencia == 0 ? 40 : WebConfigValues.Ut_Transparencia;
+}
+
+<script>
+</script>
+
+
+
+<h4 class="head-datos-form">Documento</h4>
+<div class="container-fluid">
+
+    @if (accesoCampos[CampoIngreso.Doc_DocIng] != AspectoCampo.Oculto)
+    {
+        <div class="form-row">
+            <div class="col-md-3">
+                <label class="label-dato-form">
+                    Documento de Ingreso
+                </label>
+            </div>
+            @if (accesoCampos[CampoIngreso.Doc_DocIng] == AspectoCampo.SoloLectura)
+            {
+                <div class="col-md-9">
+                    <label id="lbDocumentoIngreso" style="color: red;">@Model.DocumentoIngreso</label>
+                </div>
+            }
+            else
+            {
+                <div class="col-md-3">
+                    @Html.TextBoxFor(a => a.DocumentoIngreso, new { @class = "k-textbox w-100 docingreso-valido", data_maxAnno = "2015" })
+                </div>
+                <div class="col-md-6">
+                    <span class="help-block" id="leyenda-DOCINGRESO">El documento a ingresar tiene que ser del año 2015 o anteriores, por ejemplo 00054-2013.</span>
+                </div>
+            }
+        </div>
+    }
+
+    @if (accesoCampos[CampoIngreso.Doc_FechaIng] != AspectoCampo.Oculto)
+    {
+        <div class="form-row">
+            <div class="col-md-3">
+                <label class="label-dato-form no-wrap">
+                    Fecha de Ingreso @(form == FlujoIngreso.Historico ? "histórico" : "")
+                    @if (accesoCampos[CampoIngreso.Doc_FechaIng] != AspectoCampo.SoloLectura)
+                    {
+                        <span class="marca-obligatorio" title="Este campo es obligatorio."> *</span>
+                    }
+                </label>
+            </div>
+            <div class="col-md-4">
+                @if (accesoCampos[CampoIngreso.Doc_FechaIng] == AspectoCampo.SoloLectura)
+                {
+                    <label id="lbFechaIngreso">@Model.FechaIngreso.ToString(GeneralData.FORMATO_FECHA_CORTO, CultureInfo.InvariantCulture)</label>
+                }
+                else
+                {
+                    @(Html.Kendo().DatePicker()
+                    .Name("FechaIngreso")
+                    .HtmlAttributes(new { required = "required" })
+                    .Max(form != FlujoIngreso.Historico ? DateTime.Today : new DateTime(2015, 12, 31, 23, 59, 59))
+                    .Value(@Model.FechaIngreso)
+                    .Culture("es-ES")
+                    .Format(GeneralData.FORMATO_FECHA_CORTO)
+                    .ParseFormats(new List<string>() { GeneralData.FORMATO_FECHA_CORTO })
+                    //.DateInput()
+                    .Enable(accesoCampos[CampoIngreso.Doc_FechaIng] != AspectoCampo.Deshabilitado))
+                }
+                <span class="k-invalid-msg" data-for="FechaIngreso"></span><br />
+            </div>
+            @if (form == FlujoIngreso.Historico)
+            {
+                <div class="col-md-4">
+                    <span class="help-block">La fecha debe escribirse DD/MM/AAAA, por ejemplo 05/09/2013</span>
+                </div>
+            }
+        </div>
+    }
+
+    <div class="form-row">
+        <div class="col-md-3">
+            <label class="label-dato-form">
+                Tipo de trámite
+            </label>
+        </div>
+        <div class="col-md-9">
+            @if (accesoCampos[CampoIngreso.Doc_TipoTramite] == AspectoCampo.SoloLectura)
+            {
+                <label id="lbTipoTramite">@Model.TipoTramiteTitulo</label>
+            }
+            else
+            {
+                @(Html.Kendo().ComboBox()
+                    .Name("TipoTramiteId")
+                    .DataTextField("Titulo")
+                    .DataValueField("Id")
+                    .Filter("contains")
+                    .HtmlAttributes(new Dictionary<string, object> { { "class", "w-100" } })
+                    .Messages(Gedoc.WebApp.Helpers.KendoHelper.SetComboBoxMessages))
+            }
+        </div>
+    </div>
+
+    <div class="form-row" style="white-space: nowrap;">
+        <div class="col-md-3">
+            <label class="label-dato-form">
+                Canal de llegada del
+                <br /> @*La palabra 'trámite' se une con el asterisco y queda encima del valor, no hace el corte de línea, por eso se lo especifico directamente*@
+                trámite
+                @if (accesoCampos[CampoIngreso.Doc_CanalLlegada] != AspectoCampo.SoloLectura)
+                {
+                    <span class="marca-obligatorio" title="Este campo es obligatorio."> *</span>
+                }
+            </label>
+        </div>
+        <div class="col-md-9">
+            @if (accesoCampos[CampoIngreso.Doc_CanalLlegada] == AspectoCampo.SoloLectura)
+            {
+                <label id="lbCanalLlegada">@Model.CanalLlegadaTramiteTitulo</label>
+            }
+            else if (accesoCampos[CampoIngreso.Doc_CanalLlegada] == AspectoCampo.Editable)
+            {
+                @(Html.Kendo().ComboBox()
+                .Name("CanalLlegadaTramiteCod")
+                .DataTextField("Titulo")
+                .DataValueField("Id")
+                .Filter("contains")
+                .HtmlAttributes(new Dictionary<string, object> { { "class", "w-100" } })
+                .Messages(Gedoc.WebApp.Helpers.KendoHelper.SetComboBoxMessages)
+                )
+            }
+            else
+            {
+                <input id="canalLlegadaTramiteCod" name="canalLlegadaTramiteCod" type="text" value="@Model.CanalLlegadaTramiteTitulo" class="k-textbox w-100" disabled="disabled" style="background-color: lightgray;" />
+            }
+        </div>
+    </div>
+
+    @if (accesoCampos[CampoIngreso.Doc_TipoDoc] != AspectoCampo.Oculto)
+    {
+        <div class="form-row">
+            <div class="col-md-3">
+                <label class="label-dato-form">
+                    Tipo de documento
+
+                    @if (accesoCampos[CampoIngreso.Doc_TipoDoc] != AspectoCampo.SoloLectura)
+                    {
+                        <span class="marca-obligatorio" title="Este campo es obligatorio."> *</span>
+                    }
+                </label>
+            </div>
+            <div class="col-md-9">
+                @if (accesoCampos[CampoIngreso.Doc_TipoDoc] == AspectoCampo.SoloLectura)
+                {
+                    <label id="lbTipoDoc">@Model.TipoDocumentoTitulo</label>
+                }
+                else if (accesoCampos[CampoIngreso.Doc_TipoDoc] == AspectoCampo.Deshabilitado)
+                {
+                    <input id="tipoDocumentoCod" name="TipoDocumentoCod" type="text" value="@Model.TipoDocumentoTitulo" class="k-textbox w-100" disabled="disabled" style="background-color: lightgray;" />
+                }
+                else
+                {
+                    @(Html.Kendo().ComboBox()
+                        .Name("TipoDocumentoCod")
+                        .HtmlAttributes(new { required = "required", @class= "w-100" })
+                        .DataTextField("Titulo")
+                        .DataValueField("Id")
+                        .Filter("contains")
+                        .Messages(Gedoc.WebApp.Helpers.KendoHelper.SetComboBoxMessages)
+                        )
+                    <span class="k-invalid-msg" data-for="TipoDocumentoCod"></span><br />
+                }
+            </div>
+        </div>
+    }
+
+    @if (accesoCampos[CampoIngreso.Doc_Siac] != AspectoCampo.Oculto)
+    {
+        <div class="form-row">
+            <div class="offset-md-3 col-md-9" id="divchbTransparencia">
+                @(Html.Kendo().CheckBoxFor(m => m.EsTransparencia)
+                .Name("EsTransparencia")
+                .Enable(form != FlujoIngreso.AsignacionProfUt)
+                .Label("SIAC/Transparencia") )
+                @*@Html.CheckBoxFor(m => m.EsTransparencia, new {@class = "k-checkbox" } )
+                <label class="k-checkbox-label" for="esTransparencia">SIAC/Transparencia</label>*@
+            </div>
+        </div>
+    }
+
+
+    @if (accesoCampos[CampoIngreso.Doc_ObsTipoDoc] != AspectoCampo.Oculto)
+    {
+        <div class="form-row">
+            <div class="col-md-3">
+                <label class="label-dato-form">
+                    Observaciones al tipo de documento
+                </label>
+            </div>
+            @if (accesoCampos[CampoIngreso.Doc_ObsTipoDoc] == AspectoCampo.SoloLectura)
+            {
+                <div class="col-md-9">
+                    <div id="lbDocumentoIngreso" class="pre-wrap">@Html.Raw(Model.ObservacionesTipoDoc)</div>
+                </div>
+            }
+            else
+            {
+                <div class="col-md-9">
+                    @*<div class="k-block text-area-out">
+                        <div class="text-area-in texto-largo" id="pnObservacionTipoDoc" contenteditable="true"
+                             data-spanleyenda="leyenda-pnObservacionTipoDoc" maxlength="255">@Html.Raw(Model.ObservacionesTipoDoc)</div>
+                    </div>*@
+
+                    <textarea name="ObservacionesTipoDoc" rows="4" cols="20" id="tbProyectoActividad" class="form-control texto-largo"
+                        data-spanleyenda="leyenda-pnObservacionTipoDoc"
+                        data-maxlength="255" style="width: 100% !important;">@Html.Raw(Model.ObservacionesTipoDoc)</textarea>
+
+                    <span class="help-block-right" id="leyenda-pnObservacionTipoDoc"> </span>
+                </div>
+            }
+        </div>
+    }
+
+    @if (accesoCampos[CampoIngreso.Doc_FechaDoc] != AspectoCampo.Oculto)
+    {
+        <div class="form-row">
+            <div class="col-md-3">
+                <label class="label-dato-form">
+                    Fecha de documento
+                    @if (accesoCampos[CampoIngreso.Doc_FechaDoc] != AspectoCampo.SoloLectura)
+                    {
+                        <span class="marca-obligatorio" title="Este campo es obligatorio."> *</span>
+                    }
+                </label>
+            </div>
+            <div class="col-md-4">
+                @if (accesoCampos[CampoIngreso.Doc_FechaDoc] == AspectoCampo.SoloLectura)
+                {
+                    <label id="lbFechaDoc">@Model.FechaDocumento.ToString(GeneralData.FORMATO_FECHA_CORTO)</label>
+                }
+                else
+                {
+                    @(Html.Kendo().DatePicker()
+                    .Name("FechaDocumento")
+                    .HtmlAttributes(new { required = "required" }) //, data_validate = "false" })
+                    .Max(form != FlujoIngreso.Historico ? DateTime.Today : new DateTime(2015, 12, 31, 23, 59, 59))
+                    .Culture("es-ES")
+                    .Value(Model.FechaDocumento == DateTime.MinValue ? (DateTime?)null : (DateTime?)Model.FechaDocumento) //TODO: no funciona dejar vacío el control cuando FechaDocumento viene con valor por defecto de DateTime al crear nuevo ingreso. Se vacía el control arriba en javascript
+                    .Format(GeneralData.FORMATO_FECHA_CORTO)
+                    /*.DateInput()*/ )
+                }
+                <span class="k-invalid-msg" data-for="FechaDocumento"></span><br />
+            </div>
+            @if (form == FlujoIngreso.Historico)
+            {
+                <div class="col-md-5">
+                    <span class="help-block">La fecha debe escribirse DD/MM/AAAA, por ejemplo, 17/09/2013</span>
+                </div>
+            }
+        </div>
+    }
+
+    @if (accesoCampos[CampoIngreso.Doc_SoloMesAnno] != AspectoCampo.Oculto && accesoCampos[CampoIngreso.Doc_FechaDoc] != AspectoCampo.Oculto && accesoCampos[CampoIngreso.Doc_FechaDoc] != AspectoCampo.SoloLectura)
+    {
+        <div class="form-row">
+            <div class="offset-md-3 col-md-9" id="divchbSoloMesAnno">
+                <input type="checkbox" id="soloMesAnno" name="SoloMesAnno" class="k-checkbox">
+                <label class="k-checkbox-label" for="soloMesAnno">Considerar sólo MES y AÑO para la fecha del documento</label>
+            </div>
+        </div>
+    }
+
+    @if (accesoCampos[CampoIngreso.Doc_Estado] == AspectoCampo.Editable)
+    {
+        <div class="form-row">
+            <div class="col-md-3">
+                <label class="label-dato-form">
+                    Estado<span class="marca-obligatorio" title="Este campo es obligatorio."> *</span>
+                </label>
+            </div>
+            <div class="col-md-9">
+                @(Html.Kendo().ComboBox()
+                .Name("EstadoId")
+                .DataTextField("Titulo")
+                .DataValueField("Id")
+                .Filter("contains")
+                .HtmlAttributes(new Dictionary<string, object> { { "class", "w-100" } })
+                .Suggest(true)
+                .Messages(Gedoc.WebApp.Helpers.KendoHelper.SetComboBoxMessages)
+                .Events(e =>
+                {
+                    e.Change("onChangeComboFix");
+                })
+                )
+            </div>
+        </div>
+    }
+
+    @if (accesoCampos[CampoIngreso.Doc_Etapa] == AspectoCampo.Editable)
+    {
+        <div class="form-row">
+            <div class="col-md-3">
+                <label class="label-dato-form">
+                    Etapa<span class="marca-obligatorio" title="Este campo es obligatorio."> *</span>
+                </label>
+            </div>
+            <div class="col-md-9">
+                @(Html.Kendo().ComboBox()
+                .Name("EtapaId")
+                .DataTextField("Titulo")
+                .DataValueField("Id")
+                .Filter("contains")
+                .HtmlAttributes(new Dictionary<string, object> { { "class", "w-100" } })
+                .Messages(Gedoc.WebApp.Helpers.KendoHelper.SetComboBoxMessages)
+                .Events(e =>
+                {
+                    e.Change("onChangeComboFix");
+                })
+                )
+            </div>
+        </div>
+    }
+
+    @if (form == FlujoIngreso.RequerimientoCierre)
+    {
+        <div class="form-row">
+            <div class="col-md-3">
+                <label class="label-dato-form">
+                    Fecha(s) de emisión de Oficio(s)
+                </label>
+            </div>
+            <div class="col-md-9">
+                <label id="lbEmisionOficio">@Model.FechasEmisionOficio</label>
+            </div>
+        </div>
+    }
+
+
+</div>
+
+<script>
+
+
+    function inicializaPanelDocumento() {
+        var ds;
+        if ($("#TipoTramiteId").length) {
+            ds = Main.getDataSourceKendoGenerico($("#TipoTramiteId"),
+                '@Url.Action("MantenedorGenerico", "Json")?idM=@((int) Mantenedor.TipoTramite)');
+            $("#TipoTramiteId").data("kendoComboBox").setDataSource(ds);
+        }
+
+        if ($("#CanalLlegadaTramiteCod").length) {
+            ds = Main.getDataSourceKendoGenerico($("#CanalLlegadaTramiteCod"),
+                '@Url.Action("MantenedorGenerico", "Json")?idM=@((int) Mantenedor.CanalLlegadaTramite)');
+            $("#CanalLlegadaTramiteCod").data("kendoComboBox").setDataSource(ds);
+        }
+
+        if ($("#TipoDocumentoCod").length) {
+            ds = Main.getDataSourceKendoGenerico($("#TipoDocumentoCod"),
+                '@Url.Action("MantenedorGenerico", "Json")?idM=@((int) Mantenedor.TipoDocumento)');
+            $("#TipoDocumentoCod").data("kendoComboBox").setDataSource(ds);
+        }
+
+        if ($("#EstadoId").length && @Json.Encode(form == FlujoIngreso.EditarIngreso)) {
+            ds = Main.getDataSourceKendoGenerico($("#EstadoId"),
+                '@Url.Action("MantenedorGenerico", "Json")?idM=@((int) Mantenedor.EstadoRequerimiento)');
+            $("#EstadoId").data("kendoComboBox").setDataSource(ds);
+        }
+
+        if ($("#EtapaId").length && @Json.Encode(form == FlujoIngreso.EditarIngreso)) {
+            ds = Main.getDataSourceKendoGenerico($("#EtapaId"),
+                '@Url.Action("MantenedorGenerico", "Json")?idM=@((int) Mantenedor.EtapaRequerimiento)');
+            $("#EtapaId").data("kendoComboBox").setDataSource(ds);
+        }
+
+        @if (Model.FechaDocumento == DateTime.MinValue)
+        {
+            @:$("#FechaDocumento").data("kendoDatePicker").value(null);
+        }
+
+        $('#EsTransparencia').change(function() {
+            var isChecked = $(this).is(':checked');
+            $('.grupo-transparencia').toggle(isChecked);
+            $('.asign-temporal').toggle(!isChecked);
+            if (isChecked && $("#UtAsignadaId").length) {
+                $("#UtAsignadaId").data("kendoComboBox").value("@utTransparenciaId");
+            }
+        });
+    }
+
+    //# sourceURL=PanelDocumentoIngreso
+</script>

@@ -1,0 +1,652 @@
+﻿@using Gedoc.Helpers
+@using Gedoc.Helpers.Enum
+@using Gedoc.WebApp.Helpers
+@using Newtonsoft.Json
+@model Gedoc.WebApp.Models.RequerimientoModel
+
+@{
+    Layout = null;
+    Dictionary<CampoIngreso, AspectoCampo> accesoCampos = ViewBag.AccesoCampos;
+    var reqCatCodigos = (Model.MonumentoNacionalCategoriaMonumentoNacCodigo ?? "").Split(';');
+}
+
+
+
+<h4 class="head-datos-form">Monumento Nacional</h4>
+<div class="container-fluid">
+
+    <div class="form-row">
+        <div class="col-md-3">
+            <label class="label-dato-form">
+                Categoría de Monumento Nacional<span class="marca-obligatorio" title="Este campo es obligatorio."> *</span>
+            </label>
+        </div>
+        <div class="col-md-9">
+            @if (accesoCampos[CampoIngreso.Mn_CategoriaMn] == AspectoCampo.SoloLectura)
+            {
+                <label id="lbCatMn">@Model.CategoriaMonumentoNacTitulo </label>
+            }
+            else
+            {
+                <select id="categoriaMn" name="MonumentoNacionalCategoriaMonumentoNac" multiple required></select>
+                <span class="k-invalid-msg" data-for="MonumentoNacionalCategoriaMonumentoNac"></span>
+                <br />
+            }
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="col-md-3">
+            <label class="label-dato-form">
+                Codigo Monumento Nacional
+            </label>
+        </div>
+        <div class="col-md-9">
+            @if (accesoCampos[CampoIngreso.Mn_CodigoMn] == AspectoCampo.SoloLectura)
+            {
+                <label id="lbCodigoMn">@Model.MonumentoNacionalCodigoMonumentoNac </label>
+            }
+            else
+            {
+                @Html.TextBoxFor(a => a.MonumentoNacionalCodigoMonumentoNac, new { @class = "k-textbox w-100 datos-mn" })
+
+            }
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="col-md-3">
+            <label class="label-dato-form">
+                Denominación Oficial
+            </label>
+        </div>
+        <div class="col-md-9" id="divMonNacional">
+            @if (accesoCampos[CampoIngreso.Mn_DenomOf] == AspectoCampo.SoloLectura)
+            {
+                <label id="lbDenomOfic">@Model.MonumentoNacionalDenominacionOficial </label>
+            }
+            else
+            {
+                @Html.TextBoxFor(a => a.MonumentoNacionalDenominacionOficial, new { @class = "k-textbox w-100 datos-mn" })
+                <span class="help-block" id="leyenda-DenomOficial">Nombre que figura en la Nómina de MN / Nombre del sitio arqueológico.</span>
+            }
+        </div>
+        <div class="col-md-1">
+            <button id="btnBuscarMn" type="button" class="btn btn-primary k-icon k-i-search" onclick="return buscarMonumentoNac();"
+                    style="width: 42px; height: 36px;" title="Búsqueda en Regmon">
+            </button>
+            @*<a class="k-button" href="#">
+                    <span class="k-icon k-i-copy"></span> Copy
+                </a>*@
+            @*<span id="waitBuscarMn" class="glyphicon glyphicon-refresh glyphicon-refresh-animate" style="font-size: 24px;"></span>*@
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="col-md-3">
+            <label class="label-dato-form">
+                Otras Denominaciones
+            </label>
+        </div>
+        <div class="col-md-9">
+            @if (accesoCampos[CampoIngreso.Mn_OtrasDenom] == AspectoCampo.SoloLectura)
+            {
+                <label id="lbOtrasDenom">@Model.MonumentoNacionalOtrasDenominaciones </label>
+            }
+            else
+            {
+                @Html.TextBoxFor(a => a.MonumentoNacionalOtrasDenominaciones, new { @class = "k-textbox w-100 datos-mn" })
+
+            }
+
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="col-md-3">
+            <label class="label-dato-form">
+                Nombre o uso actual
+            </label>
+        </div>
+        <div class="col-md-9">
+            @if (accesoCampos[CampoIngreso.Mn_NombreUsoActual] == AspectoCampo.SoloLectura)
+            {
+                <label id="lbNombreUsoActual">@Model.MonumentoNacionalNombreUsoActual </label>
+            }
+            else
+            {
+                @Html.TextBoxFor(a => a.MonumentoNacionalNombreUsoActual, new { @class = "k-textbox w-100 datos-mn" })
+
+            }
+
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="col-md-3">
+            <label class="label-dato-form">
+                Dirección Monumento Nacional
+            </label>
+        </div>
+        <div class="col-md-9">
+            @if (accesoCampos[CampoIngreso.Mn_DireccionMn] == AspectoCampo.SoloLectura)
+            {
+                <label id="lbDirMn">@Model.MonumentoNacionalDireccionMonumentoNac </label>
+            }
+            else
+            {
+                @Html.TextBoxFor(a => a.MonumentoNacionalDireccionMonumentoNac, new { @class = "k-textbox w-100 datos-mn" })
+                <span class="help-block" id="leyenda-DirMn">Referencia de ubicación</span>
+            }
+
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="col-md-3">
+            <label class="label-dato-form">
+                Referencia de localización o localidad
+            </label>
+        </div>
+        <div class="col-md-9">
+            @if (accesoCampos[CampoIngreso.Mn_RefLocal] == AspectoCampo.SoloLectura)
+            {
+                <label id="lbRefLocal">@Model.MonumentoNacionalReferenciaLocalidad </label>
+            }
+            else
+            {
+                @Html.TextBoxFor(a => a.MonumentoNacionalReferenciaLocalidad, new { @class = "k-textbox w-100 datos-mn" })
+
+            }
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="col-md-3">
+            <label class="label-dato-form">
+                Región<span class="marca-obligatorio" title="Este campo es obligatorio."> *</span>
+            </label>
+        </div>
+        <div class="col-md-9">
+            @if (accesoCampos[CampoIngreso.Mn_Region] == AspectoCampo.SoloLectura)
+            {
+                <label id="lbRegion">@Model.RegionTitulos </label>
+            }
+            else
+            {
+                <select id="region" name="MonumentoNacionalRegion" multiple class="datos-mn" required></select>
+                <span class="k-invalid-msg" data-for="MonumentoNacionalRegion"></span>
+                <br />
+                <span class="help-block" id="leyenda-DirMn">Puede seleccionar 1 o 2 regiones. Si añade a más de 2 regiones seleccione "Multiregional". Si compete a todo el país seleccione "No Aplica"</span>
+            }
+
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="col-md-3">
+            <label class="label-dato-form">
+                Provincia
+            </label>
+        </div>
+        <div class="col-md-9">
+            @if (accesoCampos[CampoIngreso.Mn_Provincia] == AspectoCampo.SoloLectura)
+            {
+                <label id="lbProvincia">@Model.ProvinciaTitulos </label>
+            }
+            else
+            {
+                <select id="provincia" name="MonumentoNacionalProvincia" multiple class=" datos-mn"></select>
+            }
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="col-md-3">
+            <label class="label-dato-form">
+                Comuna
+            </label>
+        </div>
+        <div class="col-md-9">
+            @if (accesoCampos[CampoIngreso.Mn_Comuna] == AspectoCampo.SoloLectura)
+            {
+                <label id="lbComuna">@Model.ComunaTitulos </label>
+            }
+            else
+            {
+                <select id="comuna" name="MonumentoNacionalComuna" multiple class=" datos-mn"></select>
+            }
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="col-md-3">
+            <label class="label-dato-form">
+                Rol SII Propiedad
+            </label>
+        </div>
+        <div class="col-md-9">
+            @if (accesoCampos[CampoIngreso.Mn_Rol] == AspectoCampo.SoloLectura)
+            {
+                <label id="lbRolSii">@Model.MonumentoNacionalRolSii </label>
+            }
+            else
+            {
+                @Html.TextBoxFor(a => a.MonumentoNacionalRolSii, new { @class = "k-textbox w-100 datos-mn" })
+
+            }
+        </div>
+    </div>
+
+</div>
+
+
+<script>
+    var categoriasBusq = [];
+	var updateFromRegmon = { update: false, comunaCod: '', provinciaCod: '', regionCod: '' };
+
+    function inicializaPanelMonNac() {
+
+        if ($("#categoriaMn").length) {
+            var config =
+                Main.getMultiSelectConfig($("#categoriaMn"),
+                    '@Url.Action("MantenedorGenerico", "Json")?idM=@((int) Mantenedor.CategoriaMn)',
+                    "",
+                    "",
+                    @Html.Raw(JsonConvert.SerializeObject(Model.MonumentoNacionalCategoriaMonumentoNac)));
+            config.change = function(e) {
+                cambiaEstadoBusqRegmon();
+            };
+            //config.deselect = function (e) {
+            //    cambiaEstadoBusqRegmon();
+            //};
+            $("#categoriaMn").kendoMultiSelect(config);
+        } else {
+            $("#btnBuscarMn").hide();
+        }
+
+        if ($("#region").length) {
+            $("#region").kendoMultiSelect(getConfigRegion());
+        }
+
+        if ($("#provincia").length) {
+            $("#provincia").kendoMultiSelect(getConfigProvincia());
+        }
+
+        if ($("#comuna").length) {
+            $("#comuna").kendoMultiSelect(getConfigComuna());
+        }
+
+        setCategoriasBusq("@WebConfigValues.CategoriasMnBusqRegMon");
+        if ($("#categoriaMn").length) {
+            cambiaEstadoBusqRegmon(@Html.Raw(JsonConvert.SerializeObject(reqCatCodigos)));
+        }
+    }
+
+    // Configuración multiselect de Región
+    function getConfigRegion() {
+        var url = '@Url.Action("MantenedorGenerico", "Json")';
+        //var url = '@Url.Action("MantenedorGenerico", "Json")?idM=@((int) Mantenedor.Region)';
+        var value = @Html.Raw(JsonConvert.SerializeObject(Model.MonumentoNacionalRegion));
+        var ctrol = $("#region");
+        var ds = new kendo.data.DataSource({
+            transport: {
+                read: {
+                    type: "POST",
+                    dataType: "json",
+                    data: function() {
+                        return {
+                            idM: "@((int) Mantenedor.Region)",
+                        }
+                    },
+                    url: url
+                }
+            },
+            schema: {
+                data: "Data",
+            },
+            requestStart: function() {
+                Main.enEspera(ctrol, true);
+            },
+            requestEnd: function(e) {
+                Main.enEspera(ctrol, false);
+                Main.notificaResultado(e, true);
+            }
+        });
+        var cfg = {
+            dataTextField: "Titulo",
+            dataValueField: "Id",
+            messages: Main.getMensajeMultiselect(),
+            tagTemplate: kendo.template($("#tagMultiTemplate").html()),
+            dataSource: ds,
+            value: value,
+            select: cambiaRegion,
+            deselect: cambiaRegion,
+            format: "contains"
+        };
+        return cfg;
+    }
+
+    // Configuración multiselect de Provincia
+    function getConfigProvincia() {
+        var url = '@Url.Action("MantenedorGenerico", "Json")';
+        var value = @Html.Raw(JsonConvert.SerializeObject(Model.MonumentoNacionalProvincia));
+        var ctrol = $("#provincia");
+        var ds = new kendo.data.DataSource({
+            transport: {
+                read: {
+                    type: "POST",
+                    dataType: "json",
+                    data: function() {
+                        return {
+                            idM: "@((int) Mantenedor.Provincia)",
+                            extra: $("#region").data("kendoMultiSelect")
+                                ? $("#region").data("kendoMultiSelect").value().join()
+                                : ""
+                        }
+                    },
+                    url: url
+                }
+            },
+            schema: {
+                data: "Data",
+            },
+            requestStart: function() {
+                Main.enEspera(ctrol, true);
+            },
+            requestEnd: function(e) {
+                Main.enEspera(ctrol, false);
+                Main.notificaResultado(e, true);
+            }
+        });
+        var cfg = {
+            dataTextField: "Titulo",
+            dataValueField: "Id",
+            messages: Main.getMensajeMultiselect(),
+            tagTemplate: kendo.template($("#tagMultiTemplate").html()),
+            dataSource: ds,
+            value: value,
+            select: cambiaProvincia,
+            deselect: cambiaProvincia,
+            format: "contains"
+        };
+        return cfg;
+    }
+
+    // Configuración multiselect de Comuna
+    function getConfigComuna() {
+        var url = '@Url.Action("MantenedorGenerico", "Json")';
+        var value = @Html.Raw(JsonConvert.SerializeObject(Model.MonumentoNacionalComuna));
+        var ctrol = $("#comuna");
+        var ds = new kendo.data.DataSource({
+            transport: {
+                read: {
+                    type: "POST",
+                    dataType: "json",
+                    data: function() {
+                        return {
+                            idM: "@((int) Mantenedor.Comuna)",
+                            extra: $("#region").data("kendoMultiSelect")
+                                ? $("#region").data("kendoMultiSelect").value().join()
+                                : "",
+                            extra2: $("#provincia").data("kendoMultiSelect")
+                                ? $("#provincia").data("kendoMultiSelect").value().join()
+                                : ""
+                        }
+                    },
+                    url: url
+                }
+            },
+            schema: {
+                data: "Data",
+            },
+            requestStart: function() {
+                Main.enEspera(ctrol, true);
+            },
+            requestEnd: function(e) {
+                Main.enEspera(ctrol, false);
+                Main.notificaResultado(e, true);
+				if (updateFromRegmon.update) {
+					updateFromRegmon.update = false;
+					setTimeout(function () {
+						var comunaK = $("#comuna").data("kendoMultiSelect");
+						comunaK.value(updateFromRegmon.comunaCod);
+						cambiaComuna(null, updateFromRegmon.provinciaCod, updateFromRegmon.regionCod);
+					}, 250);
+				};
+            }
+        });
+        var cfg = {
+            dataTextField: "Titulo",
+            dataValueField: "Id",
+            messages: Main.getMensajeMultiselect(),
+            tagTemplate: kendo.template($("#tagMultiTemplate").html()),
+            dataSource: ds,
+            value: value,
+            select: cambiaComuna,
+            deselect: cambiaComuna,
+            format: "contains"
+        };
+        return cfg;
+    }
+
+    function cambiaRegion() {
+        setTimeout(function() {
+                $("#provincia").data("kendoMultiSelect").dataSource.read();
+                $("#comuna").data("kendoMultiSelect").dataSource.read();
+            },
+            50);
+
+    }
+
+    function cambiaProvincia(e, valRegion) {
+        setTimeout(function() {
+                var cmbPadre = $("#region").data("kendoMultiSelect");
+                var valPadre = cmbPadre.value() ? cmbPadre.value() : [];
+                var valores = valRegion || $("#provincia").data("kendoMultiSelect").dataItems();
+                if (valores) {
+                    for (var i = 0; i < valores.length; i++) {
+                        valPadre.push(valRegion ? valores[i] : valores[i].get("ExtraData"));
+                    }
+                    cmbPadre.value(valPadre);
+                }
+                cambiaRegion();
+            },
+            50);
+
+    }
+
+    function cambiaComuna(e, valProv, valRegion) {
+        setTimeout(function() {
+                var cmbPadre = $("#provincia").data("kendoMultiSelect");
+                var valPadre = cmbPadre.value() ? cmbPadre.value() : [];
+                var valores = valProv || $("#comuna").data("kendoMultiSelect").dataItems();
+                if (valores) {
+                    for (var i = 0; i < valores.length; i++) {
+                        valPadre.push(valProv ? valores[i] : valores[i].get("ExtraData"));
+                    }
+                    cmbPadre.value(valPadre);
+                }
+                cambiaProvincia(e, valRegion);
+            },
+            50);
+
+    }
+
+
+    // Gestión de datos de monumento nacional
+    function setCategoriasBusq(categBusqStr) {
+        if (!categBusqStr) {
+            return [];
+        } else {
+            categoriasBusq = categBusqStr.split(',');
+        }
+    }
+
+    // Habilita o deshabilita la búsqueda de Regmon
+    function cambiaEstadoBusqRegmon(catMonNac) {
+        catMonNac = catMonNac || ($("#categoriaMn").length ? $("#categoriaMn").data("kendoMultiSelect").dataItems() : []);
+        var mostrarRegMon = true;
+
+        if (catMonNac.length > 0) {
+            catMonNac.forEach(function(dataItem, index) {
+                var item = dataItem.ExtraData || dataItem;
+                // Si al menos 1 de las categorias seleccionas no es de búsqueda en regmon entonces se inhabilita la búsqueda
+                if (categoriasBusq.indexOf(item) < 0) {
+                    mostrarRegMon = false;
+                }
+            });
+        } else {
+            mostrarRegMon = false;
+        }
+
+        if (mostrarRegMon) { // catMonNac == 'MH' || catMonNac == 'ZT' || catMonNac == 'SN') {
+            // Busqueda desde Regmon
+            $("#btnBuscarMn").show();
+
+            $(".datos-mn").prop("readonly", true);
+            //$(".datos-mn").css("background-color", "#eee");
+
+            $("#divMonNacional").removeClass("col-md-9");
+            $("#divMonNacional").addClass("col-md-8");
+
+            // se oculta el mensaje de campo obligatorio si es q está visible
+            $('.k-invalid-msg[data-for=MonumentoNacionalRegion]').hide();
+        } else {
+            // Se llenan los datos a mano, se deshabilita la Busqueda desde Regmon
+            $("#btnBuscarMn").hide();
+
+            $(".datos-mn").prop("readonly", false);
+            //$(".datos-mn").css("background-color", "white");
+
+            $("#divMonNacional").removeClass("col-md-8");
+            $("#divMonNacional").addClass("col-md-9");
+        }
+        var regionK = $("#region").data("kendoMultiSelect");
+        if (regionK) regionK.readonly(mostrarRegMon);
+        var provK = $("#provincia").data("kendoMultiSelect");
+        if (provK) provK.readonly(mostrarRegMon);
+        var comunaK = $("#comuna").data("kendoMultiSelect");
+        if (comunaK) comunaK.readonly(mostrarRegMon);
+    }
+
+    // Función q abre la ventana de búsqueda de Regmon
+    function buscarMonumentoNac() {
+        var urlRegmon = "@Url.Action("BuscadorRegmon", "Home")";
+        Main.muestraVentanaRegmonModal("Buscador de Monumentos", urlRegmon, "winRegmon");
+        return false;
+    }
+
+    // Funcion q se gatilla cuando se selecciona un momumento en Regmon
+    function mnRegmonSeleccionado(id) {
+        Main.wait("Obteniendo datos del " + id + "...");
+        $("#btnBuscarMn").hide();
+        $("#waitBuscarMn").show();
+        if (id) {
+            var url = '@Url.Action("GetDatosRemonMn", "Json")?codigo=' + id;
+            $.ajax({
+                type: "POST",
+                url: url
+            }).done(function(response) {
+                if (response.Codigo) {
+                    if (response.Codigo > 0) {
+                        var kwin = Main.kendoWin["winRegmon"];
+                        kwin.close();
+                        var datos = response.Extra;
+                        actualizaDatosMonNac(datos);
+                    } else {
+                        Main.showError(response.Mensaje, "Error");
+                    }
+                } else {
+                    Main.showAlert("Error inesperado al realizar la operación, por favor, vuelva a intentarlo",
+                        "Error");
+                }
+                $("#btnBuscarMn").show();
+                $("#waitBuscarMn").hide();
+                Main.unwait();
+            }).fail(function(error) {
+                Main.showError("Ha ocurrido un error al realizar la operación, por favor, vuelva a intentarlo.",
+                    "Error");
+                $("#btnBuscarMn").show();
+                $("#waitBuscarMn").hide();
+                Main.unwait();
+            });
+        } else {
+            $("#btnBuscarMn").show();
+            $("#waitBuscarMn").hide();
+            Main.unwait();
+        }
+    }
+
+    // Se actualizan los datos del ingreso cuando se hace una búsqueda en Regmon
+    function actualizaDatosMonNac(datos) {
+        $("#btnBuscarMn").show();
+        $("#waitBuscarMn").hide();
+
+        if (datos) {
+            try {
+                //// En los datos q vienen de Regmon no está la categoría de monumento como está en Gedoc, tomo
+                //// la categoría del código de monumento q viene en datos
+                //var codCatMnRegmon = datos.CodigoMonumentoNac;
+                //codCatMnRegmon = codCatMnRegmon.slice(codCatMnRegmon.indexOf('_') + 1);
+                //codCatMnRegmon = codCatMnRegmon.substring(0, codCatMnRegmon.indexOf('_'));
+                var codCatMnRegmon = datos.CategoriaMonumentoNacCod;
+                var categK = $("#categoriaMn").data("kendoMultiSelect");
+                var catMonNacGedoc = categK ? categK.dataItems() : [];
+                var mnOk = false;
+                if (catMonNacGedoc) {
+                    for (var i = 0; i < catMonNacGedoc.length; i++) {
+                        var catGeDoc = catMonNacGedoc[i].ExtraData;
+                        if (codCatMnRegmon == catGeDoc) {
+                            // Si el MN seleccionado en Regmon pertenece a alguna de las categorias seleccionadas
+                            mnOk = true;
+                            break;
+                        }
+                    }
+                }
+                if (!mnOk) {
+                    Main.showAlert(
+                        'Atención. El Monumento Nacional seleccionado en Regmon <br/>no corresponde a la categoría especificada en Gedoc.');
+                }
+
+                $("#MonumentoNacionalCodigoMonumentoNac").val(datos.CodigoMonumentoNac);
+                $("#MonumentoNacionalDenominacionOficial").val(datos.DenominacionOficial);
+                $("#MonumentoNacionalOtrasDenominaciones").val(datos.OtrasDenominaciones);
+                $("#MonumentoNacionalNombreUsoActual").val(datos.NombreUsoActual);
+                $("#MonumentoNacionalDireccionMonumentoNac").val(datos.DireccionMonumentoNac);
+                $("#MonumentoNacionalReferenciaLocalidad").val(datos.ReferenciaLocalidad);
+                $("#MonumentoNacionalRolSii").val(datos.RolSii);
+
+                var provK = $("#provincia").data("kendoMultiSelect");
+                var comunaK = $("#comuna").data("kendoMultiSelect");
+                var regionK = $("#region").data("kendoMultiSelect");
+                // Para limpiar los seleccionados en Región, Comuna y Provincia y estñen listos los controles para especificarles los q vienen de Regmon
+                provK.value([]);
+                comunaK.value([]);
+                regionK.value([]);
+				updateFromRegmon.update = true;
+				updateFromRegmon.comunaCod = datos.ComunaCod;
+				updateFromRegmon.provinciaCod = datos.ProvinciaCod;
+				updateFromRegmon.regionCod = datos.RegionCod;
+                $("#provincia").data("kendoMultiSelect").dataSource.read();
+                $("#comuna").data("kendoMultiSelect").dataSource.read();
+
+                /*setTimeout(function () {
+                    comunaK.value(datos.ComunaCod);
+                    cambiaComuna(null, datos.ProvinciaCod, datos.RegionCod);
+                }, 250);*/
+            } catch (error) {
+                Main.unwait();
+                Main.showAlert("Ocurrió un error al obtener los datos del Monumento Nacional, <br/>por favor vuelva a intentar la operación.");
+            }
+        }
+    }
+
+    function errorDatosRegMon() {
+        $("#btnBuscarMn").show();
+        $("#waitBuscarMn").hide();
+        Main.showAlert("Ocurrió un error al obtener los datos del Monumento, <br/>por favor vuelva a intentar la operación.");
+    }
+
+    //# sourceURL=PanelMonNacIngreso
+</script>

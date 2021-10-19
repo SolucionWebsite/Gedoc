@@ -1,0 +1,132 @@
+﻿@*@model Gedoc.WebApp.Models.u*@
+
+@{
+    ViewBag.Title = "FormSolicitanteUrgencia";
+    Layout = null; // "~/Views/Shared/_LayoutVacio.cshtml"; //
+}
+
+<style>
+    #formSolicitanteUrgencia {
+        font-size: 0.9em;
+    }
+</style>
+
+<script>
+
+    $(function () {
+        var container = $("#formSolicitanteUrgencia");
+        kendo.init(container);
+        container.kendoValidator({
+            messages: {
+                required: "Este campo es obligatorio",
+                radio: "Este campo es obligatorio",
+                rut: "RUT no válido",
+                multipleemails: "Formato de email no válido",
+                telefono: "Formato de telefono no válido"
+            }
+        });
+    });
+
+    function grabaSolicitanteUrgencia(e) {
+        e.preventDefault();
+        var form = $("#formSolicitanteUrgencia");
+
+        var validator = form.data("kendoValidator");
+        if (!validator.validate() || $("#UsuariosIJC").data("kendoComboBox").selectedIndex == -1) {
+            Main.showError("Por favor, revise los datos de la página. Hay datos incompletos o erróneos.");
+
+            return false;
+        }
+
+        // Main.wait("Grabando...");
+        kendo.ui.progress($(document.body), true);
+
+        var url = '@Url.Action("ActivarSolicitanteUrgencia")';
+        $.ajax({
+            type: "POST",
+            url: url,
+            data: { idUsuario: $("#UsuariosIJC").data("kendoComboBox").value() }
+        }).done(function (response) {
+           // Main.unwait();
+            kendo.ui.progress($(document.body), false);
+            if (response) {
+                Main.showInfo(response.Mensaje);
+                Main.cierraModal($(e.currentTarget), { resultado: response.Extra }, "winFormSU");
+            } else {
+                Main.showAlert("Error inesperado al realizar la operación, por favor, vuelva a intentarlo", "Error");
+            }
+        }).fail(function (error) {
+          //  Main.unwait();
+            kendo.ui.progress($(body), false);
+            Main.showError("Ha ocurrido un error al realizar la operación, por favor, vuelva a intentarlo.", "Error");
+        });
+    };
+
+    function cancelaSolicitanteUrgencia(e) {
+        Main.cierraModal($(e.currentTarget), { resultado: false }, "winFormSU");
+    };
+    //# sourceURL=FormSolicitanteUrgencia
+</script>
+
+<div class="container-fluid">
+    <form id="formSolicitanteUrgencia">
+        <div class="form-row">
+            <div class="col-sm-3">
+                <label class="label-dato-form">
+                    Usuario<span class="marca-obligatorio" title="Este campo es obligatorio."> *</span>
+                </label>
+            </div>
+            <div class="col-sm-9">
+                <select id="UsuariosIJC" name="UsuariosIJC" class="w-100" required></select>
+            </div>
+        </div>
+    </form>
+</div>
+
+<div class="container-fluid pt-3 mt-2" style="border-top: 1px solid lightgray;">
+    <div class="form-row">
+        <div class="offset-sm-3 col-sm-2 text-center">
+            <button type="button" id="btnGrabaSolicitanteUrgencia" class="k-primary-blue k-button" onclick="return grabaSolicitanteUrgencia(event);">Guardar</button>
+        </div>
+        <div class="offset-sm-2 col-sm-2 text-center">
+            <button type="button" id="btnCancelaSolicitanteUrgencia" class="k-danger k-button" onclick="cancelaSolicitanteUrgencia(event);">Cancelar</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    function getConfigUsuariosIJC() {
+        var url = '@Url.Action("GetUsuariosJefaturaNoUrgencia", "Usuario")';
+        var ctrol = $("#UsuariosIJC");
+        var ds = new kendo.data.DataSource({
+            serverFiltering: false,
+            transport: {
+                read: {
+                    url: url
+                }
+            },
+            requestStart: function() {
+                Main.enEspera(ctrol, true);
+            },
+            requestEnd: function (e) {
+                Main.enEspera(ctrol, false);
+                Main.notificaResultado(e, true);
+            }
+        });
+        var cfg = {
+            dataSource: ds,
+            dataTextField: "NombresApellidos",
+            dataValueField: "Id",
+            filter: "contains",
+            messages: Main.getMensajeCombobox()
+        };
+        return cfg;
+    }
+
+    $(function () {
+        if ($("#UsuariosIJC").length) {
+            $("#UsuariosIJC").kendoComboBox(getConfigUsuariosIJC());
+        }
+    });
+
+</script>

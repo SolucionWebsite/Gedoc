@@ -1,0 +1,144 @@
+﻿
+@using Gedoc.Helpers
+@using Gedoc.WebApp.Models
+
+@{
+    ViewBag.Title = "Despachos por Destinatarios";
+    Layout = null;
+}
+
+<script>
+
+    $(function () {
+
+    });
+
+    function extraDataGrilla() {
+        return {
+            Dato: '4'
+        };
+    }
+
+</script>
+
+<h4 class="header-level1">@ViewBag.Title</h4>
+  
+<div class="div-main">
+    <div id="gridDestinatario" class="grilla-datos"></div>
+</div>
+
+<script>
+    var ds = new kendo.data.DataSource({
+        transport: {
+            read: {
+                type: "POST",
+                dataType: "json",
+                url: '@Url.Action("DatosVista", "Vista")', //?Dato=3&take=10',
+                data: {
+                    Dato: '4'
+                }
+            }
+        },
+        schema: {
+            model: {
+                fields: {
+                    "RequerimientoMain.FechaIngreso": { type: "date" },
+                    FechaEmisionOficio: { type: "date" },
+                    "RequerimientoMain.FechaRecepcion": { type: "date" }
+                }
+            },
+            data: "Data",
+            total: "Total"
+        },
+        requestStart: function () {
+            Main.enEspera($("#gridDestinatario"), true);
+        },
+        requestEnd: function (e) {
+            Main.enEspera($("#gridDestinatario"), false);
+            Main.notificaResultado(e, true);
+        },
+        group: [
+            // group by "category" and then by "subcategory"
+            { field: "RequerimientoMain.UnidadTecnicaAsignTitulo", aggregates: [{ field: "RequerimientoMain.UnidadTecnicaAsignTitulo", aggregate: "count" }] },
+            { field: "FechaEmisionOficio", aggregates: [{ field: "FechaEmisionOficio", aggregate: "count" }] },
+        ],
+        pageSize: 100,
+        serverPaging: true,
+        serverFiltering: false,
+        serverSorting: true,
+    });
+
+    $("#gridDestinatario").kendoGrid({
+        toolbar: ["excel"],
+        excel: {
+            text: "Exportar a Excel",
+            fileName: "VistaDestinatarios.xlsx",
+            allPages: true
+        },
+        dataSource: ds,
+        columns: [
+            { field: "RequerimientoMain.DocumentoIngreso",width: "150px", title: "Documento<br/>de ingreso"},
+            {
+                field: "RequerimientoMain.FechaIngreso",
+                width: "150px", title: "Documento ingreso:<br/>Fecha de ingreso",
+                //format: Main.getFormatoLargoFechaGrid(),  // TODO: no está funcionando el formato, al parecer por tener un . el nombre de campo
+                template: "#= kendo.toString(kendo.parseDate(RequerimientoMain.FechaIngreso, 'yyyy-MM-ddTHH:mm:ss'), 'dd/MM/yyyy HH:mm') #"
+            },
+            {
+                field: "RequerimientoMain.UtAsignadaTitulo",
+                width: "200px",
+                title: "Documento ingreso: UT",
+                groupHeaderTemplate: "Unidad Técnica asignada: #= value || '' # - Total: #= count #",
+                aggregates: ["count"]
+            },
+            { field: "RequerimientoMain.ProfesionalNombre",width: "150px", title: "Profesional en UT" },
+            {
+                field: "Materia",
+                title: "Materia del despacho", width: "200px",
+                template: "<span title='#: Materia #'> #: Main.acortaTexto(Materia, 100) #</span>"
+            },
+            { field: "DestinatarioNombre", width: "150px", title: "Destinatario:Nombre" },
+            { field: "RequerimientoMain.EtiquetaTitulos",width: "150px", title: "Etiqueta" },
+            { field: "DestinatarioNombre",width: "150px", title: "Destinatario" },
+            { field: "FolioDespacho",width: "100px", title: "Nombre" },
+            {
+                field: "FechaEmisionOficio", width: "150px",
+                title: "Fecha <br/>emisión oficio",
+                format: Main.getFormatoCortoFechaGrid(),
+                groupHeaderTemplate: "Fecha: #= kendo.toString(value, 'dd/MM/yyyy') # - Total: #= count #",
+                aggregates: ["count"]
+            },
+            { field: "RequerimientoMain.UnidadTecnicaAsignTitulo", width: "150px", title: "Unidad Técnica<br/> asignada" },
+            { field: "RequerimientoMain.ProfesionalNombre", width: "150px", title: "Profesional <br/>en área" },
+            { field: "RequerimientoMain.RegionTitulos",width: "100px", title: "Región" },
+            { field: "RequerimientoMain.ComunaTitulos",width: "100px", title: "Comuna" },
+            { field: "TipoAdjuntoTitulos", width: "150px", title: "Tipos <br/>de adjuntos" },
+            { field: "EstadoTitulo", width: "150px", title: "Estado <br/>del despacho" },
+            { field: "RequerimientoMain.FechaRecepcion", width: "150px", title: "Fecha de <br/>recepción", format: Main.getFormatoCortoFechaGrid() },
+            { field: "MedioDespachoTitulo", width: "100px", title: "Medio de <br/>despacho" },
+            { field: "MedioVerificacionTitulo", width: "150px", title: "Medio de <br/>verificación" },
+            { field: "ObservacionesDespacho",width: "300px", title: "Observaciones de despacho" },
+            { field: "ObservacionesMedioVerif", width: "300px", title: "Observaciones medio <br/>de verificación" },
+
+            { field: "CasoTitulo", width: "200px", title: "Nombre del Caso" },
+            { field: "TipoTramiteTitulo", width: "200px", title: "Tipo de trámite" },
+            { field: "RequerimientoMain.CanalLlegadaTramiteTitulo", width: "200px", title: "Canal de llegada <br/>del trámite" },
+            { field: "RequerimientoMain.CategoriaMonumentoNacTitulo", width: "200px", title: "Categoría de <br/>Monumento Nacional" },
+            { field: "RequerimientoMain.MonumentoNacionalDenominacionOficial", width: "200px", title: "Denominación Oficial" },
+            { field: "RequerimientoMain.MonumentoNacionalOtrasDenominaciones", width: "200px", title: "Otras Denominaciones" },
+            { field: "RequerimientoMain.MonumentoNacionalNombreUsoActual", width: "200px", title: "Nombre o Uso Actual" },
+            { field: "RequerimientoMain.MonumentoNacionalReferenciaLocalidad", width: "250px", title: "Referencia de localización o<br/> localidad" },
+
+        ],
+        //height: 500,
+        scrollable: true,
+        selectable: false,
+        sortable: false,
+        navigatable: true,
+        filterable: false,
+        pageable: {
+            alwaysVisible: true,
+            pageSizes: [50, 100, 200]
+        }
+    });
+</script>

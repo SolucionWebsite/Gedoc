@@ -1,0 +1,26 @@
+﻿@model string
+@{
+    ViewBag.Title = "Error";
+    Layout = "~/Views/Shared/_LayoutVacio.cshtml";
+    var urlSolicitada = Request.QueryString["aspxerrorpath"] ?? "";
+
+}
+
+<div class="row">
+    <div class="alert alert-danger col-md-10 offset-md-1 mt-5">
+        <div style="text-align: center;">
+            <i class="k-icon k-icon-32 k-i-close-outline" aria-hidden="true"></i>
+            <strong>¡Página no encontrada!</strong>
+        </div>
+        <br />
+        @*La URL @("'" + urlSolicitada + "'") solicitada no se encuentra en el sitio.*@
+        Lo sentimos, la URL solicitada no se encuentra en el sitio.
+    </div>
+</div>
+<div class="text-center">
+    <button class="btn btn-primary" type="button" onclick="window.history.back();">Atrás</button>
+</div>
+
+<br />
+<br />
+<br />

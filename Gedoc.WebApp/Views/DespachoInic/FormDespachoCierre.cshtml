@@ -1,0 +1,296 @@
+﻿@using Gedoc.Helpers.Enum
+@using Gedoc.Helpers
+@model Gedoc.WebApp.Models.DespachoIniciativaModel
+
+@{
+    ViewBag.Title = "Despaco Cierre";
+    Layout = null; // "~/Views/Shared/_LayoutVacio.cshtml"; // "~/Views/Shared/_Layout.cshtml";
+    FlujoIngreso form = ViewBag.Form;
+    ResultadoOperacion accesoForm = ViewBag.AccesoForm ?? new ResultadoOperacion(1, "OK", null);
+    Model.Flujo = form;
+}
+
+<script src="~/Scripts/form.js"></script>
+
+
+@Html.Partial("~/Views/Partial/TemplateTagMultiselect.cshtml", Model)
+
+
+<h4 class="head-datos-form">Cierre de Despacho</h4>
+<div class="div-main-form">
+
+    <form id="formDesp" action="@Url.Action("Save")" class="form-datos">
+        @Html.AntiForgeryToken()
+        @Html.HiddenFor(a => a.Id)
+        @Html.HiddenFor(a => a.Flujo)
+        @Html.HiddenFor(a => a.ObservacionesMedioVerif)
+        @Html.HiddenFor(a => a.ObservacionesDespacho)
+
+        <div class="form-row">
+            <div class="col-md-3">
+                <label class="label-dato-form">
+                    Número del Oficio
+                </label>
+            </div>
+            <div class="col-md-9">
+                <label id="lbDocumentoIngreso" style="color: red;">@Model.NumeroDespacho</label>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="col-md-3">
+                <label class="label-dato-form">
+                    Proveedor de despacho<span class="marca-obligatorio" title="Este campo es obligatorio."> *</span>
+                </label>
+            </div>
+            <div class="col-md-9">
+                @(Html.Kendo().ComboBox()
+                    .Name("ProveedorDespachoCod")
+                    .DataTextField("Titulo")
+                    .DataValueField("Id")
+                    .Filter("contains")
+                    .HtmlAttributes(new { @class = "w-100", required = "required" })
+                    .Messages(Gedoc.WebApp.Helpers.KendoHelper.SetComboBoxMessages)
+                    //.SelectedIndex(-1) // TODO
+                    )
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="col-md-3">
+                <label class="label-dato-form">
+                    Número guía de despacho
+                </label>
+            </div>
+            <div class="col-md-9">
+                @Html.TextBoxFor(a => a.NumeroGuia, new { @class = "k-textbox w-100" })
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="col-md-3">
+                <label class="label-dato-form">
+                    Fecha de recepción<span class="marca-obligatorio" title="Este campo es obligatorio."> *</span>
+                </label>
+            </div>
+            <div class="col-md-4">
+                @(Html.Kendo().DatePicker()
+                    .Name("FechaRecepcion")
+                    .Max(DateTime.Today)
+                    .Value(DateTime.Today) // TODO
+                    .Format(GeneralData.FORMATO_FECHA_CORTO)
+                    .HtmlAttributes(new { required = "required" })
+                    .DateInput()
+                    )
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="col-md-3">
+                <label class="label-dato-form">
+                    Medio de verificación<span class="marca-obligatorio" title="Este campo es obligatorio."> *</span>
+                </label>
+            </div>
+            <div class="col-md-9">
+                @(Html.Kendo().ComboBox()
+                    .Name("MedioVerificacionCod")
+                    .DataTextField("Titulo")
+                    .DataValueField("Id")
+                    .Filter("contains")
+                    .HtmlAttributes(new { @class = "w-100", required = "required" })
+                    .Messages(Gedoc.WebApp.Helpers.KendoHelper.SetComboBoxMessages)
+                    //.SelectedIndex(-1) // TODO
+                    )
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="col-md-3">
+                <label class="label-dato-form">
+                    Observaciones de medio de verificación
+                </label>
+            </div>
+            <div class="col-md-9">
+                <div class="k-block text-area-out">
+                    <div class="text-area-in texto-largo" id="pnObservacionesMedioVerif" contenteditable="true" maxlength="255"
+                         data-spanleyenda="leyenda-pnObservacionesMedioVerif">@Html.Raw(Model.ObservacionesMedioVerif)</div>
+                    </div>
+                    <span class="help-block-right" id="leyenda-pnObservacionesMedioVerif"> </span>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="col-md-3">
+                    <label class="label-dato-form">
+                        Observaciones del despacho
+                    </label>
+                </div>
+                <div class="col-md-9">
+                    <div class="k-block text-area-out">
+                        <div class="text-area-in texto-largo" id="pnObservacionesDespacho" contenteditable="true" maxlength="255"
+                             data-spanleyenda="leyenda-pnObservacionesDespacho">@Html.Raw(Model.ObservacionesDespacho)</div>
+                        </div>
+                        <span class="help-block-right" id="leyenda-pnObservacionesDespacho"> </span>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="col-md-3" style="white-space: nowrap">
+                        <label class="label-dato-form">
+                            Enviar notificación<span class="marca-obligatorio" title="Este campo es obligatorio."> *</span>
+                        </label>
+                    </div>
+                    <div class="col-md-9">
+                        @(Html.Kendo().RadioButtonFor(m => m.EnviarNotificacion).Label("Sí").Value(true))
+                        @(Html.Kendo().RadioButtonFor(m => m.EnviarNotificacion).HtmlAttributes(new { @class = "ml-3" }).Label("No").Value(false))
+
+                        <br />
+                        <span class="help-block" id="leyenda-pnEnviarNotificacion">Enviar notificación de cierre despacho a UT asignada. </span>
+                    </div>
+                </div>
+
+
+                <div class="footer-modal">
+                    <div class="form-row">
+                        <div class="offset-md-3 col-md-2 text-center">
+                            <button type="button" id="btnGrabaDespacho" class="k-primary-blue k-button" onclick="grabaDespacho(event);">Guardar</button>
+                        </div>
+                        <div class="offset-md-2 col-md-2 text-center">
+                            <button type="button" id="btnCancelaDespacho" class="k-danger k-button" onclick="cancelaDespacho(event);">Cancelar</button>
+                        </div>
+                    </div>
+                </div>
+
+            </form>
+
+        </div>
+
+
+<script>
+
+    @if (accesoForm.Codigo < 0)
+    {
+        <text>
+    Main.showAlert("@Html.Raw(accesoForm.Mensaje)")
+        .then(function (result) {
+            Main.cierraModal(null, false, "winFormIngreso");
+        });
+        </text>
+    }
+
+    function configValidacionForm() {
+        var container = $("#formDesp");
+        kendo.init(container);
+        container.kendoValidator({
+            rules: {
+                radio: function (input) {
+                    if (input.filter("[type=radio]").length && input.attr("required")) {
+                        return container.find("[type=radio][name=" + input.attr("name") + "]").is(":checked");
+                    }
+                    return true;
+                },
+                fechaCorrecta: function (input) {
+                    if (input.is("[data-role=datepicker]")) {
+                        return input.data("kendoDatePicker").value();
+                    } else {
+                        return true;
+                    }
+                },
+                upload: function (input) {
+                    if (input[0].type == "file" && input.hasClass("upload-required")) {
+                        return input.closest(".k-upload").find(".k-file").length;
+                    }
+                    return true;
+                },
+                uploadValid: function (input) {
+                    if (input[0].type == "file" && input.closest('.k-upload').find('.k-file').length) {
+                        return input.closest(".k-upload").find(".k-file-invalid").length == 0;
+                    }
+                    return true;
+                },
+                oficioValido: function (input) {
+                    if (input.hasClass("oficio-valido")) {
+                        return Form.isValidNumOficio(input.val(), new Date().getFullYear(), new Date().getFullYear());
+                    }
+                    return true;
+                },
+            },
+            messages: {
+                required: "Este campo es obligatorio",
+                radio: "Este campo es obligatorio",
+                fechaCorrecta: "Fecha incorrecta",
+                number: "Valor incorrecto",
+                upload: "Este campo es obligatorio",
+                uploadValid: "Formato o tamaño de archivo no válido",
+                oficioValido: "Valor incorrecto"
+            }
+        });
+    }
+
+    function grabaDespacho(e) {
+
+        Main.wait("Grabando...");
+
+        var currentTarget = $(e.currentTarget);
+        var form = $("#formDesp");
+
+        var validator = form.data("kendoValidator");
+        if (!validator.validate()) {
+            Main.unwait();
+            Main.showError("Por favor, revise los datos de la página. Hay datos incompletos o erróneos.");
+            return false;
+        }
+
+        Form.setValueHiddeFieldTextArea("ObservacionesMedioVerif", "pnObservacionesMedioVerif");
+        Form.setValueHiddeFieldTextArea("ObservacionesDespacho", "pnObservacionesDespacho");
+
+        var data = $(form).serialize();
+        var url = $(form).attr("action");
+        $.ajax({
+            type: "POST",
+            url: url,
+            data: data
+        }).done(function (response) {
+            Main.unwait();
+            if (response.Codigo) {
+                if (response.Codigo > 0) {
+                    Main.showInfo(response.Mensaje).then(function (result) {
+                        Main.cierraModal(currentTarget, true, "winFormIngreso");
+                    });
+                } else {
+                    Main.showError(response.Mensaje, "Error");
+                }
+            } else {
+                Main.showAlert("Error inesperado al realizar la operación, por favor, vuelva a intentarlo",
+                    "Error");
+            }
+        }).fail(function (error) {
+            Main.unwait();
+            Main.showError("Ha ocurrido un error al realizar la operación, por favor, vuelva a intentarlo.",
+                "Error");
+        });
+    };
+
+    function cancelaDespacho(e) {
+        Main.cierraModal($(e.currentTarget), { resultado: false }, "winFormIngreso");
+    };
+
+    $(function () {
+        configValidacionForm();
+
+        ds = Main.getDataSourceKendoGenerico($("#ProveedorDespachoCod"),
+            '@Url.Action("MantenedorGenerico", "Json")?idM=@((int) Mantenedor.FormaLlegada)');
+        $("#ProveedorDespachoCod").data("kendoComboBox").setDataSource(ds);
+
+        ds = Main.getDataSourceKendoGenerico($("#MedioVerificacionCod"),
+            '@Url.Action("MantenedorGenerico", "Json")?idM=@((int) Mantenedor.MedioVerificacion)');
+        $("#MedioVerificacionCod").data("kendoComboBox").setDataSource(ds);
+
+        Form.inicializaForm();
+
+    });
+
+
+
+    //# sourceURL=FormIngreso
+</script>

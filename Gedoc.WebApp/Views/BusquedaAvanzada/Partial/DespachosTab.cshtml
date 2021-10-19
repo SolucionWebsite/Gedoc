@@ -1,0 +1,165 @@
+﻿@using Gedoc.Helpers
+@using Gedoc.Helpers.Enum
+
+@{
+    Layout = null;
+}
+    <script>
+    function currentFilters() {
+        return {
+            TipoBusquedaBusqAv: '@Request["TipoBusquedaBusqAv"]',
+            TipoBitacoraBusqAv: '@Request["TipoBitacoraBusqAv"]',
+            FechaIngresoBusqAv: '@Request["FechaIngresoBusqAv"]',
+            DocumentoIngresoIdBusqAv: '@Request["DocumentoIngresoIdBusqAv"]',
+            FechaDocumentoIngresoBusqAv: '@Request["FechaDocumentoIngresoBusqAv"]',
+            RequerimientoAnteriorIdBusqAv: '@Request["RequerimientoAnteriorIdBusqAv"]',
+            RemitenteIdBusqAv: '@Request["RemitenteIdBusqAv"]',
+            InstitucionRemitenteBusqAv: '@Html.Raw(Request["InstitucionRemitenteBusqAv"])',
+            CargoProfesionRemitenteBusqAv: '@Html.Raw(Request["CargoProfesionRemitenteBusqAv"])',
+            NumeroOficioCMNBusqAv: '@Request["NumeroOficioCMNBusqAv"]',
+            FechaEmisionOficioCMNBusqAv: '@Request["FechaEmisionOficioCMNBusqAv"]',
+            MateriaBusqAv: '@Html.Raw(Request["MateriaBusqAv"])',
+            RegionBusqAv: '@Request["RegionBusqAv"]',
+            ComunaBusqAv: '@Request["ComunaBusqAv"]',
+            EtiquetaBusqAv: '@Request["EtiquetaBusqAv"]',
+            DenominacionOficialBusqAv: '@Html.Raw(Request["DenominacionOficialBusqAv"])',
+            CategoriaMonumentoNacionalBusqAv: '@Request["CategoriaMonumentoNacionalBusqAv"]',
+            RolSIIPropiedadBusqAv: '@Html.Raw(Request["RolSIIPropiedadBusqAv"])',
+            FechaBitacoraBusqAv: '@Request["FechaBitacoraBusqAv"]',
+            UnidadTecnicaAsignadaBusqAv: '@Request["UnidadTecnicaAsignadaBusqAv"]',
+            ProfesionalUTAsignadoBusqAv: '@Request["ProfesionalUTAsignadoBusqAv"]',
+            CreadorBitacoraBusqAv: '@Request["CreadorBitacoraBusqAv"]',
+            FormaLlegadaBusqAv: '@Request["FormaLlegadaBusqAv"]',
+            EstadoBusqAv: '@Request["EstadoBusqAv"]',
+            EstadoDespachoBusqAv: '@Request["EstadoDespachoBusqAv"]',
+            ObservacionAcuerdoComentarioBusqAv: '@Html.Raw(Request["ObservacionAcuerdoComentarioBusqAv"])'
+        }
+    }
+
+    //# sourceURL=DespachosTab
+    </script>
+<style>
+    #gridDespachos {
+        font-size: 11px;
+    }
+    #gridDespachos td {
+        line-height: 1.1em;
+    }
+    #gridDespachos .k-grid-header .k-header .k-link {
+        height: auto;
+    }
+    #gridDespachos .k-grid-header .k-header {
+        white-space: normal;
+    }
+    #gridDespachos .k-grid-header th > .k-link > .k-icon {
+        float: right;
+    }
+    #gridDespachos .k-grid-toolbar > span {
+        float: left !important;
+    }
+    #gridDespachos .k-grid-toolbar > button {
+        float: left !important;
+    }
+    /*#tabstrip > .k-content.k-state-active {
+        padding: 0;
+        display: table;
+    }*/
+</style>
+<div class="container-fluid-no" id="divResultadoBusquedaAvanzadaDespacho" style="padding:0;">
+    @*<div class="form-row">
+        <div class="col-md-12">*@
+            @(Html.Kendo().Grid<Gedoc.Helpers.Dto.RequerimientoDespachoDto>()
+                .Name("gridDespachos")
+                .Columns(columns =>
+                {
+                    columns.Bound(c => c.DocumentoIngreso)
+                        .Width("100px")
+                        .Title("Documento Ingreso")
+                        .ClientTemplate("#= Main.getTemplateFicha(data.DocumentoIngreso, data.Id, data.DocumentoIngreso) #").HeaderHtmlAttributes(new { style = "text-align:center;" });
+
+                    //columns.Bound(c => c.DocumentoIngreso).Width(120).HtmlAttributes(new { style = "text-align:center;" }).Title("Documento Ingreso").HeaderHtmlAttributes(new { style = "text-align:center;" });
+                    columns.Bound(c => c.FechaIngreso).Width(150).HtmlAttributes(new { style = "text-align:center;" }).Title("Fecha Ingreso").Format("{0:dd/MM/yyyy HH:mm}").HeaderHtmlAttributes(new { style = "text-align:center;" });
+                    columns.Bound(c => c.NumeroDespacho)
+                        .Width(80)
+                        .Title("Número Oficio")
+                        .HtmlAttributes(new { @class = "text-center", @title = "Ver Oficio" })
+                        .ClientTemplate("#= buildLinkOficio(data.DespachoId, data.NumeroDespacho)#")
+                        .Sortable(true).HeaderHtmlAttributes(new { style = "text-align:center;" });
+                    columns.Bound(c => c.FechaEmisionOficio).Width(140).Title("Fecha de Oficio").Format("{0:dd/MM/yyyy}").HeaderHtmlAttributes(new { style = "text-align:center;" });
+                    columns.Bound(c => c.DestinatarioNombre).Width(200).Title("Destinatario").HeaderHtmlAttributes(new { style = "text-align:center;" });
+                    columns.Bound(c => c.DestinatarioInstitucion).Width(330).Title("Institución Destinatario").HeaderHtmlAttributes(new { style = "text-align:center;" });
+                    columns.Bound(c => c.MateriaOficioCMN).Width(300).HtmlAttributes(new { style = "text-align:center;" }).Title("Materia Oficio CMN").HeaderHtmlAttributes(new { style = "text-align:center;" });
+                    columns.Bound(c => c.RegionTitulo).Width(160).HtmlAttributes(new { style = "text-align:center;" }).Title("Región").HeaderHtmlAttributes(new { style = "text-align:center;" });
+                    columns.Bound(c => c.ComunaTitulo).Width(160).HtmlAttributes(new { style = "text-align:center;" }).Title("Comuna").HeaderHtmlAttributes(new { style = "text-align:center;" });
+                    columns.Bound(c => c.Etiqueta).Width(140).Title("Etiqueta").HeaderHtmlAttributes(new { style = "text-align:center;" });
+                    columns.Bound(c => c.UtAsignadaTitulo).Width(220).Title("Unidad Técnica").HeaderHtmlAttributes(new { style = "text-align:center;" });
+                    columns.Bound(c => c.ProfesionalNombre).Width(150).Title("Profesional Asignado").HeaderHtmlAttributes(new { style = "text-align:center;" });
+                    columns.Bound(c => c.TipoAdjuntoTitulos).Width(120).HtmlAttributes(new { style = "text-align:center;" }).Title("Tipo de Adjuntos").HeaderHtmlAttributes(new { style = "text-align:center;" });
+                    columns.Bound(c => c.CantidadAdjuntos)
+                        .Width(80)
+                        .Title(" Adjuntos ")
+                        .HtmlAttributes(new { @class = "text-center", @title = "Ver adjuntos" })
+                        .ClientTemplate("#= buildLinkAdjuntos(data.Id, data.DocumentoIngreso, data.CantidadAdjuntos)#")
+                        .Sortable(true).HeaderHtmlAttributes(new { style = "text-align:center;" });
+                    columns.Bound(c => c.MedioDespachoTitulo).Width(140).HtmlAttributes(new { style = "text-align:center;" }).Title("Medio de Despacho").HeaderHtmlAttributes(new { style = "text-align:center;" });
+                    columns.Bound(c => c.FechaRecepcion).Width(140).Title("Fecha Recepción").Format("{0:dd/MM/yyyy}").HeaderHtmlAttributes(new { style = "text-align:center;" });
+                })
+                //.HtmlAttributes(new { style = "height: 800px; width: 200%; display:table-row;", @class = "text-sm-center" })
+                .ToolBar(t => { t.Search(); t.Excel().Text("Excel"); })
+                .Excel(excel =>
+                {
+                    excel.FileName("Despachos_BusquedaAvanzada.xlsx");
+                    excel.AllPages(true);
+                })
+                .Pageable(pager => pager.AlwaysVisible(true).PageSizes(new List<object> { 5, 10, 30, 100, 250 })
+                    .Messages(m => m.ItemsPerPage("registros por página")))
+                .Sortable(sortable =>
+                {
+                    sortable.SortMode(GridSortMode.SingleColumn);
+                })
+                .Scrollable(scr => scr.Height("100%"))
+                .NoRecords("No se encontraron datos.")
+                .DataSource(dataSource => dataSource
+                    .Ajax()
+                    .ServerOperation(false)
+                    //.Model(model =>
+                    //{
+                    //    model.Id(u => u.Id);
+                    //    model.Field(u => u.Id).Editable(false);
+                    //})
+                    .Read(read => read.Action("DespachosTab_Read", "BusquedaAvanzada").Data("currentFilters"))
+                    //.Update(update => update.Action("Grid_Update", "Adjunto").Data("currentFilters"))
+                    .Model(m => m.Id(id => id.Id))
+                    .PageSize(5)
+                )
+            )
+        @*</div>
+    </div>*@
+</div>
+
+<script>
+
+    kendo.culture("es-ES"); // Tiene el formato de fecha dd/MM/yyyy q es el q se usa en la aplicación, la cultura es-CL tiene formato dd-MM-yyyy
+
+    $(function () {
+        kendo.ui.progress($("#divResultadoBusquedaAvanzadaDespacho"), true);
+
+        $(".k-textbox.k-grid-search input").attr("placeholder", "Buscar...");
+        //$(".k-pager-sizes.k-label").html($(".k-pager-sizes.k-label").html().replace("items per page", "elementos por página"));
+
+        $("#gridDespachos th.k-header a.k-link").each(function () {
+            var colText = $(this).html();
+            var newText = colText + '<span class="k-icon k-i-kpi" style="color: lightgray;"></span>';
+            $(this).html(newText);
+        });
+
+        //$('body :not(script)').contents().filter(function () {
+        //    return this.nodeType === 3;
+        //}).replaceWith(function () {
+        //    return this.nodeValue.replace('items per page', 'elementos por página');
+        //});
+    });
+
+    //# sourceURL=DespachosTab2
+
+</script>

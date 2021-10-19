@@ -1,0 +1,162 @@
+﻿@using Gedoc.Helpers
+@using Gedoc.Helpers.Dto
+@using Gedoc.WebApp.Models
+
+@{
+    Layout = null;
+    ViewBag.Title = "Bitacoras";
+    var despId = ViewBag.IdDespacho;  
+}
+
+<style>
+    #gridBitacorasDespInic .k-grid {
+        font-size: 0.8em;
+    }
+
+    #gridBitacorasDespInic .k-grid tbody td {
+        padding: 5px;
+    }
+
+    #gridBitacorasDespInic .k-grid-header .k-header {
+        background-color: #ebe8e8;
+    }
+</style>
+
+<script src="~/Scripts/form.js"></script>
+
+<script>
+    function refrescaGridBitacora() {
+        var gridK = $("#gridBitacorasDespInic").data("kendoGrid");
+        if (gridK) {
+            gridK.dataSource.read();
+        }
+    }
+
+    function extraDataGrillaBitacora() {
+        return {
+            idDesp: '@despId'
+        };
+    }
+
+
+    function buildActions(idBitacora, urlArchivo, nombreArchivo) {
+        var enlace = "";
+        if (urlArchivo && nombreArchivo) {
+            enlace = "@Url.Action("GetArchivo", "Bitacora")" + "?idBitacora=" + idBitacora;
+            //enlace = "<a href='" + enlace + "'  class='text-center enlace-grilla'>Descargar</a>";
+            enlace = '<a href="' + enlace + '" title="Descargar"><img height="20" src="Content/images/Icono-Descargar.png" /></a>';
+        }
+
+        var deleteAccion =@Html.Raw(Json.Encode(ViewBag.DeleteAccion));
+        if (deleteAccion) {
+            var onclick = 'deleteBitacora(' + idBitacora + ')';
+            var acc = '<a href="#" onclick="' + onclick + '; return false;">' +             
+                '<img height="20" src="Content/images/Icono-Eliminar.png" title="Eliminar Bitacora" /></a>';
+            enlace = enlace + acc;
+        }
+
+        enlace = '<div style="display: inline-flex;">' + enlace + '</div>';
+        return enlace;
+    }
+
+
+    function deleteBitacora(idBitacora) {
+        Main.showConfirm("¿Desea eliminar la Bitacora?", "Eliminar", true)
+            .then(function (isOk) {
+                if (!isOk) return false;
+                kendo.ui.progress($("#gridAdjuntosIngreso"), true);
+                $.ajax({
+                    type: "POST",
+                    url: '@Url.Action("BitacoraEliminar", "Bitacora")',
+                    contentType: "application/json; charset=utf-8",
+                    data: JSON.stringify({
+                        id: idBitacora
+                    }),
+                    dataType: "json",
+                    success: function (data) {
+                        kendo.ui.progress($("#gridAdjuntosIngreso"), false);
+                         Main.showAlert(data.Mensaje);
+                        refrescaGridBitacora();
+                    },
+                    error: function (data) {
+                        kendo.ui.progress($("#gridAdjuntosIngreso"), false);
+                         Main.showAlert("Error al eliminar");
+                        refrescaGridBitacora();
+                    }
+                });
+            });
+    }
+
+
+    //# sourceURL=GrillaBitacora2
+
+</script>
+
+
+
+<div id="divGrillaBitacoras">
+
+    <h5>
+        <a href="#" class="badge badge-light mr-3 enlace-accion"
+           onclick="Acciones.ejecutaAccionNuevaVentana('Nuevo Documento',
+                '@Url.Action("AccionBitacora", "Bitacora")' + '?idAccion=BD&idBitacora=0&idDoc=@despId',
+                null, '', 'BITA',refrescaGridBitacora); return false;">
+            <span class="k-icon k-i-plus-outline"></span>
+            Nueva Bitácora
+        </a>
+    </h5>
+
+    @(Html.Kendo().DataSource<BitacoraModel>()
+        .Name("dataSourceGridBit")
+        .Ajax(dataSource => dataSource
+            .Read(read =>
+            {
+                read.Action("BitacorasDespacho", "Bitacora")
+                    .Type(HttpVerbs.Post)
+                    .Data("extraDataGrillaBitacora");
+            })
+            //.Events(ev =>
+            //{
+            //    ev.RequestStart("function(e) {  Main.enEspera($('#divGrillaBitacoras'), true); }");
+            //    ev.RequestEnd("function(e) {  Main.enEspera($('#divGrillaBitacoras'), false); Main.notificaResultado(e); }");
+            //})
+            .PageSize(10)
+            .ServerOperation(false)
+        )
+        )
+    @(Html.Kendo().Grid<BitacoraModel>()
+        .Name("gridBitacorasDespInic")
+        .DataSource("dataSourceGridBit")
+        .HtmlAttributes(new { @class = "k-grid-alternate" })
+        .Scrollable(scr => scr.Height("auto"))
+        .Pageable(p => p.AlwaysVisible(false).PageSizes(new int[3] { 10, 50, 100 }).Enabled(true).Info(true))
+        .Sortable()
+        .Navigatable()
+        .NoRecords("No existen documentos.")
+        .Columns(columns =>
+        {
+            columns.Bound(c => c.Id)
+                .Title("<center>Acción</center>")
+                .Width(120)
+                .ClientTemplate("#=buildActions(data.Id, data.UrlArchivo, data.NombreArchivo)#");
+            columns.Bound(c => c.TipoContenido).Width(100).Title("<center>Tipo</center>");
+            columns.Bound(c => c.UsuarioCreacionNombresApellidos).Width(100).Title("<center>Creado por</center>").Format("{0:dd/MM/yyyy}");
+            columns.Bound(c => c.ObsAcuerdoComentario).Title("<center>Observaciones</center>");
+            columns.Bound(c => c.Fecha).Width(130).Title("<center>Fecha de carga</center>").Format(GeneralData.FORMATO_FECHA_CORTO_GRID);
+            ;
+
+        })
+        )
+
+
+</div>
+
+
+<script>
+
+    $(function () {
+    });
+
+    //# sourceURL=GrillaBitacora
+
+</script>

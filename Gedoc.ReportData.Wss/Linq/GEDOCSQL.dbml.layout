@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ordesignerObjectsDiagram dslVersion="1.0.0.0" absoluteBounds="0, 0, 11, 8.5" name="GEDOCSQL">
+  <DataContextMoniker Name="/GEDOCSQLDataContext" />
+  <nestedChildShapes>
+    <classShape Id="6b905030-a4ad-44bb-a011-38986f733530" absoluteBounds="0.625, 1, 2, 1.5891951497395831">
+      <DataClassMoniker Name="/GEDOCSQLDataContext/TB_SesionTabla" />
+      <nestedChildShapes>
+        <elementListCompartment Id="d3a11f7f-b0d7-4e83-be63-8e30f1206a30" absoluteBounds="0.64000000000000012, 1.46, 1.9700000000000002, 1.0291951497395833" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
+      </nestedChildShapes>
+    </classShape>
+    <classShape Id="10427a4f-889d-42c7-9a02-372a386a7352" absoluteBounds="3, 2.25, 2, 1.4248478190104168">
+      <DataClassMoniker Name="/GEDOCSQLDataContext/TB_SesionTablaDetalle" />
+      <nestedChildShapes>
+        <elementListCompartment Id="addd6848-6738-4a50-94f2-93ff46b3c516" absoluteBounds="3.015, 2.71, 1.9700000000000002, 0.86484781901041674" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
+      </nestedChildShapes>
+    </classShape>
+    <associationConnector edgePoints="[(2.625 : 2.41959757486979); (3 : 2.41959757486979)]" fixedFrom="Algorithm" fixedTo="Algorithm">
+      <AssociationMoniker Name="/GEDOCSQLDataContext/TB_SesionTabla/TB_SesionTabla_TB_SesionTablaDetalle" />
+      <nodes>
+        <classShapeMoniker Id="6b905030-a4ad-44bb-a011-38986f733530" />
+        <classShapeMoniker Id="10427a4f-889d-42c7-9a02-372a386a7352" />
+      </nodes>
+    </associationConnector>
+    <classShape Id="7879242d-3fe8-4ca6-aea5-41185b421ee5" absoluteBounds="5.375, 1.125, 2, 2.5752791341145831">
+      <DataClassMoniker Name="/GEDOCSQLDataContext/TB_Log" />
+      <nestedChildShapes>
+        <elementListCompartment Id="d6493aa1-5bb0-492a-9867-326492e02971" absoluteBounds="5.39, 1.585, 1.9700000000000002, 2.015279134114583" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
+      </nestedChildShapes>
+    </classShape>
+  </nestedChildShapes>
+</ordesignerObjectsDiagram>

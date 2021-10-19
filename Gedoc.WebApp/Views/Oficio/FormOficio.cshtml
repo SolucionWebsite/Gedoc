@@ -1,0 +1,599 @@
+﻿@using Gedoc.Helpers
+@using Gedoc.Helpers.Dto
+@using Gedoc.Helpers.Enum
+@using Gedoc.WebApp.Helpers
+@using Kendo.Mvc.Extensions
+@using Kendo.Mvc.UI.Fluent
+@using Newtonsoft.Json
+@model Gedoc.WebApp.Models.OficioModel
+
+@{
+    ViewBag.Title = "Oficio";
+    ResultadoOperacion accesoForm = ViewBag.AccesoForm ?? new ResultadoOperacion(1, "OK", null);
+    var usuarioId = ViewBag.UsuarioId ?? 0;
+
+    Layout = null;
+    //bool esNuevo = Model.Id == 0;
+    // Margenes del editor de acuerdo a los margenes definidos del pdf en web.config
+    var margenSup = "0"; //string.IsNullOrWhiteSpace(WebConfigValues.PdfOficioMargenSup) ? "5pt" : WebConfigValues.PdfOficioMargenSup;
+    var margenDer = string.IsNullOrWhiteSpace(WebConfigValues.PdfOficioMargenDer) ? "40pt" : WebConfigValues.PdfOficioMargenDer;
+    var margenInf = "0"; // string.IsNullOrWhiteSpace(WebConfigValues.PdfOficioMargenInf) ? "5pt" : WebConfigValues.PdfOficioMargenInf;
+    var margenIzq = string.IsNullOrWhiteSpace(WebConfigValues.PdfOficioMargenIzq) ? "40pt" : WebConfigValues.PdfOficioMargenIzq;
+}
+
+<script src="~/Scripts/form.js"></script>
+@*Habilita la compresión del pdf, útil si es un pdf muy extenso*@
+<script src="@Url.Content("~/Scripts/kendo/2020.1.114/pako_deflate.min.js")"></script>
+
+<script>
+    // Import DejaVu Sans font for embedding
+    kendo.pdf.defineFont({
+        "DejaVu Sans": "@Url.Content("~/Content/kendo/2020.1.114/fonts/DejaVu/DejaVuSans.ttf")",
+        "DejaVu Sans|Bold": "@Url.Content("~/Content/kendo/2020.1.114/fonts/DejaVu/DejaVuSans-Bold.ttf")",
+        "DejaVu Sans|Bold|Italic": "@Url.Content("~/Content/kendo/2020.1.114/fonts/DejaVu/DejaVuSans-Oblique.ttf")",
+        "DejaVu Sans|Italic": "@Url.Content("~/Content/kendo/2020.1.114/fonts/DejaVu/DejaVuSans-Oblique.ttf")",
+        "WebComponentsIcons": "@Url.Content("~/Content/kendo/2020.1.114/fonts/glyphs/WebComponentsIcons.ttf")"
+    });
+
+</script>
+
+<style>
+
+    .k-link.k-state-selected.k-header {
+        padding: 5px;
+    }
+
+    /*se reduce el tamaño de los botonoes del toolbar del editor*/
+
+    .k-editor-toolbar a[role="button"].k-tool {
+        padding: 0px !important;
+        width: 32px !important;
+        height: 32px !important;
+    }
+
+    .k-editor-toolbar span.k-combobox, .k-editor-toolbar .k-colorpicker, .k-editor-toolbar .k-dropdowntree {
+        height: 32px !important;
+    }
+</style>
+
+
+<script>
+
+    function configValidacionForm() {
+        var container = $("#formOficio");
+        kendo.init(container);
+        container.kendoValidator({
+            messages: {
+                required: "Este campo es obligatorio"
+            }
+        });
+    }
+
+    function grabaOficio(e) {
+        Main.wait("Grabando...");
+
+        var currentTarget = $(e.currentTarget);
+        var form = $("#formOficio");
+
+        var validator = form.data("kendoValidator");
+        if (!validator.validate()) {
+            Main.unwait();
+            Main.showError("Por favor, revise los datos de la página. Hay datos incompletos o erróneos.");
+            return false;
+        }
+
+        //Form.setValueHiddeFieldTextArea("ObservacionesAdjuntos", "pnObservacionAdj");
+
+        var data = $(form).serialize();
+        var url = $(form).attr("action");
+        $.ajax({
+            type: "POST",
+            url: url,
+            data: data
+        }).done(function (response) {
+            Main.unwait();
+            if (response.Codigo) {
+                if (response.Codigo > 0) {
+                    Main.showInfo(response.Mensaje).then(function (result) {
+                        Main.cierraModal(currentTarget, true, "winFormIngreso");
+                    });
+                } else {
+                    Main.showError(response.Mensaje, "Error");
+                }
+            } else {
+                Main.showAlert("Error inesperado al realizar la operación, por favor, vuelva a intentarlo",
+                    "Error");
+            }
+        }).fail(function (error) {
+            Main.unwait();
+            Main.showError("Ha ocurrido un error al realizar la operación, por favor, vuelva a intentarlo.",
+                "Error");
+        });
+    };
+
+    function cancelaOficio(e) {
+        Main.cierraModal($(e.currentTarget), { resultado: false }, "winFormIngreso");
+    };
+
+    function actualizarDesdePlantilla() {
+        Main.showConfirm("Se va a actualizar la propuesta de oficio con la plantilla @Model.PlantillaOficioNombre.<br/>" +
+            "Las modificaciones que haya realizado a la propuesta de oficio se perderán.<br/>" +
+            "Se recomienda copiar todo el texto de la propuesta de oficio y pegar, por ejemplo, en Word<br/>" +
+            "para tener una salva de la actual propuesta de oficio.<br/>" +
+                "¿Desea continuar?",
+                "Actualizar desde plantilla",
+                true)
+            .then(function(isOk) {
+                if (isOk) {
+                    var plantillaId = @Model.PlantillaId.GetValueOrDefault(0);
+                    var reqK = $("#Requerimiento").data("kendoMultiSelect");
+                    // Se carga la plantilla con las variables sustituidas por los valores de los campos del requerimiento
+                    Main.wait("Cargando plantilla, espere...", "#rowEditor");
+                    var data = { id: plantillaId, reqIds: reqK ? reqK.value() : [] };
+                    var url = "@Url.Action("GetContenidoPlantillaConDatosById", "Oficio")";
+                    $.ajax({
+                        type: "POST",
+                        url: url,
+                        data: data
+                    }).done(function (response) {
+                        Main.unwait("#rowEditor");
+                        if (response.Codigo) {
+                            if (response.Codigo > 0) {
+                                var contenido = response.Extra ? response.Extra.Contenido : "";
+                                var editorK = $("#Contenido").data("kendoEditor");
+                                if (editorK) {
+                                    editorK.value(contenido);
+                                }
+                                // Actualiza en el template de exportación a pdf el código html de encabezado y pie de página
+                                var scriptTemplate = $("#page-template");
+                                var tempScriptContainer = $('<div/>').html(scriptTemplate.html());
+                                tempScriptContainer.find(".header").replaceWith(response.Extra.Encabezado);
+                                tempScriptContainer.find(".footer").replaceWith(response.Extra.Pie);
+                                scriptTemplate.html(tempScriptContainer.html());
+                                if (editorK) {
+                                    editorK.update();
+                                }
+
+                                //var template = kendo.template(scriptTemplate.html());
+                                //kendo.render(template);
+                            } else {
+                                Main.showError(response.Mensaje, "Error");
+                            }
+                        } else {
+                            Main.showAlert("Error inesperado al realizar la operación, por favor, vuelva a intentarlo",
+                                "Error");
+                        }
+                    }).fail(function (error) {
+                        Main.unwait("#rowEditor");
+                        Main.showError("Ha ocurrido un error al realizar la operación, por favor, vuelva a intentarlo.",
+                            "Error");
+                    });
+                }
+            });
+    }
+
+    function exportaPdf() {
+        var url = '@Url.Action("GetPdfFromContenidoHtml", "Oficio")' ;
+        Main.exportaKendoEditorToPdf($("#Contenido"), url, "Oficio@(Model.Id).pdf");
+    }
+
+    function onExecuteEditorCommand(e) {
+        if (e.name == "tablewizard" || e.name == "tablewizardinsert") {
+            setTimeout(function () {
+                // Se especifica texto en español de opciones del asistente de tabla q no aparecen para especificarlas en los Message del editor de kendo
+                $("label[for='k-editor-table-header-rows']").text("Filas de encabezado");
+                $("label[for='k-editor-table-header-columns']").text("Columnas de encabezado");
+                $("label[for='k-editor-wrap-text']").text("Ajustar texto");
+                $("textarea#k-editor-accessibility-summary").attr("placeholder", "El atributo Resumen no es compatible con HTML5");
+                $(".k-i-align-remove").attr("title", "Sin alineación");
+                $(".k-i-table-align-middle-left").attr("title", "Alineación izquierda");
+                $(".k-i-table-align-middle-center").attr("title", "Alineación centro");
+                $(".k-i-table-align-middle-right").attr("title", "Alineación derecha");
+                $(".k-i-table-align-top-left").attr("title", "Alineación arriba izquierda");
+                $(".k-i-table-align-top-center").attr("title", "Alineación arriba centro");
+                $(".k-i-table-align-top-right").attr("title", "Alineación arriba derecha");
+                $(".k-i-table-align-bottom-left").attr("title", "Alineación abajo izquierda");
+                $(".k-i-table-align-bottom-center").attr("title", "Alineación abajo centro");
+                $(".k-i-table-align-bottom-right").attr("title", "Alineación abajo derecha");
+                $(".k-i-table-align-middle-left").attr("title", "Alineación medio izquierda");
+                $(".k-i-table-align-middle-center").attr("title", "Alineación medio centro");
+                $(".k-i-table-align-middle-right").attr("title", "Alineación medio derecha");
+
+                // Texto para opción "Associate headers" y su lista asociada
+                $("label[for='k-editor-cells-headers']").text("Encabezados asociados");
+                $("#k-editor-cells-headers_listbox li[data-offset-index='0']").text("Ninguno");
+                $("#k-editor-cells-headers_listbox li[data-offset-index='1']").text("Asociar usando atributo 'alcance'");
+                $("#k-editor-cells-headers_listbox li[data-offset-index='2']").text("Asociar usando Ids");
+
+                // Texto para opción "Border style", en tabla y celda, y su lista asociada
+                $("label[for='k-editor-border-style']").text("Estilo de borde");
+                $("#k-editor-border-style_listbox li[data-offset-index='0']").text("Sólido");
+                $("#k-editor-border-style_listbox li[data-offset-index='1']").text("Punteado");
+                $("#k-editor-border-style_listbox li[data-offset-index='2']").text("Discontinuo");
+                $("#k-editor-border-style_listbox li[data-offset-index='3']").text("Doble");
+                $("#k-editor-border-style_listbox li[data-offset-index='4']").text("Ranurado");
+                $("#k-editor-border-style_listbox li[data-offset-index='5']").text("Relieve");
+                $("#k-editor-border-style_listbox li[data-offset-index='6']").text("Presionado");
+                $("#k-editor-border-style_listbox li[data-offset-index='7']").text("Sobresaliente");
+                $("#k-editor-border-style_listbox li[data-offset-index='8']").text("Inicial");
+                $("#k-editor-border-style_listbox li[data-offset-index='9']").text("Heredado");
+                $("#k-editor-border-style_listbox li[data-offset-index='10']").text("Ninguno");
+                $("#k-editor-border-style_listbox li[data-offset-index='11']").text("Oculto");
+                $("label[for='k-editor-cell-border-style']").text("Estilo de borde");
+                $("label[for='k-editor-border-style']").text("Estilo de borde");
+                $("#k-editor-cell-border-style_listbox li[data-offset-index='0']").text("Sólido");
+                $("#k-editor-cell-border-style_listbox li[data-offset-index='1']").text("Punteado");
+                $("#k-editor-cell-border-style_listbox li[data-offset-index='2']").text("Discontinuo");
+                $("#k-editor-cell-border-style_listbox li[data-offset-index='3']").text("Doble");
+                $("#k-editor-cell-border-style_listbox li[data-offset-index='4']").text("Ranurado");
+                $("#k-editor-cell-border-style_listbox li[data-offset-index='5']").text("Relieve");
+                $("#k-editor-cell-border-style_listbox li[data-offset-index='6']").text("Presionado");
+                $("#k-editor-cell-border-style_listbox li[data-offset-index='7']").text("Sobresaliente");
+                $("#k-editor-cell-border-style_listbox li[data-offset-index='8']").text("Inicial");
+                $("#k-editor-cell-border-style_listbox li[data-offset-index='9']").text("Heredado");
+                $("#k-editor-cell-border-style_listbox li[data-offset-index='10']").text("Ninguno");
+                $("#k-editor-cell-border-style_listbox li[data-offset-index='11']").text("Oculto");
+				
+				$("#k-editor-table-alignment").data("kendoDropDownList").bind("change", 
+					function(e) {
+						$(".k-i-align-remove").attr("title", "Sin alineación");
+						$(".k-i-table-align-middle-left").attr("title", "Alineación izquierda");
+						$(".k-i-table-align-middle-center").attr("title", "Alineación centro");
+						$(".k-i-table-align-middle-right").attr("title", "Alineación derecha");
+					}
+				);
+				
+				$("#k-editor-cell-alignment").data("kendoDropDownList").bind("change", 
+					function(e) {
+						$(".k-i-align-remove").attr("title", "Sin alineación");
+						$(".k-i-table-align-top-left").attr("title", "Alineación arriba izquierda");
+						$(".k-i-table-align-top-center").attr("title", "Alineación arriba centro");
+						$(".k-i-table-align-top-right").attr("title", "Alineación arriba derecha");
+						$(".k-i-table-align-bottom-left").attr("title", "Alineación abajo izquierda");
+						$(".k-i-table-align-bottom-center").attr("title", "Alineación abajo centro");
+						$(".k-i-table-align-bottom-right").attr("title", "Alineación abajo derecha");
+						$(".k-i-table-align-middle-left").attr("title", "Alineación medio izquierda");
+						$(".k-i-table-align-middle-center").attr("title", "Alineación medio centro");
+						$(".k-i-table-align-middle-right").attr("title", "Alineación medio derecha");
+					}
+				);
+                },
+                200);
+        }
+    }
+
+    function onListaGuionExec() {
+        var editor = $(this).data("kendoEditor");
+
+        editor.exec("insertunorderedlist");
+        var list = kendo.ui.editor.Dom.closestEditableOfType(editor.getRange().startContainer, ["ul"]);
+        if (list) {
+            list.setAttribute("class", "dashed");
+        }
+    }
+
+    //# sourceURL=FormOficio2
+</script>
+
+
+@Html.Partial("~/Views/Partial/TemplateTagMultiselect.cshtml", Model)
+
+<div class="div-main-form">
+
+    <form id="formOficio" action="@Url.Action("SaveOficio", "Oficio")" class="form-datos">
+        @Html.AntiForgeryToken()
+
+        @Html.HiddenFor(a => a.Id)
+        @Html.HiddenFor(a => a.NumeroOficio)
+        @Html.HiddenFor(a => a.FechaEmisionOficio)
+        @Html.HiddenFor(a => a.PlantillaId)
+        @Html.HiddenFor(a => a.TipoTramiteId)
+        @Html.HiddenFor(a => a.RequerimientoPrincipalId)
+        @Html.HiddenFor(a => a.TipoPlantillaId)
+
+        @if (Model.TipoPlantillaId == (int)TipoPlantillaOficio.DespachoIniciativa)
+        {
+            <div class="form-row ">
+                <div class="col-md-3">
+                    <label class="label-dato-form no-wrap">
+                        Unidad Técnica<span class="marca-obligatorio" title="Este campo es obligatorio."> *</span>
+                    </label>
+                </div>
+                <div class="col-md-9">
+                    @(Html.Kendo().ComboBox()
+                        .Name("UnidadTecnicaId")
+                        .DataTextField("Titulo")
+                        .DataValueField("Id")
+                        .Filter("contains")
+                        .HtmlAttributes(new { required = "required", @class = "w-100" })
+                        .Messages(Gedoc.WebApp.Helpers.KendoHelper.SetComboBoxMessages)
+                        )
+                    <span class="k-invalid-msg" data-for="UnidadTecnicaId"></span><br />
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="form-row ">
+                <div class="col-md-3">
+                    <label class="label-dato-form no-wrap">
+                        Documento de ingreso<span class="marca-obligatorio" title="Este campo es obligatorio."> *</span>
+                    </label>
+                </div>
+                <div class="col-md-9">
+                    <select id="Requerimiento" name="Requerimiento" multiple required></select>
+                    <span class="k-invalid-msg" data-for="Requerimiento"></span><br />
+                </div>
+            </div>
+        }
+
+        <div class="form-row" id="rowEditor">
+            <div class="col-md-12">
+
+                @*Plantilla para el PDF q se genera al visualizar el oficio, tiene el encabezado y pie de página*@
+                <script type="x/kendo-template" id="page-oficio-template">
+                    <div class="page-template">
+                        @Html.Raw(Model.Encabezado.Replace("#", "\\#"))
+                        @Html.Raw(Model.Pie.Replace("#", "\\#"))
+                    </div>
+                </script>
+
+                @*Se cambia la función de la tecla Enter: inserta un linebreak en vez de un separador de parrafo (Shift+Enter agregar separador de parrafo) -> el default del editor es al revés,*@
+                @*<script>
+                        var editorNS = kendo.ui.editor,
+                            registerTool = editorNS.EditorUtils.registerTool,
+                            Tool = editorNS.Tool;
+                        registerTool("insertLineBreak", new Tool({ key: 13, command: editorNS.NewLineCommand }));
+                        registerTool("insertParagraph", new Tool({ key: 13, shift: true, command: editorNS.ParagraphCommand }));
+                    </script>*@
+
+
+                <div id="editorWrapper">
+                    @(Html.Kendo().Editor()
+                        .Name("Contenido")
+                        .HtmlAttributes(new {style = "height:600px", aria_label = "editor", required = "required"})
+                        .PasteCleanup(p => p
+                            .All(false)
+                            .KeepNewLines(false)
+                            .Span(false)
+                            .Css(false)
+                            .MsTags(true)
+                            .MsAllFormatting(false)
+                            .MsConvertLists(true))
+                        .StyleSheets(css => css
+                            .Add(Url.Content("~/Content/editorStyles.css"))
+                            .Add(Url.Content("~/Content/pdfCommonStyles.css"))
+                        )
+                        .Immutables(false)
+                        .Pdf(pdf => KendoHelper.SetPdfSettingsOficio(pdf, Url.Action("Pdf_Export_Save"))
+                            .FileName("Oficio.pdf") )
+                        .Tools(tools => tools
+                            .Clear()
+                            .Bold().Italic().Underline()
+                            .JustifyLeft().JustifyCenter().JustifyRight().JustifyFull()
+                            .InsertUnorderedList().InsertOrderedList()
+                            .CustomButton(x => x
+                                .Name("gridLayout")
+                                .ToolTip("Lista con raya")
+                                .Exec("onListaGuionExec")
+                            )
+                            .Outdent().Indent()
+                            //.CreateLink().Unlink()
+                            .InsertImage()
+                            //.TableEditing()
+                            .FontName()
+                            .FontSize(items => items
+                                .Add("8pt", "8pt")
+                                .Add("9pt", "9pt")
+                                .Add("10pt", "small")
+                                .Add("11pt", "11pt")
+                                .Add("12pt", "12pt")
+                                .Add("14pt", "14pt")
+                                .Add("18px", "18px")
+                                .Add("24pt", "24pt")
+                                .Add("36pt", "36pt"))
+                            .FontColor(f => f.Palette(ColorPickerPalette.None)) // en la versión jQuery del Editor seteando el palette a null permite seleccionar cualquier color (https://dojo.telerik.com/iciGAmER/3). Aquí no funciona, ni con null ni com ColorPickerPalette.None, ni con new string[0]
+                            .BackColor()
+                            .TableEditing()
+                            ///.ExportAs()
+                            ///.Import()
+                            // Julio-2021, se solicita eliminar este botón del editor:
+                            //.CustomButton(cb => cb.Name("reload")
+                            //    .ToolTip("Actualizar en base a la plantilla")
+                            //    .Exec("actualizarDesdePlantilla"))
+                            .CustomButton(cb => cb.Name("filePdf")
+                                .ToolTip("Exportar PDF")
+                                .Exec("exportaPdf"))
+                        //.Pdf()
+                        )
+                        .Resizable(r => r.Min(400).Content(true))
+                        .Events(ev => ev.Execute("onExecuteEditorCommand"))
+                        .Messages(m => m.InsertUnorderedList("Viñetas")
+                            .InsertOrderedList("Numeración")
+                            .Italic("Cursiva")
+                            .TableWizard("Asistente")
+                            .TableTab("Tabla")
+                            .CellTab("Celda")
+                            .AccessibilityTab("Accesibilidad")
+                            .Width("Ancho")
+                            .Height("Alto")
+                            .Columns("Columnas")
+                            .Rows("Filas")
+                            .CellSpacing("Espaciado de celda")
+                            .CellPadding("Relleno de celda")
+                            .Alignment("Alineación")
+                            .Background("Fondo")
+                            .CssClass("Clase CSS")
+                            .Border("Borde")
+                            .CollapseBorders("Colapsar bordes")
+                            .SelectAllCells("Seleccionar todas las celdas")
+                            .CellMargin("Margen de celda")
+                            .Caption("Título")
+                            .Summary("Resumen")
+                        )
+                        //.Value(Model.Mensaje)
+                        )
+                    <span class="k-invalid-msg" data-for="Contenido"></span>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="footer-modal">
+            <div class="form-row">
+                <div class="offset-md-3 col-md-2 text-center">
+                    <button type="button" id="btngrabaOficio" class="k-primary-blue k-button" onclick="grabaOficio(event);">Guardar</button>
+                </div>
+                <div class="offset-md-2 col-md-2 text-center">
+                    <button type="button" id="btncancelaOficio" class="k-danger k-button" onclick="cancelaOficio(event);">Cancelar</button>
+                </div>
+            </div>
+        </div>
+
+    </form>
+
+</div>
+
+
+
+<script>
+
+    @if (accesoForm.Codigo < 0)
+    {
+        <text>
+    Main.showAlert("@Html.Raw(accesoForm.Mensaje)")
+        .then(function(result) {
+            Main.cierraModal(null, false, "winFormIngreso");
+        });
+        </text>
+    }
+
+    $(function() {
+
+        if ($("#Requerimiento").length) {
+            $("#Requerimiento").kendoMultiSelect(
+                Main.getMultiSelectConfigVirtual($("#Requerimiento")
+                    , '@Url.Action("RequerimientoUsuarioResumenPaging", "Json")'
+                    , '@Url.Action("RequerimientoResumenByIds", "Json")'
+                    , undefined, undefined
+                    , undefined //@Html.Raw(JsonConvert.SerializeObject(Model.Requerimiento))
+                    , undefined, false
+                )
+            );
+            var reqK = $("#Requerimiento").data("kendoMultiSelect");
+            reqK.dataSource.filter({});
+            reqK.value(@Html.Raw(JsonConvert.SerializeObject(Model.Requerimiento)));
+            reqK.bind("change", requerimientoChange);
+        }
+
+        var ds;
+        if ($("#UnidadTecnicaId").length) {
+            ds = Main.getDataSourceKendoGenerico($("#UtAsignadaId"),
+                '@Url.Action("MantenedorGenerico", "Json")?idM=@((int) Mantenedor.UnidadTecnica)&extra=@(usuarioId <= 0 ? "" : usuarioId)');
+            $("#UnidadTecnicaId").data("kendoComboBox").setDataSource(ds);
+        }
+
+        configValidacionForm();
+
+        Form.inicializaForm();
+
+        // Hint para botón de Exportar PDF en botones del editor
+        $('li.k-tool-group a[role="button"][title="Export PDF"]').attr("title", "Exportar a PDF");
+
+        Main.fixPaletaColorPickerKendoEditor($("#Contenido"));
+
+        $("#editorWrapper span.k-icon.k-clear-value.k-i-close").prop('title', 'limpiar');
+
+        // Margenes del editor de acuerdo a los margenes especificados en web.config
+        var editor = $("#Contenido").data("kendoEditor");
+        $($("#Contenido").data("kendoEditor").body).css('padding-top', '@margenSup');
+        $($("#Contenido").data("kendoEditor").body).css('padding-right', '@margenDer');
+        $($("#Contenido").data("kendoEditor").body).css('padding-bottom', '@margenInf');
+        $($("#Contenido").data("kendoEditor").body).css('padding-left', '@margenIzq');
+
+        // Corrigiendo botón "Asistente" en editor de kendo, y corrigiendo texto de algunos botones del editor q no se pueden configurar con Messages
+        $(".k-editor-toolbar > a[title='Asistente']").attr('style', 'width: 100% !important');
+        $("a.k-tool[title='Merge cells horizontally']").prop("title", "Combinar celdas hacia la derecha");
+        $("a.k-tool[title='Merge cells vertically']").prop("title", "Combinar celdas hacia abajo");
+        $("a.k-tool[title='Split cells horizontally']").prop("title", "Separar celdas horizontal");
+        $("a.k-tool[title='Split cells vertically']").prop("title", "Separar celdas vertical");
+    });
+
+    function requerimientoChange(e) {
+        // Se busca si cambió el requerimiento principal del ofico
+        var reqK = $("#Requerimiento").data("kendoMultiSelect");
+        if (!reqK.value() || !reqK.value().length) return false;
+        var data = { reqIds: reqK.value() };
+        var url = "@Url.Action("GetDatosRequerimientoMain", "Oficio")";
+        $.ajax({
+            type: "POST",
+            url: url,
+            data: data
+        }).done(function (response) {
+            Main.unwait("#rowEditor");
+            if (response) {
+                var reqMainIdActual = $("#RequerimientoPrincipalId").val();
+                var reqMainIdNuevo = response.Id;
+                if (reqMainIdActual != reqMainIdNuevo) {
+                    $("#RequerimientoPrincipalId").val(reqMainIdNuevo);
+                    //Main.showInfo("El requerimiento principal del oficio ha cambiado, " +
+                    //    " ahora es el requerimiento " + response.DocumentoIngreso + "<br/>" +
+                    //    "Se va a actualizar el contenido de la propuesta de Oficio con los datos " +
+                    //    "de este requerimiento.", "Requerimiento Principal del Oficio")
+                    //    .then(function() {
+                            actualizarContenidoReqMain(response.Id, reqK.value());
+                    //    });
+                }
+
+            } else {
+                Main.showAlert("Ha ocurrido un error al validar el Requerimiento principal del Oficio, por favor, vuelva a intentarlo",
+                    "Error");
+            }
+        }).fail(function (error) {
+            Main.unwait("#rowEditor");
+            Main.showError("Ha ocurrido un error al realizar la operación, por favor, vuelva a intentarlo.",
+                "Error");
+        });
+    }
+
+    function actualizarContenidoReqMain(reqMainId, reqsId) {
+        // Se actualiza el contenido del oficio con los valores del nuevo requerimiento seleccionado
+        var contenido = "";
+        var editorK = $("#Contenido").data("kendoEditor");
+        if (editorK) {
+            contenido = editorK.value();
+        }
+        Main.wait("Actualizando contenido del oficio, espere...", "#rowEditor");
+        var oficoId = '@Model.Id';
+        var data = JSON.stringify({ oficioId: oficoId, contenido: contenido, reqIds: reqsId, reqMainId });
+        var url = "@Url.Action("GetContenidoOficioActualizado", "Oficio")";
+        $.ajax({
+            type: "POST",
+            url: url,
+            dataType: "json",
+            contentType: "application/json; charset=utf-8",
+            data: data
+        }).done(function (response) {
+            Main.unwait("#rowEditor");
+            if (response.Codigo) {
+                if (response.Codigo > 0) {
+                    var contenidoNew = response.Extra || "";
+                    if (editorK) {
+                        editorK.value(contenidoNew);
+                    }
+                } else {
+                    Main.showError(response.Mensaje, "Error");
+                }
+            } else {
+                Main.showAlert("Error inesperado al realizar la operación, por favor, vuelva a intentarlo",
+                    "Error");
+            }
+        }).fail(function (error) {
+            Main.unwait("#rowEditor");
+            Main.showError("Ha ocurrido un error al realizar la operación, por favor, vuelva a intentarlo.",
+                "Error");
+        });
+    }
+
+    //# sourceURL=FormOficio
+</script>

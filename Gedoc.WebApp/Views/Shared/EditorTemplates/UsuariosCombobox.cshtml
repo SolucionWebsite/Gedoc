@@ -1,0 +1,30 @@
+﻿@using Gedoc.Helpers.Enum
+@model Gedoc.Helpers.Dto.UsuarioDto
+
+
+@(Html.Kendo().ComboBox()
+    .Name("UsuarioId")
+    .DataTextField("Titulo")
+    .DataValueField("Id")
+    .Filter("contains")
+    .HtmlAttributes(new { required = "required", @class = "w-100" }) 
+    .Messages(Gedoc.WebApp.Helpers.KendoHelper.SetComboBoxMessages)
+    .DataSource(source => {
+        //source.Read(read =>
+        //{
+        //    read.Action("MantenedorGenerico", "Json", new { idM = (int)Mantenedor.UsuarioActivo })
+        //        .Type(HttpVerbs.Post);
+        //});
+          source.Custom()
+              .Schema(schema => schema.Data("Data"))
+              .Transport(transport =>
+              {
+                  transport.Read(read =>
+                  {
+                      read.Action("MantenedorGenerico", "Json", new {idM = (int) Mantenedor.UsuarioActivo})
+                          .Type(HttpVerbs.Post);
+                  });
+              });
+    })
+    )
+

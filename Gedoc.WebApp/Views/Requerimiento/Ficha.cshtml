@@ -415,6 +415,7 @@
     <div class="row mt-1">
         <div class="col-md" style="text-align: right !important; ">
 
+            @if (Model.SolicitudTramId.GetValueOrDefault(0) > 0) {
             <button id="btTramites" type="button" class="btn btn-primary btn-sm" aria-label="Left Align"
                     data-toggle="tooltip" title="Trámites Web @(Model.SolicitudTramId.GetValueOrDefault(0) > 0 ? $"(Id Solicitud: {Model.SolicitudTramId.Value})" : "")" style="margin-right: 30px;"
                     onclick="tramitesWeb(); ">
@@ -422,6 +423,7 @@
             </button>
             <span id="waitLinkTramites" class="glyphicon glyphicon-refresh glyphicon-refresh-animate"
                   style="margin-right: 30px; font-size: 18px;"></span>
+            }
 
 
             <button id="btImprimir" type="button" class="btn btn-secondary btn-sm" aria-label="Left Align"

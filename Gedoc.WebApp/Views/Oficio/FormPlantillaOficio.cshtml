@@ -500,7 +500,7 @@
                             .FileName("PlantillaOficio.pdf"))
                         .Tools(tools => tools
                             .Clear()
-                            .Bold().Italic().Underline()
+                            .Bold().Italic().Underline().Strikethrough()
                             .JustifyLeft().JustifyCenter().JustifyRight().JustifyFull()
                             .InsertUnorderedList().InsertOrderedList()
 
@@ -521,8 +521,16 @@
                             )
 
                             .Outdent().Indent()
-                            //.CreateLink().Unlink()
+                            .CreateLink().Unlink()
                             .InsertImage()
+                            .InsertFile()
+                            .SubScript()
+                            .SuperScript()
+                            .TableEditing()
+                            .ViewHtml()
+                            .Formatting()
+                            .CleanFormatting()
+                            .FormatPainter()
                             .FontName()
                             .FontSize(items => items
                                 .Add("8pt", "8pt")
@@ -536,6 +544,9 @@
                                 .Add("36pt", "36pt"))
                             .FontColor(f => f.Palette( Kendo.Mvc.UI.ColorPickerPalette.None )) // en la versión jQuery del Editor seteando el palette a null permite seleccionar cualquier color (https://dojo.telerik.com/iciGAmER/4). Aquí no funciona, ni con null ni com ColorPickerPalette.None, ni con new string[0]
                             .BackColor()
+                            .Print()
+                            .ExportAs()
+                            .Import()
                             .TableEditing()
 
                             //.FormatPainter()

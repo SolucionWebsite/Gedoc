@@ -44,6 +44,7 @@ namespace Gedoc.Helpers.Dto
         public bool NuevaObservacion { get; set; }
         public string BaseUrl { get; set; }
         public string CodigoDocFirmado { get; set; }
+        public bool Urgente { get; set; }
 
         public DatosArchivo datosArchivo { get; set; }
     }

@@ -108,6 +108,25 @@
                             accion.Icono +
                             "'></span></a>";
                     }
+
+                    if (accion.IdAccion == "@AccionOficio.URGENTE.ToString()") {
+                        btnAcc = "<a href='#' class='mr-1' id='" +
+                            accion.IdAccion +
+                            id +
+                            "' onclick='" +
+                            accion.Onclick +
+                            "(\"" +
+                            id +
+                            "\", \"" +
+                            numOficio +
+                            "\", \"" +
+                            numDocsReq +
+                            "\"); return false;' title='" +
+                            accion.Titulo +
+                            "' >" +
+                            "<img src='Content/images/" + accion.Icono + "' width='16px' title='Urgente' /></a>";
+                    }
+
                     accionesHtml.push(btnAcc);
                 }
                 break;
@@ -545,7 +564,7 @@
         var element = "";
 
         if (isUrgent) {
-            element = "<span id='1' class='k-icon k-i-kpi-status-hold'></span>";
+            element = "<img src='Content/images/warning-red.png'  width='16px' title='Urgente'/>";
         } else {
             element = "<span id='0'></span>";
         }

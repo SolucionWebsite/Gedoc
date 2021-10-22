@@ -118,9 +118,16 @@
         {
             toolbar.Search();
             toolbar.Custom()
-                .HtmlAttributes ( new { onclick= "nuevaPlantilla(); return false;" } )
+                .HtmlAttributes ( new { onclick= "nuevaPlantilla(0); return false;" } )
                 .Name("NuevaPlantilla")
                 .Text("Agregar")
+                .IconClass("k-icon k-i-plus-outline")
+                .Url("#")
+                ;
+            toolbar.Custom()
+                .HtmlAttributes(new { onclick = "nuevaPlantilla(1); return false;" })
+                .Name("NuevaPlantillaWord")
+                .Text("Agregar mediante Word")
                 .IconClass("k-icon k-i-plus-outline")
                 .Url("#")
                 ;
@@ -208,9 +215,9 @@
         });
     }
 
-    function nuevaPlantilla() {
+    function nuevaPlantilla(isTemplateWord) {
         Acciones.ejecutaAccionNuevaVentana("Nueva Plantilla de Oficio",
-            '@Url.Action("FormPlantillaOficio")' + '?id=0'
+            '@Url.Action("FormPlantillaOficio")' + '?id=0&plantillaWord=' + isTemplateWord
             , "100%", 'MAX', "PLANT", refrescaGrid);
     }
 

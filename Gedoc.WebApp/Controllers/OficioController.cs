@@ -75,7 +75,7 @@ namespace Gedoc.WebApp.Controllers
             return Json(reqMain);
         }
 
-        public ActionResult FormPlantillaOficio(int id)
+        public ActionResult FormPlantillaOficio(int id, int plantillaWord)
         {
             ViewBag.AccesoForm = ValidaAccesoUtForm();
             var tipoPlant = (int) TipoPlantillaOficio.Despacho;
@@ -90,6 +90,7 @@ namespace Gedoc.WebApp.Controllers
             }
             ViewBag.CamposSeleccionables = _oficioSrv.GetCamposSeleccionablePorGrupos(tipoPlant);
             var model = _mapper.MapFromDtoToModel < PlantillaOficioDto, PlantillaOficioModel>(datos);
+            model.IsWordTemplate = plantillaWord == 1;
             return View(model);
         }
 

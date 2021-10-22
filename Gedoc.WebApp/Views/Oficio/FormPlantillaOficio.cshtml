@@ -383,10 +383,10 @@
             </div>
             <div class="col-md-6">
                 @*@Html.TextArea("Descripcion",
-                    new { @Value = @Html.Raw(Model.Descripcion),  @rows = "2", @cols = "20",
-                        @class = "form-control texto-largo w-100",
-                        @data_spanleyenda = "leyenda-pnDescripcion",
-                        @maxlength = "10000", @placeholder = "", @style = "width: 97%;margin: 5px;", @autoresize = "true" })*@
+                new { @Value = @Html.Raw(Model.Descripcion),  @rows = "2", @cols = "20",
+                    @class = "form-control texto-largo w-100",
+                    @data_spanleyenda = "leyenda-pnDescripcion",
+                    @maxlength = "10000", @placeholder = "", @style = "width: 97%;margin: 5px;", @autoresize = "true" })*@
 
                 <textarea name="Descripcion" rows="1" cols="20" id="Descripcion" class="form-control texto-largo"
                           data-spanleyenda="leyenda-pnDescripcion" data-autoresize="true"
@@ -445,29 +445,61 @@
                 }
             </div>
         </div>
-
-        <div class="form-row">
-            @*<div class="col-md-2">
+        @if (Model.IsWordTemplate)
+        {
+            <div class="form-row">
+                <div class="col-md-2">
+                </div>
+                <div class="col-md-4">
+                    <div class="demo-section k-content wide">
+                        <div>
+                            @(Html.Kendo().Upload()
+                            .Name("files")
+                            .Async(a => a
+                                //.Save("Chunk_Upload_Save", "Upload")
+                                .Remove("Chunk_Upload_Remove", "Upload")
+                                .AutoUpload(false)
+                                .ChunkSize(14000)
+                            )
+                            .DropZone(".dropZoneElement")
+                            //.Validation(validation =>
+                            //{
+                            //    validation.AllowedExtensions(Model.AllowedExtensions);
+                            //    if (@Model.IsLimited)
+                            //    {
+                            //        validation.MaxFileSize(50000);
+                            //    }
+                            //})
+                            )
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="form-row">
+                @*<div class="col-md-2">
                     <label class="label-dato-form">
                         Contenido<span class="marca-obligatorio" title="Este campo es obligatorio."> *</span>
                     </label>
                 </div>*@
-            <div class="col-md-12">
+                <div class="col-md-12">
 
-                <script id="campos-template" type="text/kendo-ui-template">
-                    @*<span class="k-sprite #: item.spriteCssClass #"></span>*@
-                    <span class="#: item.padreId ? 'campo-selecc' : 'grupo-campo' #"> #: item.text # </span>
-                </script>
+                    <script id="campos-template" type="text/kendo-ui-template">
+                            @*<span class="k-sprite #: item.spriteCssClass #"></span>*@
+                            <span class="#: item.padreId ? 'campo-selecc' : 'grupo-campo' #"> #: item.text # </span>
+                    </script>
 
-                @*Plantilla para el PDF q se genera al visualizar el oficio, tiene el encabezado y pie de página*@
-                <script type="x/kendo-template" id="page-oficio-template">
-                    <div class="page-template">
+                    @*Plantilla para el PDF q se genera al visualizar el oficio, tiene el encabezado y pie de página*@
+                    <script type="x/kendo-template" id="page-oficio-template">
+                        <div class="page-template">
 
-                    </div>
-                </script>
+                        </div>
+                    </script>
 
-                @*Se cambia la función de la tecla Enter: inserta un linebreak en vez de un separador de parrafo (Shift+Enter agregar separador de parrafo) -> el default del editor es al revés,*@
-                @*<script>
+                    @*Se cambia la función de la tecla Enter: inserta un linebreak en vez de un separador de parrafo (Shift+Enter agregar separador de parrafo) -> el default del editor es al revés,*@
+                    @*<script>
                         var editorNS = kendo.ui.editor,
                             registerTool = editorNS.EditorUtils.registerTool,
                             Tool = editorNS.Tool;
@@ -475,178 +507,178 @@
                         registerTool("insertParagraph", new Tool({ key: 13, shift: true, command: editorNS.ParagraphCommand }));
                     </script>*@
 
+                    <div id="editorWrapper">
+                        @(Html.Kendo().Editor()
+                                .Name("Contenido")
+                                .HtmlAttributes(new {style = "height:550px", aria_label = "editor", required = "required"})
+                                .PasteCleanup(p => p
+                                    .All(false)
+                                    .KeepNewLines(false)
+                                    .Span(false)
+                                    .Css(false)
+                                    .MsTags(true)
+                                    .MsAllFormatting(false)
+                                    .MsConvertLists(true))
+                                .StyleSheets(css => css
+                                    .Add(Url.Content("~/Content/editorStyles-plantilla.css"))
+                                    .Add(Url.Content("~/Content/pdfCommonStyles.css"))
+                                )
+                                .Immutables(false)
+                                .Resizable(r => r.Min(400).Content(true))
+                                //.Messages(msg =>
+                                //    msg.FontNameInherit("Tipo de Letra Heredado"))
+                                .Pdf(pdf => KendoHelper.SetPdfSettingsOficio(pdf, Url.Action("Pdf_Export_Save"))
+                                    .FileName("PlantillaOficio.pdf"))
+                                .Tools(tools => tools
+                                    .Clear()
+                                    .Bold().Italic().Underline()
+                                    .JustifyLeft().JustifyCenter().JustifyRight().JustifyFull()
+                                    .InsertUnorderedList().InsertOrderedList()
 
-                <div id="editorWrapper">
-                    @(Html.Kendo().Editor()
-                        .Name("Contenido")
-                        .HtmlAttributes(new {style = "height:550px", aria_label = "editor", required = "required"})
-                        .PasteCleanup(p => p
-                            .All(false)
-                            .KeepNewLines(false)
-                            .Span(false)
-                            .Css(false)
-                            .MsTags(true)
-                            .MsAllFormatting(false)
-                            .MsConvertLists(true))
-                        .StyleSheets(css => css
-                            .Add(Url.Content("~/Content/editorStyles-plantilla.css"))
-                            .Add(Url.Content("~/Content/pdfCommonStyles.css"))
-                        )
-                        .Immutables(false)
-                        .Resizable(r => r.Min(400).Content(true))
-                        //.Messages(msg =>
-                        //    msg.FontNameInherit("Tipo de Letra Heredado"))
-                        .Pdf(pdf => KendoHelper.SetPdfSettingsOficio(pdf, Url.Action("Pdf_Export_Save"))
-                            .FileName("PlantillaOficio.pdf"))
-                        .Tools(tools => tools
-                            .Clear()
-                            .Bold().Italic().Underline()
-                            .JustifyLeft().JustifyCenter().JustifyRight().JustifyFull()
-                            .InsertUnorderedList().InsertOrderedList()
-
-                            //.CustomButton(x => x
-                            //    .Name("groupBox")
-                            //    .ToolTip("Lista con letras")
-                            //    .Exec("onListaLetrasExec")
-                            //)
-                            //.CustomButton(x => x
-                            //    .Name("gridLayout")
-                            //    .ToolTip("Lista con números romanos")
-                            //    .Exec("onListaRomanosExec")
-                            //)
-                            .CustomButton(x => x
-                                .Name("gridLayout")
-                                .ToolTip("Lista con raya")
-                                .Exec("onListaGuionExec")
-                            )
-
-                            .Outdent().Indent()
-                            //.CreateLink().Unlink()
-                            .InsertImage()
-                            .FontName()
-                            .FontSize(items => items
-                                .Add("8pt", "8pt")
-                                .Add("9pt", "9pt")
-                                .Add("10pt", "small")
-                                .Add("11pt", "11pt")
-                                .Add("12pt", "12pt")
-                                .Add("14pt", "14pt")
-                                .Add("18px", "18px")
-                                .Add("24pt", "24pt")
-                                .Add("36pt", "36pt"))
-                            .FontColor(f => f.Palette( Kendo.Mvc.UI.ColorPickerPalette.None )) // en la versión jQuery del Editor seteando el palette a null permite seleccionar cualquier color (https://dojo.telerik.com/iciGAmER/4). Aquí no funciona, ni con null ni com ColorPickerPalette.None, ni con new string[0]
-                            .BackColor()
-                            .TableEditing()
-
-                            //.FormatPainter()
-                            //.CleanFormatting
-                            //.Formatting(items => items
-                            //	.Add("Lista (I, II,...)", ".lista-romanos-upper")
-                            //	.Add("Lista (i, ii, ...)", ".lista-romanos-upper")
-                            //	.Add("Lista (A, B, ...)", ".lista-romanos-upper")
-                            //	.Add("Lista (a, b, ...)", ".lista-romanos-upper")
-                            //)
-                            //.ViewHtml()
-
-                            .CustomTemplate(ct => ct.Template(
-                                Html.Kendo().DropDownTree()
-                                    .Name("CamposSeleccionables")
-                                    .AutoWidth(true).AutoClose(true)
-                                    .Checkboxes(false)
-                                    .Filter("contains").Placeholder("Campo a insertar")
-                                    .Events(events => events
-                                        .Select("onSelectCampo")
-                                        .Change("onChangeCampo"))
-                                    .TemplateId("campos-template")
-                                    .Messages(m => m.NoData("No se encontraron datos."))
-                                    .DataSource(dataSource => dataSource
-                                        .Read(read => read
-                                            .Action("GetCamposSeleccionablesTipoPlantilla", "Oficio")
-                                            .Data("extraDataCamposSelecc")
-                                        )
+                                    //.CustomButton(x => x
+                                    //    .Name("groupBox")
+                                    //    .ToolTip("Lista con letras")
+                                    //    .Exec("onListaLetrasExec")
+                                    //)
+                                    //.CustomButton(x => x
+                                    //    .Name("gridLayout")
+                                    //    .ToolTip("Lista con números romanos")
+                                    //    .Exec("onListaRomanosExec")
+                                    //)
+                                    .CustomButton(x => x
+                                        .Name("gridLayout")
+                                        .ToolTip("Lista con raya")
+                                        .Exec("onListaGuionExec")
                                     )
-                                    //.BindTo(camposSeleccionables, (NavigationBindingFactory<DropDownTreeItem>
-                                    //    mappings) =>
-                                    //{
-                                    //    mappings.For<CampoSeleccionableDto>
-                                    //        (binding => binding.ItemDataBound((item, campo) =>
-                                    //        {
-                                    //            item.Id = campo.Id.ToString();
-                                    //            item.Text = campo.Titulo;
-                                    //            item.Value = Html.Raw(campo.Variable).ToHtmlString();
-                                    //            item.HasChildren = campo.HasChildren;
-                                    //            item.SpriteCssClasses = "";
-                                    //            item.Url = "";
-                                    //            item.Checked = false;
-                                    //            item.Expanded = true;
-                                    //            //item.PrependCssClass((campo.Hijos?.Count ?? 0) > 0 ? "grupo-campo" : "campo-selecc");
-                                    //            //item.AppendCssClass("");
-                                    //        }).Children(campo => campo.Hijos));
-                                    //})
-                                    .ToClientTemplate().ToHtmlString()
-                                ))
-                            // Exportar a PDF custom:
-                            .CustomButton(cb => cb.Name("filePdf")
-                                .ToolTip("Exportar PDF")
-                                .Exec("exportaPdf"))
-                        // Full screen:
-                        //.CustomButton(cb => cb.Name("maximize")
-                        //    .ToolTip("Pantalla completa")
-                        //    .Exec("toggleFullScreen"))
-                        // Combo de opciones de exportar :
-                        ///.ExportAs()
-                        // Exportar a PDF propio del editor:
-                        //.Pdf()
-                        )
-                        //.ExportAs(exportAs => exportAs
-                        //    .FileName("PlantillaOficio")
-                        //    .Proxy("ExportEditor", "Oficio")
-                        //)
-                        // Combo de opciones de importar :
-                        //.Import(import => import
-                        //    .Proxy("ImportEditor", "Oficio")
-                        //    .AllowedExtensions(new[] { "docx", "rtf", "html", "txt" })
-                        //    .MaxFileSize(104857600)
-                        //    .Select("onSelectImportEditor")
-                        //    .Error("onErrorImportEditor")
-                        //)
-                        .Events(ev => ev.Select("onEditorSelect")
-                            .Execute("onExecuteEditorCommand"))
-                        //.Serialization(s => s
-                        //    //.Entities(false)
-                        //    .Custom("customDeserialization"))
-                        .Messages(m => m.InsertUnorderedList("Viñetas")
-                            .InsertOrderedList("Numeración")
-                            .Italic("Cursiva")
-                            .CleanFormatting("Limpiar formatos")
-                            .TableWizard("Asistente")
-                            .TableTab("Tabla")
-                            .CellTab("Celda")
-                            .AccessibilityTab("Accesibilidad")
-                            .Width("Ancho")
-                            .Height("Alto")
-                            .Columns("Columnas")
-                            .Rows("Filas")
-                            .CellSpacing("Espaciado de celda")
-                            .CellPadding("Relleno de celda")
-                            .Alignment("Alineación")
-                            .Background("Fondo")
-                            .CssClass("Clase CSS")
-                            .Border("Borde")
-                            .CollapseBorders("Colapsar bordes")
-                            .SelectAllCells("Seleccionar todas las celdas")
-                            .CellMargin("Margen de celda")
-                            .Caption("Título")
-                            .Summary("Resumen")
-                        )
-                        )
-                    <span class="k-invalid-msg" data-for="Contenido"></span>
+
+                                    .Outdent().Indent()
+                                    //.CreateLink().Unlink()
+                                    .InsertImage()
+                                    .FontName()
+                                    .FontSize(items => items
+                                        .Add("8pt", "8pt")
+                                        .Add("9pt", "9pt")
+                                        .Add("10pt", "small")
+                                        .Add("11pt", "11pt")
+                                        .Add("12pt", "12pt")
+                                        .Add("14pt", "14pt")
+                                        .Add("18px", "18px")
+                                        .Add("24pt", "24pt")
+                                        .Add("36pt", "36pt"))
+                                    .FontColor(f => f.Palette( Kendo.Mvc.UI.ColorPickerPalette.None )) // en la versión jQuery del Editor seteando el palette a null permite seleccionar cualquier color (https://dojo.telerik.com/iciGAmER/4). Aquí no funciona, ni con null ni com ColorPickerPalette.None, ni con new string[0]
+                                    .BackColor()
+                                    .TableEditing()
+
+                                    //.FormatPainter()
+                                    //.CleanFormatting
+                                    //.Formatting(items => items
+                                    //	.Add("Lista (I, II,...)", ".lista-romanos-upper")
+                                    //	.Add("Lista (i, ii, ...)", ".lista-romanos-upper")
+                                    //	.Add("Lista (A, B, ...)", ".lista-romanos-upper")
+                                    //	.Add("Lista (a, b, ...)", ".lista-romanos-upper")
+                                    //)
+                                    //.ViewHtml()
+
+                                    .CustomTemplate(ct => ct.Template(
+                                        Html.Kendo().DropDownTree()
+                                            .Name("CamposSeleccionables")
+                                            .AutoWidth(true).AutoClose(true)
+                                            .Checkboxes(false)
+                                            .Filter("contains").Placeholder("Campo a insertar")
+                                            .Events(events => events
+                                                .Select("onSelectCampo")
+                                                .Change("onChangeCampo"))
+                                            .TemplateId("campos-template")
+                                            .Messages(m => m.NoData("No se encontraron datos."))
+                                            .DataSource(dataSource => dataSource
+                                                .Read(read => read
+                                                    .Action("GetCamposSeleccionablesTipoPlantilla", "Oficio")
+                                                    .Data("extraDataCamposSelecc")
+                                                )
+                                            )
+                                            //.BindTo(camposSeleccionables, (NavigationBindingFactory<DropDownTreeItem>
+                                            //    mappings) =>
+                                            //{
+                                            //    mappings.For<CampoSeleccionableDto>
+                                            //        (binding => binding.ItemDataBound((item, campo) =>
+                                            //        {
+                                            //            item.Id = campo.Id.ToString();
+                                            //            item.Text = campo.Titulo;
+                                            //            item.Value = Html.Raw(campo.Variable).ToHtmlString();
+                                            //            item.HasChildren = campo.HasChildren;
+                                            //            item.SpriteCssClasses = "";
+                                            //            item.Url = "";
+                                            //            item.Checked = false;
+                                            //            item.Expanded = true;
+                                            //            //item.PrependCssClass((campo.Hijos?.Count ?? 0) > 0 ? "grupo-campo" : "campo-selecc");
+                                            //            //item.AppendCssClass("");
+                                            //        }).Children(campo => campo.Hijos));
+                                            //})
+                                            .ToClientTemplate().ToHtmlString()
+                                        ))
+                                    // Exportar a PDF custom:
+                                    .CustomButton(cb => cb.Name("filePdf")
+                                        .ToolTip("Exportar PDF")
+                                        .Exec("exportaPdf"))
+                                // Full screen:
+                                //.CustomButton(cb => cb.Name("maximize")
+                                //    .ToolTip("Pantalla completa")
+                                //    .Exec("toggleFullScreen"))
+                                // Combo de opciones de exportar :
+                                ///.ExportAs()
+                                // Exportar a PDF propio del editor:
+                                //.Pdf()
+                                )
+                                //.ExportAs(exportAs => exportAs
+                                //    .FileName("PlantillaOficio")
+                                //    .Proxy("ExportEditor", "Oficio")
+                                //)
+                                // Combo de opciones de importar :
+                                //.Import(import => import
+                                //    .Proxy("ImportEditor", "Oficio")
+                                //    .AllowedExtensions(new[] { "docx", "rtf", "html", "txt" })
+                                //    .MaxFileSize(104857600)
+                                //    .Select("onSelectImportEditor")
+                                //    .Error("onErrorImportEditor")
+                                //)
+                                .Events(ev => ev.Select("onEditorSelect")
+                                    .Execute("onExecuteEditorCommand"))
+                                //.Serialization(s => s
+                                //    //.Entities(false)
+                                //    .Custom("customDeserialization"))
+                                .Messages(m => m.InsertUnorderedList("Viñetas")
+                                    .InsertOrderedList("Numeración")
+                                    .Italic("Cursiva")
+                                    .CleanFormatting("Limpiar formatos")
+                                    .TableWizard("Asistente")
+                                    .TableTab("Tabla")
+                                    .CellTab("Celda")
+                                    .AccessibilityTab("Accesibilidad")
+                                    .Width("Ancho")
+                                    .Height("Alto")
+                                    .Columns("Columnas")
+                                    .Rows("Filas")
+                                    .CellSpacing("Espaciado de celda")
+                                    .CellPadding("Relleno de celda")
+                                    .Alignment("Alineación")
+                                    .Background("Fondo")
+                                    .CssClass("Clase CSS")
+                                    .Border("Borde")
+                                    .CollapseBorders("Colapsar bordes")
+                                    .SelectAllCells("Seleccionar todas las celdas")
+                                    .CellMargin("Margen de celda")
+                                    .Caption("Título")
+                                    .Summary("Resumen")
+                                )
+                                )
+                        <span class="k-invalid-msg" data-for="Contenido"></span>
+                    </div>
+
                 </div>
+
             </div>
-
-        </div>
-
-        <div class="footer-modal">
+        }
+        <div class="footer-modal" style="@(Model.IsWordTemplate ? "border-radius: 0; bottom:0px; position:absolute; width:100%;" : "")">
             <div class="form-row">
                 <div class="offset-md-3 col-md-2 text-center">
                     <button type="button" id="btngrabaPlantilla" class="k-primary-blue k-button" onclick="grabaPlantilla(event);">Guardar</button>
@@ -656,9 +688,7 @@
                 </div>
             </div>
         </div>
-
     </form>
-
 </div>
 
 <script>

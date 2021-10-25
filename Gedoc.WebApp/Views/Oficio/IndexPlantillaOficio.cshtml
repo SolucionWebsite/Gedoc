@@ -57,15 +57,22 @@
         }
     }
 
-    function buildAccionesPlantilla(id, titulo) {
+    function buildAccionesPlantilla(id, titulo, TipoWord) {
         var enlace = "";
         var btn = "<button class='k-button mr-1' onclick='editarPlantilla(\"" + id +
             "\")' title='Editar' type='button' data-role='button' role='button'><span class='k-icon k-i-edit'></span></button>";
         enlace += btn;
-        btn = "<button class='k-button' id='btnDelPlantilla" + id +
+        btn = "<button class='k-button mr-1' id='btnDelPlantilla" + id +
             "' onclick='eliminarPlantilla(\"" + id + "\", \"" + titulo +
             "\")' title='Eliminar' type='button' data-role='button' role='button'><span class='k-icon k-i-trash'></span></button>";
         enlace += btn;
+
+        if (TipoWord) {
+            btn = "<a href='#' class='mr-1' id='btnDescargarWord" + id +
+                "' onclick='descargarWord(\"" + id + "\", \"" + titulo +
+                "\") return false;' title='DescargarWord'><img src='Content/images/word.png' width='28px'/></a>";
+            enlace += btn;
+        }
 
         enlace = '<div style="display: inline-flex;">' + enlace + '</div>';
         return enlace;
@@ -166,7 +173,7 @@
                 .Title("<center>Acción</center>")
                 .Sortable(false)
                 .Filterable(false)
-                .ClientTemplate("#= buildAccionesPlantilla(data.Id, data.Nombre) #");
+                .ClientTemplate("#= buildAccionesPlantilla(data.Id, data.Nombre, data.TipoWord) #");
         })
         )
 
@@ -215,9 +222,9 @@
         });
     }
 
-    function nuevaPlantilla(isTemplateWord) {
+    function nuevaPlantilla(TipoWord) {
         Acciones.ejecutaAccionNuevaVentana("Nueva Plantilla de Oficio",
-            '@Url.Action("FormPlantillaOficio")' + '?id=0&plantillaWord=' + isTemplateWord
+            '@Url.Action("FormPlantillaOficio")' + '?id=0&tipoWord=' + TipoWord
             , "100%", 'MAX', "PLANT", refrescaGrid);
     }
 

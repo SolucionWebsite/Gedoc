@@ -20,6 +20,6 @@ namespace Gedoc.WebApp.Models
         public int? UsuarioModificacionId { get; set; }
         public DateTime? EliminacionFecha { get; set; }
         public int? UsuarioEliminacionId { get; set; }
-        public bool IsWordTemplate { get; set; }
+        public bool TipoWord { get; set; }
     }
 }

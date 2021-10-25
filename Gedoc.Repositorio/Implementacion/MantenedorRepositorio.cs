@@ -1077,7 +1077,8 @@ namespace Gedoc.Repositorio.Implementacion
                         Nombre = d.Nombre,
                         Activo = d.Activo,
                         Descripcion = d.Descripcion,
-                        TipoTramiteId = d.TipoTramiteId
+                        TipoTramiteId = d.TipoTramiteId,
+                        TipoWord = d.TipoWord
                     })
                     .OrderBy(tp => tp.Nombre)
                     .ToList();

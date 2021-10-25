@@ -640,6 +640,7 @@
           <Property Name="UsuarioEliminacionId" Type="int" />
           <Property Name="Eliminado" Type="bit" Nullable="false" />
           <Property Name="TipoPlantillaId" Type="int" Nullable="false" />
+          <Property Name="TipoWord" Type="bit" Nullable="false" />
         </EntityType>
         <EntityType Name="Remitente">
           <Key>
@@ -949,8 +950,8 @@
           <Property Name="UsuarioId" Type="int" Nullable="false" />
           <Property Name="UnidadTecnicaId" Type="int" Nullable="false" />
         </EntityType>
-        <!--Errors Found During Generation:
-warning 6002: The table/view 'GedocMvc_PROD.dbo.vw_AccionesBandeja' does not have a primary key defined. The key has been inferred and the definition was created as a read-only table/view.-->
+        <!--Errores durante la generación:
+advertencia 6002: La tabla o vista 'GedocMvc_Prod.dbo.vw_AccionesBandeja' no tiene definida ninguna clave principal. Se ha inferido la clave y la definición se creado como una vista o tabla de solo lectura.-->
         <EntityType Name="vw_AccionesBandeja">
           <Key>
             <PropertyRef Name="BandejaId" />
@@ -971,8 +972,8 @@ warning 6002: The table/view 'GedocMvc_PROD.dbo.vw_AccionesBandeja' does not hav
           <Property Name="AccionId" Type="int" Nullable="false" />
           <Property Name="AccionTitulo" Type="varchar" MaxLength="100" Nullable="false" />
         </EntityType>
-        <!--Errors Found During Generation:
-warning 6002: The table/view 'GedocMvc_PROD.dbo.vw_BandejaEntrada' does not have a primary key defined. The key has been inferred and the definition was created as a read-only table/view.-->
+        <!--Errores durante la generación:
+advertencia 6002: La tabla o vista 'GedocMvc_Prod.dbo.vw_BandejaEntrada' no tiene definida ninguna clave principal. Se ha inferido la clave y la definición se creado como una vista o tabla de solo lectura.-->
         <EntityType Name="vw_BandejaEntrada">
           <Key>
             <PropertyRef Name="Id" />
@@ -1021,8 +1022,8 @@ warning 6002: The table/view 'GedocMvc_PROD.dbo.vw_BandejaEntrada' does not have
           <Property Name="ForzarPrioridadFecha" Type="datetime" />
           <Property Name="ForzarPrioridadMotivo" Type="varchar(max)" />
         </EntityType>
-        <!--Errors Found During Generation:
-warning 6002: The table/view 'GedocMvc_PROD.dbo.vw_BandejaEntradaDespachoInic' does not have a primary key defined. The key has been inferred and the definition was created as a read-only table/view.-->
+        <!--Errores durante la generación:
+advertencia 6002: La tabla o vista 'GedocMvc_Prod.dbo.vw_BandejaEntradaDespachoInic' no tiene definida ninguna clave principal. Se ha inferido la clave y la definición se creado como una vista o tabla de solo lectura.-->
         <EntityType Name="vw_BandejaEntradaDespachoInic">
           <Key>
             <PropertyRef Name="Id" />
@@ -1040,8 +1041,8 @@ warning 6002: The table/view 'GedocMvc_PROD.dbo.vw_BandejaEntradaDespachoInic' d
           <Property Name="Materia" Type="varchar(max)" />
           <Property Name="Acciones" Type="varchar" MaxLength="1" Nullable="false" />
         </EntityType>
-        <!--Errors Found During Generation:
-warning 6002: The table/view 'GedocMvc_PROD.dbo.vw_DestinatarioDesp' does not have a primary key defined. The key has been inferred and the definition was created as a read-only table/view.-->
+        <!--Errores durante la generación:
+advertencia 6002: La tabla o vista 'GedocMvc_Prod.dbo.vw_DestinatarioDesp' no tiene definida ninguna clave principal. Se ha inferido la clave y la definición se creado como una vista o tabla de solo lectura.-->
         <EntityType Name="vw_DestinatarioDesp">
           <Key>
             <PropertyRef Name="RequerimientoMainDocumentoIngreso" />
@@ -1091,8 +1092,8 @@ warning 6002: The table/view 'GedocMvc_PROD.dbo.vw_DestinatarioDesp' does not ha
           <Property Name="RequerimientoMainMonumentoNacionalNombreUsoActual" Type="varchar" MaxLength="1000" />
           <Property Name="RequerimientoMainMonumentoNacionalReferenciaLocalidad" Type="varchar(max)" />
         </EntityType>
-        <!--Errors Found During Generation:
-warning 6002: The table/view 'GedocMvc_PROD.dbo.vw_EtiquetasReq' does not have a primary key defined. The key has been inferred and the definition was created as a read-only table/view.-->
+        <!--Errores durante la generación:
+advertencia 6002: La tabla o vista 'GedocMvc_Prod.dbo.vw_EtiquetasReq' no tiene definida ninguna clave principal. Se ha inferido la clave y la definición se creado como una vista o tabla de solo lectura.-->
         <EntityType Name="vw_EtiquetasReq">
           <Key>
             <PropertyRef Name="Id" />
@@ -1139,8 +1140,8 @@ warning 6002: The table/view 'GedocMvc_PROD.dbo.vw_EtiquetasReq' does not have a
           <Property Name="RegionTitulos" Type="nvarchar(max)" Nullable="false" />
           <Property Name="ComunaTitulos" Type="nvarchar(max)" Nullable="false" />
         </EntityType>
-        <!--Errors Found During Generation:
-warning 6002: The table/view 'GedocMvc_PROD.dbo.vw_FichaIngreso' does not have a primary key defined. The key has been inferred and the definition was created as a read-only table/view.-->
+        <!--Errores durante la generación:
+advertencia 6002: La tabla o vista 'GedocMvc_Prod.dbo.vw_FichaIngreso' no tiene definida ninguna clave principal. Se ha inferido la clave y la definición se creado como una vista o tabla de solo lectura.-->
         <EntityType Name="vw_FichaIngreso">
           <Key>
             <PropertyRef Name="Id" />
@@ -1280,8 +1281,8 @@ warning 6002: The table/view 'GedocMvc_PROD.dbo.vw_FichaIngreso' does not have a
           <Property Name="ForzarPrioridadFecha" Type="datetime" />
           <Property Name="ForzarPrioridadMotivo" Type="varchar(max)" />
         </EntityType>
-        <!--Errors Found During Generation:
-warning 6002: The table/view 'GedocMvc_PROD.dbo.vw_GeneroReq' does not have a primary key defined. The key has been inferred and the definition was created as a read-only table/view.-->
+        <!--Errores durante la generación:
+advertencia 6002: La tabla o vista 'GedocMvc_Prod.dbo.vw_GeneroReq' no tiene definida ninguna clave principal. Se ha inferido la clave y la definición se creado como una vista o tabla de solo lectura.-->
         <EntityType Name="vw_GeneroReq">
           <Key>
             <PropertyRef Name="Id" />
@@ -1339,8 +1340,8 @@ warning 6002: The table/view 'GedocMvc_PROD.dbo.vw_GeneroReq' does not have a pr
           <Property Name="EstadoId" Type="int" Nullable="false" />
           <Property Name="EstadoTitulo" Type="varchar" MaxLength="250" />
         </EntityType>
-        <!--Errors Found During Generation:
-warning 6002: The table/view 'GedocMvc_PROD.dbo.vw_GeneroReqNivel1' does not have a primary key defined. The key has been inferred and the definition was created as a read-only table/view.-->
+        <!--Errores durante la generación:
+advertencia 6002: La tabla o vista 'GedocMvc_Prod.dbo.vw_GeneroReqNivel1' no tiene definida ninguna clave principal. Se ha inferido la clave y la definición se creado como una vista o tabla de solo lectura.-->
         <EntityType Name="vw_GeneroReqNivel1">
           <Key>
             <PropertyRef Name="Anno" />
@@ -1350,8 +1351,8 @@ warning 6002: The table/view 'GedocMvc_PROD.dbo.vw_GeneroReqNivel1' does not hav
           <Property Name="Anno" Type="int" Nullable="false" />
           <Property Name="Mes" Type="int" Nullable="false" />
         </EntityType>
-        <!--Errors Found During Generation:
-warning 6002: The table/view 'GedocMvc_PROD.dbo.vw_GeneroReqNivel2' does not have a primary key defined. The key has been inferred and the definition was created as a read-only table/view.-->
+        <!--Errores durante la generación:
+advertencia 6002: La tabla o vista 'GedocMvc_Prod.dbo.vw_GeneroReqNivel2' no tiene definida ninguna clave principal. Se ha inferido la clave y la definición se creado como una vista o tabla de solo lectura.-->
         <EntityType Name="vw_GeneroReqNivel2">
           <Key>
             <PropertyRef Name="Anno" />
@@ -1363,8 +1364,8 @@ warning 6002: The table/view 'GedocMvc_PROD.dbo.vw_GeneroReqNivel2' does not hav
           <Property Name="Mes" Type="int" Nullable="false" />
           <Property Name="Genero" Type="varchar" MaxLength="50" Nullable="false" />
         </EntityType>
-        <!--Errors Found During Generation:
-warning 6002: The table/view 'GedocMvc_PROD.dbo.vw_RemitentesReq' does not have a primary key defined. The key has been inferred and the definition was created as a read-only table/view.-->
+        <!--Errores durante la generación:
+advertencia 6002: La tabla o vista 'GedocMvc_Prod.dbo.vw_RemitentesReq' no tiene definida ninguna clave principal. Se ha inferido la clave y la definición se creado como una vista o tabla de solo lectura.-->
         <EntityType Name="vw_RemitentesReq">
           <Key>
             <PropertyRef Name="Id" />
@@ -1426,8 +1427,8 @@ warning 6002: The table/view 'GedocMvc_PROD.dbo.vw_RemitentesReq' does not have 
           <Property Name="MonumentoNacionalNombreUsoActual" Type="varchar" MaxLength="1000" />
           <Property Name="MonumentoNacionalReferenciaLocalidad" Type="varchar(max)" />
         </EntityType>
-        <!--Errors Found During Generation:
-warning 6002: The table/view 'GedocMvc_PROD.dbo.vw_Usuario' does not have a primary key defined. The key has been inferred and the definition was created as a read-only table/view.-->
+        <!--Errores durante la generación:
+advertencia 6002: La tabla o vista 'GedocMvc_Prod.dbo.vw_Usuario' no tiene definida ninguna clave principal. Se ha inferido la clave y la definición se creado como una vista o tabla de solo lectura.-->
         <EntityType Name="vw_Usuario">
           <Key>
             <PropertyRef Name="Id" />
@@ -6685,6 +6686,7 @@ warning 6002: The table/view 'GedocMvc_PROD.dbo.vw_Usuario' does not have a prim
           <NavigationProperty Name="UsuarioEliminacion" Relationship="GedocDbModel.FK_PlantillaOficio_UsuarioElim" FromRole="PlantillaOficio" ToRole="Usuario" />
           <NavigationProperty Name="UsuarioEdicion" Relationship="GedocDbModel.FK_PlantillaOficio_UsuarioMod" FromRole="PlantillaOficio" ToRole="Usuario" />
           <Property Name="TipoPlantillaId" Type="Int32" Nullable="false" />
+          <Property Name="TipoWord" Type="Boolean" Nullable="false" />
         </EntityType>
         <Association Name="FK_PlantillaOficio_TipoTr">
           <End Type="GedocDbModel.TipoTramite" Role="TipoTramite" Multiplicity="0..1" />
@@ -8672,6 +8674,7 @@ warning 6002: The table/view 'GedocMvc_PROD.dbo.vw_Usuario' does not have a prim
           <EntitySetMapping Name="PlantillaOficio">
             <EntityTypeMapping TypeName="GedocDbModel.PlantillaOficio">
               <MappingFragment StoreEntitySet="PlantillaOficio">
+                <ScalarProperty Name="TipoWord" ColumnName="TipoWord" />
                 <ScalarProperty Name="TipoPlantillaId" ColumnName="TipoPlantillaId" />
                 <ScalarProperty Name="Eliminado" ColumnName="Eliminado" />
                 <ScalarProperty Name="UsuarioEliminacionId" ColumnName="UsuarioEliminacionId" />

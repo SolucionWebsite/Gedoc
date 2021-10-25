@@ -445,16 +445,21 @@
                 }
             </div>
         </div>
-        @if (Model.IsWordTemplate)
+        @if (Model.TipoWord)
         {
             <div class="form-row">
                 <div class="col-md-2">
+                    <label class="label-dato-form">
+                        Modelo de plantilla
+                    </label>
                 </div>
                 <div class="col-md-4">
                     <div class="demo-section k-content wide">
                         <div>
                             @(Html.Kendo().Upload()
                             .Name("files")
+                            .HtmlAttributes(new { accept = ".doc,.docx,application/msword" })
+                            .Multiple(false)
                             .Async(a => a
                                 //.Save("Chunk_Upload_Save", "Upload")
                                 .Remove("Chunk_Upload_Remove", "Upload")
@@ -474,6 +479,9 @@
                         </div>
                     </div>
                 </div>
+            </div>
+            <div class="form-row">
+                <input class="" id="TipoWord" name="TipoWord" type="text" value="True" hidden="hidden">
             </div>
         }
         else
@@ -678,7 +686,7 @@
 
             </div>
         }
-        <div class="footer-modal" style="@(Model.IsWordTemplate ? "border-radius: 0; bottom:0px; position:absolute; width:100%;" : "")">
+        <div class="footer-modal" style="@(Model.TipoWord ? "border-radius: 0; bottom:0px; position:absolute; width:100%;" : "")">
             <div class="form-row">
                 <div class="offset-md-3 col-md-2 text-center">
                     <button type="button" id="btngrabaPlantilla" class="k-primary-blue k-button" onclick="grabaPlantilla(event);">Guardar</button>

@@ -18,6 +18,7 @@
                       codigoBandeja == (int)Bandeja.ProfesionalUt ||
                       codigoBandeja == (int)Bandeja.Transparencia;
     bool compruebaFirmaOficios = codigoBandeja == (int)Bandeja.JefaturaUt;
+    bool mostrarTabTramites = true; // siempre true, al menos por ahora.
 }
 
 <style>
@@ -409,7 +410,7 @@
         </a>
     }*@
 
-@*Pestañas de la bandeja: Bandeja de Entrada, Priorizados y Oficios*@
+@*Pestañas de la bandeja: Bandeja de Entrada, Priorizados, Oficios y Trámites *@
 @(Html.Kendo().TabStrip()
     .Name("tabStripPestannas")
     .Items(tabstrip =>
@@ -453,6 +454,21 @@
                 }).ToHtmlString()
                 : ""
             );
+
+        tabstrip.Add()
+            .Text("Trámites Digitales")
+            .Visible(mostrarTabTramites)
+            .Content(mostrarTabTramites
+                ? Html.Partial("Partial/PestannaBandejaTramites", 
+                    new ViewDataDictionary
+                {
+                    { "CodigoBandeja", codigoBandeja },
+                    { "IdBandeja", idBandeja },
+                    { "CurrentUserName", ViewBag.CurrentUserName }
+                }).ToHtmlString()
+                : ""
+            );
+
     })
 )
 

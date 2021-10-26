@@ -1,4 +1,4 @@
-﻿// T4 code generation is enabled for model 'D:\03_Dibam\GEDOC MVC\GEDOC MVC en TFS Dibam\Código fuente\GedocMvc\Gedoc.Repositorio\Model\GedocModel.edmx'. 
+﻿// T4 code generation is enabled for model 'D:\03_Dibam\GEDOC MVC\PRO_MejGedoc2021_27_2021\Gedoc.Repositorio\Model\GedocModel.edmx'. 
 // To enable legacy code generation, change the value of the 'Code Generation Strategy' designer
 // property to 'Legacy ObjectContext'. This property is available in the Properties Window when the model
 // is open in the designer.

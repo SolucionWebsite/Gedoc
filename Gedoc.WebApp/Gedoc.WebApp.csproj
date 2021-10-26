@@ -682,6 +682,7 @@
     <Content Include="Views\AdjuntoOficio\FormAdjunto.cshtml" />
     <Content Include="Views\AdjuntoOficio\GrillaAdjunto.cshtml" />
     <Content Include="Views\Requerimiento\FormCierreMultiple.cshtml" />
+    <Content Include="Views\Home\Partial\PestannaBandejaTramites.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

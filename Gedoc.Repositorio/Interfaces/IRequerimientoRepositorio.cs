@@ -45,7 +45,7 @@ namespace Gedoc.Repositorio.Interfaces
         List<RequerimientoDto> GetRequerimientoByIds(List<int> ids, bool soloCerrados);
         DatosAjax<List<RequerimientoDto>> GetDatosBandejaEntrada(int idBandeja, int codigoBandeja, int skip, int take,
             SortParam sort, string filterText, string filtroSql, object[] filtroSqlParams, DateTime fechaDesde, int idUsuario, int? DocumentoIngreso, DateTime? FechaHasta, 
-            int? UnidadTecnica, int? Estado);
+            int? UnidadTecnica, int? Estado, bool? soloTramite);
         //DatosAjax<List<RequerimientoDto>> GetDatosBandejaEntradaHistorico(int idBandeja, int skip, int take,
         //    SortParam sort, string filterText, DateTime fechaDesde, int? DocumentoIngreso, DateTime? FechaHasta, int? UnidadTecnica, int? Estado);
         DatosAjax<List<GroupResult>> GetDatosBandejaPriorizados(int idBandeja, int codigoBandeja, int skip, int take,

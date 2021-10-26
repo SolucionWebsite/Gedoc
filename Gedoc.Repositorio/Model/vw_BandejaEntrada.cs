@@ -50,5 +50,6 @@ namespace Gedoc.Repositorio.Model
         public Nullable<bool> ForzarPrioridad { get; set; }
         public Nullable<System.DateTime> ForzarPrioridadFecha { get; set; }
         public string ForzarPrioridadMotivo { get; set; }
+        public Nullable<int> SolicitudTramId { get; set; }
     }
 }

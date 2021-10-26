@@ -25,7 +25,7 @@ namespace Gedoc.Service.DataAccess.Interfaces
         /// <param name="param">Opciones para obtener los datos</param>
         /// <param name="idUsuario"></param>
         /// <returns></returns>
-        DatosAjax<List<RequerimientoDto>> GetDatosBandejaEntrada(ParametrosGrillaDto<int> param, int idUsuario);
+        DatosAjax<List<RequerimientoDto>> GetDatosBandejaEntrada(ParametrosGrillaDto<int> param, int idUsuario, bool? soloTramite);
 
         DatosAjax<List<GroupResult>> GetDatosBandejaPriorizados(ParametrosGrillaDto<int> param, int idUsuario);
         RequerimientoDto GetById(int id);

@@ -1,0 +1,264 @@
+﻿@using Gedoc.Helpers
+@using Gedoc.Helpers.Enum
+@using Gedoc.WebApp.Models
+
+@{
+    int codigoBandeja = ViewBag.CodigoBandeja ?? 0;
+    int idBandeja = ViewBag.IdBandeja ?? 0;
+    bool mostrarColumnaNuevaFechaPrio = codigoBandeja == (int)Bandeja.EncargadoUt ||
+                                codigoBandeja == (int)Bandeja.SecretariaUt ||
+                                codigoBandeja == (int)Bandeja.ProfesionalUt;
+    var userName = ViewBag.CurrentUserName ?? "";
+    userName = userName.Contains(@"\") ? userName.Remove(0, userName.IndexOf(@"\") + 1) : userName;
+    var secretKeyTramitesWeb = WebConfigValues.SecretKeyTramitesWeb;
+}
+
+<script>
+
+    $(function () {
+        // Búsqueda en la grilla
+        $("#textoBusqGridTram").on("search",
+            function(e) {
+                var grid = $("#gridBandejaTram").data("kendoGrid");
+                if (grid && grid.dataSource) {
+                    grid.dataSource.filter({});
+                }
+            });
+
+    });
+
+    function extraDataGrillaTram() {
+        return {
+            Dato: '@idBandeja',
+            FilterText: $('#textoBusqGridTram').val(),
+            DocumentoIngreso: $("#busqDocumentoIngresoTram").val(),
+            FechaDesde: $("#busqFechaDesdeTram").val(),
+            FechaHasta: $("#busqFechaHastaTram").val(),
+            UnidadTecnica: $("#busqUnidadTecnicaTram").val(),
+            Estado: $("#busqEstadoTram").val()
+        };
+    }
+
+    function onDataBoundGridTram(e) {
+        var grid = this;
+        grid.tbody.find('>tr').each(function() {
+            var dataItem = grid.dataItem(this);
+            coloreaRowGrid(dataItem, this);
+        });
+    }
+
+    function reducirGridTram() {
+        var grid = $("#gridBandejaTram").data("kendoGrid");
+        if (grid) {
+            grid.hideColumn("RemitenteInstitucion");
+            grid.hideColumn("Resolucion");
+            grid.hideColumn("AsignacionUt");
+            $("#btnReducirGridTram").hide();
+            $("#btnAmpliarGridTram").show();
+        }
+    }
+
+    function ampliarGridTram() {
+        var grid = $("#gridBandejaTram").data("kendoGrid");
+        if (grid) {
+            grid.showColumn("RemitenteInstitucion");
+            grid.showColumn("Resolucion");
+            grid.showColumn("AsignacionUt");
+            $("#btnReducirGridTram").show();
+            $("#btnAmpliarGridTram").hide();
+        }
+    }
+
+    function onRequestEndDsGridBandejaTram(e) {
+        Main.enEspera($('#gridBandejaTram'), false);
+        Main.notificaResultado(e);
+    }
+
+    function tramitesWebTram(e, idSolicitud) {
+        e.preventDefault(); 
+        var urlAuthTramitesWeb = "@(WebConfigValues.UrlAuthTramitesWeb ?? "")";
+        urlAuthTramitesWeb = urlAuthTramitesWeb.replace("%solicitud%", idSolicitud);
+        var urlTramitesWeb = "@(WebConfigValues.UrlTramitesWeb ?? "")";
+        urlTramitesWeb = urlTramitesWeb.replace("%solicitud%", idSolicitud);
+
+        if (!urlTramitesWeb.length) {
+            Main.showError("No es posible conectar al sistema de Trámites. Es necesario configurar en la aplicación el enlace al sistema de Trámites.");
+            return false;
+        }
+        var user = "@userName";
+        var secretKey = "@secretKeyTramitesWeb";
+        Main.abreUrlTramite(urlAuthTramitesWeb, user, secretKey, urlTramitesWeb, idSolicitud );
+    }
+
+
+
+</script>
+
+
+<div id="divBandejaTram">
+    
+    @helper EnlaceDespachoIngresoTram()
+    {
+        <a href="\\#" class="text-center enlace-grilla"
+           onclick="ventanaOficios('Oficios CMN asociados al ingreso #= data.DocumentoIngreso #', '@Url.Action("DespachosIngresoForm", "Despacho")?idRequerimiento=#= Id #&idBandeja=@ViewBag.IdBandeja'); return false;">
+            #: CantOficiosCmn #
+        </a>
+    }
+
+    @(Html.Kendo().DataSource<RequerimientoModel>()
+        .Name("dataSourceGridTram")
+        .Ajax(dataSource => dataSource
+            .Read(read =>
+            {
+                read.Action("DatosBandejaEntradaTramites", "Home")
+                    .Type(HttpVerbs.Post)
+                    .Data("extraDataGrillaTram");
+            })
+            .Events(ev =>
+            {
+                //ev.RequestStart("function() { Main.enEspera($('#gridBandejaTram'), true) }")
+                ev.RequestEnd("onRequestEndDsGridBandejaTram");
+            })
+            .PageSize(10)
+        )
+        )
+    @(Html.Kendo().Grid<RequerimientoModel>()
+        .Name("gridBandejaTram")
+        .ToolBar(t => t.Template(@<text>
+                                     <div class="form-row">
+                                         <div class="col-md-1">
+                                             @*Botón para mostrar una versión reducida de la grilla. Se oculta el icono para q no sea visible, se ocupa sólo en etapa de desarrollo, no ha sido solicitado por el cliente.*@
+                                             @*<button type="button" id="btnReducirGridTram" class="btn btn-sm" onclick="reducirGridTram()"
+                                                         data-toggle="tooltip" title="Vista reducida de la grilla">
+                                                     <span class="k-icon k-i-indent-NOPORELMOMENTO"></span>
+                                                 </button>*@
+                                             @*Botón para mostrar la grilla en su tamaño normal luego de mostrarla reducida*@
+                                             @*<button type="button" id="btnAmpliarGridTram" class="btn btn-sm" onclick="ampliarGridTram()"
+                                                         data-toggle="tooltip" title="Vista normal de la grilla"
+                                                         style="display: none;">
+                                                     <span class="k-icon k-i-outdent-NOPORELMOMENTO"></span>
+                                                 </button>*@
+                                         </div>
+                                         <div class="col-md-6 offset-md-5 text-right">
+                                             <label class="" for="textoBusqGridTram">Buscar:</label>
+                                             <input type="search" id="textoBusqGridTram" class="k-textbox" style="width: 150px">
+                                             <div class="" style="line-height: normal; font-size: 0.9em;"><b>Importante:</b> en esta bandeja se despliegan los ingresos de los últimos <span id="mesesBandeja1" class="textDiasBandeja">6 meses</span> asociados a tu perfil, si necesita buscar en la bandeja, utiliza el casillero <b>Buscar</b>. Si el ingreso es anterior a <span id="mesesBandeja2" class="textDiasBandeja">6 meses</span> debe utilizar <b>Búsqueda en Bandeja de Entrada</b>. Para registros en general, es decir no asociados a tu perfil debes utilizar <b>Búsqueda Avanzada</b>. </div>
+
+                                         </div>
+                                     </div>
+                                  </text>))
+        .EnableCustomBinding(true)
+        .DataSource("dataSourceGridTram")
+        .Scrollable(scr => scr.Height("auto"))
+        .Pageable(p => p.AlwaysVisible(true).PageSizes(new int[3] {10, 50, 100}).Enabled(true)
+            .Messages(m => m.ItemsPerPage("registros por página")))
+        .Sortable()
+        .Navigatable()
+        .Events(e => e.DataBound("onDataBoundGridTram"))
+        .Filterable(s => s.Enabled(true))
+        //.Groupable()
+        //.Selectable(s => s.Mode(GridSelectionMode.Single	))
+        .Columns(columns =>
+        {
+            columns.Bound(c => c.SolicitudTramId)
+                .Width(100)
+                .Title("ID<br>Solicitud <span class='k-icon k-i-kpi' style='color: lightgray;'></span>")
+                .ClientTemplate("<a href='##' class='enlace-grilla' onclick='tramitesWebTram(event, #=data.SolicitudTramId#); return false;'>#= data.SolicitudTramId #</a>")
+                .Sortable(true)
+                .Filterable(false);
+            columns.Bound(c => c.Id)
+                .Width(130)
+                .Title("Documento<br>Ingreso <span class='k-icon k-i-kpi' style='color: lightgray;'></span>")
+                .ClientTemplate("#= Main.getTemplateFicha(data.DocumentoIngreso, data.Id, data.DocumentoIngreso) #" + "<br>" +
+                                "#= Main.getTemplateResumen(data.DocumentoIngreso, data.Id) #")
+                .Sortable(true)
+                .Filterable(false);
+            columns.Bound(c => c.FechaIngreso)
+                .Width(90)
+                .Title("<center>Fecha de<br>Ingreso <span class='k-icon k-i-kpi' style='color: lightgray;'></span></center>")
+                .Format(GeneralData.FORMATO_FECHA_LARGO_GRID)
+                .Filterable(false);
+            columns.Bound(c => c.NombreProyecto)
+                .Width(130)
+                .Title("<center>Nombre de<br>Proyecto <span class='k-icon k-i-kpi' style='color: lightgray;'></span></center>")
+                .Filterable(false);
+            columns.Bound(c => c.RemitenteNombre)
+                .Width(130)
+                .Title("<center>Remitente <span class='k-icon k-i-kpi' style='color: lightgray;'></span></center>")
+                .Filterable(false);
+            columns.Bound(c => c.RemitenteInstitucion)
+                .Width(180)
+                .Title("<center>Institución Remitente <span class='k-icon k-i-kpi' style='color: lightgray;'></span></center>")
+                .Filterable(false);
+            columns.Bound(c => c.Id)
+                .Width(50)
+                .Title("<center><img src='Content/images/semaforo.png' width='25px'></center>")
+                .ClientTemplate("#=semaforoIngreso(data)#")
+                .Sortable(false)
+                .Filterable(false);
+            columns.Bound(c => c.Materia)
+                .Title("<center>Materia <span class='k-icon k-i-kpi' style='color: lightgray;'></span></center>")
+                .Width(250)
+                .ClientTemplate("<span title='#:data.Materia#'> #:Main.acortaTexto(data.Materia, 100)#" + "</span>")
+                .Filterable(false)
+                .Encoded(true);
+            columns.Bound(c => c.AsignacionUt)
+                .Width(90)
+                .Title("<center>Fecha de<br>Asignación <br>UT <span class='k-icon k-i-kpi' style='color: lightgray;'></span></center>")
+                .Format(GeneralData.FORMATO_FECHA_CORTO_GRID)
+                .Filterable(false);
+            columns.Bound(c => c.Resolucion)
+                .Width(100)
+                .Title("<center>Fecha<br>Resolución <span class='k-icon k-i-kpi' style='color: lightgray;'></span><br>Estimada <span class='k-icon'></span></center>")
+                .Format(GeneralData.FORMATO_FECHA_CORTO_GRID)
+                .Filterable(true);
+            columns.Bound(c => c.ForzarPrioridadFecha)
+                .Width(130)
+                .Title("<center>Nueva Fecha<br>Resolución<br>Estimada <span class='k-icon k-i-kpi' style='color: lightgray;'></span></center>")
+                .Format(GeneralData.FORMATO_FECHA_CORTO_GRID)
+                .Visible(mostrarColumnaNuevaFechaPrio)
+                .Filterable(true);
+            columns.Bound(c => c.CantOficiosCmn)
+                .Width(80)
+                .Title("<center> Oficios<br>CMN <span class='k-icon k-i-kpi' style='color: lightgray;'></span></center>")
+                .HtmlAttributes(new {@class = "text-center", @title = "Oficios CMN del ingreso #: DocumentoIngreso #"})
+                .ClientTemplate(
+                    EnlaceDespachoIngresoTram().ToHtmlString()
+                )
+                .Sortable(true)
+                .Filterable(false);
+            columns.Bound(c => c.EstadoTitulo)
+                .Width(100)
+                .Title("<center>Estado <span class='k-icon k-i-kpi' style='color: lightgray;'></span></center>")
+                .Filterable(false);
+            columns.Bound(c => c.EstadoTramitesTitulo)
+                .Width(130)
+                .Title("<center>Estado en trámites<br>digitales<span class='k-icon k-i-kpi' style='color: lightgray;'></span></center>")
+                .Filterable(false);
+            //columns.Bound(c => c.EtapaTitulo)
+            //    .Width(100)
+            //    .Title("<center>Etapa <span class='k-icon k-i-kpi' style='color: lightgray;'></span></center>")
+            //    .Filterable(false);
+            columns.Bound(c => c.UtAsignadaTitulo)
+                .Width(100)
+                .Title("<center>Unidad<br>Técnica <span class='k-icon k-i-kpi' style='color: lightgray;'></span></center>")
+                .Filterable(false);
+            columns.Bound(c => c.ProfesionalNombre).Width(120)
+                .Title("<center>Profesional<br>UT <span class='k-icon k-i-kpi' style='color: lightgray;'></span></center>")
+                .Filterable(false);
+            columns.Bound(c => c.Id)
+                .Title("<center>Acciones</center>")
+                .Width(100)
+                .ClientTemplate("#= buildAccionesIngresos(data.EstadoId, data.EtapaId, data.Id, data.DocumentoIngreso)#")
+                .Sortable(false)
+                .Filterable(false);
+        }))
+
+
+    <input type="hidden" id="busqDocumentoIngresoTram"/>
+    <input type="hidden" id="busqFechaDesdeTram"/>
+    <input type="hidden" id="busqFechaHastaTram"/>
+    <input type="hidden" id="busqUnidadTecnicaTram"/>
+    <input type="hidden" id="busqEstadoTram"/>
+
+</div>

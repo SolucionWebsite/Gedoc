@@ -108,6 +108,25 @@
                             accion.Icono +
                             "'></span></a>";
                     }
+
+                    if (accion.IdAccion == "@AccionOficio.URGENTE.ToString()") {
+                        btnAcc = "<a href='#' class='mr-1' id='" +
+                            accion.IdAccion +
+                            id +
+                            "' onclick='" +
+                            accion.Onclick +
+                            "(\"" +
+                            id +
+                            "\", \"" +
+                            numOficio +
+                            "\", \"" +
+                            numDocsReq +
+                            "\"); return false;' title='" +
+                            accion.Titulo +
+                            "' >" +
+                            "<img src='Content/images/" + accion.Icono + "' width='16px' title='Urgente' /></a>";
+                    }
+
                     accionesHtml.push(btnAcc);
                 }
                 break;
@@ -189,7 +208,7 @@
     function onExcelExport(e) {
         var grid = this;
         var colAcciones = 8;
-        
+
         e.workbook.fileName = "Oficios.xlsx";
         var sheet = e.workbook.sheets[0];
         //para no exportar la columna Acciones al excel:
@@ -364,6 +383,10 @@
             });
     }
 
+    function marcarUrgente(id, numOficio) {
+        ejecutaAccionOficio(id, numOficio, "@AccionOficio.URGENTE.ToString()");
+    }
+
     @*function verOficioPdf(id, numOficio) {
         Main.muestraVentanaModal("Oficio PDF", "@(Url.Action("FormOficioPdf", "Oficio"))?id=" + id
             , 600, 200, false, "winOficioPdf", undefined, true);
@@ -536,6 +559,21 @@
         });
     }
 
+    function AddUrgentIcon(isUrgent) {
+        var html = [];
+        var element = "";
+
+        if (isUrgent) {
+            element = "<img src='Content/images/warning-red.png'  width='16px' title='Urgente'/>";
+        } else {
+            element = "<span id='0'></span>";
+        }
+
+        html.push(element);
+
+        return html;
+    }
+
     //# sourceURL=PestañaOficios
 </script>
 
@@ -611,6 +649,13 @@
 //.Filterable(s => s.Enabled(true))
         .Columns(columns =>
         {
+            columns.Bound(c => c.Urgente)
+                .Width(50)
+                .HtmlAttributes(new {@class = "text-center"})
+                .Title("<center>Urgente <span class='k-icon k-i-kpi' style='color: lightgray;'></span></center>")
+                .ClientTemplate("#= AddUrgentIcon(data.Urgente)#")
+                .Sortable(true)
+                .Filterable(false);
             columns.Bound(c => c.Id)
                 .Width(50)
                 .HtmlAttributes(new {@class = "text-center"})

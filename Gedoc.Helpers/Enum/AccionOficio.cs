@@ -21,6 +21,7 @@ namespace Gedoc.Helpers.Enum
         AFIRMA = 10,
         EDITFIRMADO = 11,
         BORRAR = 12,
-        FIRMADODIGITAL = 13
+        FIRMADODIGITAL = 13,
+        URGENTE = 14
     }
 }

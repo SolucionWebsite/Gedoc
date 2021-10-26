@@ -350,6 +350,9 @@
     <Content Include="Content\bootstrap-theme.min.css" />
     <Content Include="Content\bootstrap.css" />
     <Content Include="Content\bootstrap.min.css" />
+    <Content Include="Content\images\warning-black.png" />
+    <Content Include="Content\images\warning-red.png" />
+    <Content Include="Content\images\warning-white.png" />
     <Content Include="Content\pdfCommonStyles.css" />
     <Content Include="Content\hiQPdfStyles.css" />
     <Content Include="Content\editorStyles-plantilla.css" />

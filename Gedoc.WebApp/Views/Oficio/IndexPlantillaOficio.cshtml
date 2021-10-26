@@ -59,9 +59,17 @@
 
     function buildAccionesPlantilla(id, titulo, TipoWord) {
         var enlace = "";
-        var btn = "<button class='k-button mr-1' onclick='editarPlantilla(\"" + id +
-            "\")' title='Editar' type='button' data-role='button' role='button'><span class='k-icon k-i-edit'></span></button>";
-        enlace += btn;
+
+        if (TipoWord) {
+            var btn = "<button data-attribute ='1' id='btnEditPlantilla" + id + "' class='k-button mr-1' onclick='editarPlantilla(\"" + id +
+                "\")' title='Editar' type='button' data-role='button' role='button'><span class='k-icon k-i-edit'></span></button>";
+            enlace += btn;
+        } else {
+            var btn = "<button class='k-button mr-1' id='btnEditPlantilla" + id + "' onclick='editarPlantilla(\"" + id +
+                "\")' title='Editar' type='button' data-role='button' role='button'><span class='k-icon k-i-edit'></span></button>";
+            enlace += btn;
+        }
+
         btn = "<button class='k-button mr-1' id='btnDelPlantilla" + id +
             "' onclick='eliminarPlantilla(\"" + id + "\", \"" + titulo +
             "\")' title='Eliminar' type='button' data-role='button' role='button'><span class='k-icon k-i-trash'></span></button>";
@@ -238,8 +246,15 @@
     }*@
 
     function editarPlantilla(id) {
+        var btnElement = '#btnEditPlantilla' + id;
+        var esTipoWord = 0;
+
+        if ($(btnElement).attr("data-attribute") !== undefined) {
+            esTipoWord = 1;
+        }
+
         Acciones.ejecutaAccionNuevaVentana("Editar Plantilla Oficio ",
-            '@Url.Action("FormPlantillaOficio")' + '?id=' + id
+            '@Url.Action("FormPlantillaOficio")' + '?id=' + id + '&tipoWord=' + esTipoWord
             , "100%", "MAX", "PLANT", refrescaGrid, false);
         return false;
     }

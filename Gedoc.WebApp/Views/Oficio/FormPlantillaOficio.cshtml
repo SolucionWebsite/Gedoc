@@ -483,6 +483,13 @@
             <div class="form-row">
                 <input class="" id="TipoWord" name="TipoWord" type="text" value="True" hidden="hidden">
             </div>
+            <div class="form-row">
+                <div class="col-md-2">
+                </div>
+                <div class="col-md-4">
+                    <span><b>Tamaño de archivo permitido: 50 Mb. Formatos permitidos: Word</b></span>
+                </div>
+            </div>
         }
         else
         {
@@ -775,7 +782,22 @@
         });
     }
 
+    function validarArchivo() {
+        if ($('#TipoWord').length > 0) {
+            var fileSize = $('.k-file-size').text();
+            if (fileSize.includes('KB') || (fileSize.includes('MB') && fileSize.split('.')[0] > 50)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     function grabaPlantilla(e) {
+
+        if (!validarArchivo()) {
+            return false;
+        }
 
         Main.wait("Grabando...");
 

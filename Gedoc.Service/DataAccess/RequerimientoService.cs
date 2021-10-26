@@ -1048,7 +1048,7 @@ namespace Gedoc.Service.DataAccess
             return resultado;
         }
 
-        public DatosAjax<List<RequerimientoDto>> GetDatosBandejaEntrada(ParametrosGrillaDto<int> param, int idUsuario)
+        public DatosAjax<List<RequerimientoDto>> GetDatosBandejaEntrada(ParametrosGrillaDto<int> param, int idUsuario, bool? soloTramite)
         {
             var resultado = new DatosAjax<List<RequerimientoDto>>(new List<RequerimientoDto>(), new ResultadoOperacion(-1, "Lo sentimos, ha ocurrido un error al obtener los datos de la bandeja.", null));
             try
@@ -1074,7 +1074,7 @@ namespace Gedoc.Service.DataAccess
 
                 resultado = _repoReq.GetDatosBandejaEntrada(idBandeja, configBandeja.IdBandeja, skip, take, sort, 
                     param.FilterText, param.Filter, param.FilterParameters, fechaDesde,
-                    idUsuario, param.DocumentoIngreso, param.FechaHasta, param.UnidadTecnica, param.Estado);
+                    idUsuario, param.DocumentoIngreso, param.FechaHasta, param.UnidadTecnica, param.Estado, soloTramite);
             }
             catch (Exception ex)
             {

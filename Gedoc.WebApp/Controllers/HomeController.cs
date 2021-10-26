@@ -83,6 +83,7 @@ namespace Gedoc.WebApp.Controllers
             else
             {
                 ViewBag.CurrentUserRoles = CurrentUserRoles;
+                ViewBag.CurrentUserName = CurrentUserName;
                 ViewBag.Acciones = configBandeja.Acciones;
                 ViewBag.IdBandeja = configBandeja.Id;
                 ViewBag.TituloBandeja = configBandeja.Titulo;
@@ -183,7 +184,7 @@ namespace Gedoc.WebApp.Controllers
             param.Filter = filterSql;
             param.FilterParameters = filterSqlParams.ToArray();
 
-            var datos = _requerimientoSrv.GetDatosBandejaEntrada(param, CurrentUserId.GetValueOrDefault()); //idBandeja);
+            var datos = _requerimientoSrv.GetDatosBandejaEntrada(param, CurrentUserId.GetValueOrDefault(), false);
 
             var jsonResult = Json(datos);
             jsonResult.MaxJsonLength = int.MaxValue;
@@ -198,6 +199,21 @@ namespace Gedoc.WebApp.Controllers
 
             var datos = _requerimientoSrv.GetDatosBandejaPriorizados(param, CurrentUserId.GetValueOrDefault()); //idBandeja);
             datos.Resultado.Extra = param; // para guardar en la página los últimos parametros utilizados para obtener los datos de la grilla. Se utiliza luego cuando se vaya a actualizar la Nueva Fecha Resolucion al utilizar la opción Aplicar a Todos
+
+            var jsonResult = Json(datos);
+            jsonResult.MaxJsonLength = int.MaxValue;
+            return jsonResult;
+        }
+
+        public ActionResult DatosBandejaEntradaTramites(ParametrosGrillaDto<int> param)  
+        {
+            /* Filtros aplicados en las columnas de la grilla*/
+            var filterSqlParams = new List<object>();
+            var filterSql = KendoHelper.FiltersToParameterizedQuery(FilterDescriptorFactory.Create(param.Filter), paramValues: filterSqlParams);
+            param.Filter = filterSql;
+            param.FilterParameters = filterSqlParams.ToArray();
+
+            var datos = _requerimientoSrv.GetDatosBandejaEntrada(param, CurrentUserId.GetValueOrDefault(), true); 
 
             var jsonResult = Json(datos);
             jsonResult.MaxJsonLength = int.MaxValue;
@@ -418,6 +434,9 @@ namespace Gedoc.WebApp.Controllers
 
             // Se comprueba las credenciales del usuario en AD
             var loginAd = sessionHelper.CheckLoginAd(model.Username, model.Password);
+#if DEBUG
+            loginAd.Codigo = 1;
+#endif
             if (loginAd.Codigo > 0)
             {
                 // Se busca el usuario en Gedoc

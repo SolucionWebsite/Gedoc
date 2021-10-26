@@ -1512,7 +1512,7 @@ namespace Gedoc.Repositorio.Implementacion
 
         public DatosAjax<List<RequerimientoDto>> GetDatosBandejaEntrada(int idBandeja, int codigoBandeja, int skip, int take,
             SortParam sort, string filterText, string filtroSql, object[] filtroSqlParams, DateTime fechaDesde, int idUsuario, int? DocumentoIngreso, DateTime? FechaHasta, 
-            int? UnidadTecnica, int? Estado)
+            int? UnidadTecnica, int? Estado, bool? soloTramite)
         {
             var hayFiltroExtra = !string.IsNullOrEmpty(filterText) ? 1 : 0;
             var esAdmin = db.Usuario
@@ -1561,6 +1561,12 @@ namespace Gedoc.Repositorio.Implementacion
             if (!string.IsNullOrWhiteSpace(filtroSql))
             {
                 query = query.Where(filtroSql, filtroSqlParams);
+            }
+
+            /* solo ingresos asociados al sistema de trámites */
+            if (soloTramite.GetValueOrDefault(false))
+            {
+                query = query.Where(d => d.SolicitudTramId > 0);
             }
 
             /* Lógica implementada en el actual Gedoc Sharepoint:

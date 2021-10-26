@@ -208,6 +208,9 @@ namespace Gedoc.Helpers.Dto
         public string AnnoMesInt { get; set; }
         public int TotalAnnoMes { get; set; }
         public int TotalAnnoMesGenero { get; set; }
+        public string NombreProyecto { get; set; }
+        public int EstadoTramitesId { get; set; }
+        public string EstadoTramitesTitulo { get; set; }
 
 
     }

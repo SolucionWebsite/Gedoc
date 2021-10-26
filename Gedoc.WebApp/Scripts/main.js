@@ -704,6 +704,48 @@ var Main = Main || {
         $("#hfContenidoTmp").val(contenido);
         $("#hfNombreArchivoTmp").val(nombreArchivo);
         $formTmp.submit().remove();
+    }, 
+
+    abreUrlTramite: function (urlAuth, user, secretKey, urlSolicitud, idSolicitudTram) {
+
+        /* Abre la URL de la solicitud del sistema de trámites asociada al ingreso*/
+        if (idSolicitudTram <= 0) {
+            Main.showAlert('El ingreso no está asociado a una solicitud en el Sistema de Trámites.');
+            return false;
+        }
+        //kendo.ui.progress($("#btTramites"), true);
+        Main.wait("", "#btTramites");
+
+        var data = { "UserName": user, "SecretKey": secretKey };
+
+        $.ajax({
+            type: "POST",
+            url: urlAuth,
+            data: data,
+            dataType: 'text'
+        }).done(function (token) {
+            //kendo.ui.progress($("#btTramites"), false);
+            Main.unwait("#btTramites");
+            if (token) {
+                urlSolicitud = urlSolicitud.replace('%token%', token);
+                window.open(urlSolicitud, '_blank');
+            } else {
+                Main.showAlert('No se recibió respuesta del sistema de trámites, por favor, reintente la operación.');
+            }
+        }).fail(function (xhr, result, status) {
+            //kendo.ui.progress($("#btTramites"), false);
+            Main.unwait("#btTramites");
+            if (xhr.status == 0) {
+                Main.showAlert('No fue posible contactar la URL del sistema de trámite.');
+            } else if (xhr.status == 404) {
+                Main.showAlert('No es posible abrir la página. El sistema de trámite ha devuelto Error 404.');
+            } else if (xhr.status == 500) {
+                Main.showAlert('No es posible abrir la página. El sistema de trámite ha devuelto Error 500.');
+            } else {
+                Main.showAlert('No es posible abrir la página. Error desconocido devuelto por el sistema de trámite:\n' + xhr.responseText);
+            }
+        });
+
     }
 
 };

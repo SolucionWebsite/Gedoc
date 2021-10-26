@@ -240,5 +240,9 @@ namespace Gedoc.WebApp.Models
 
         // Control de datos modificados en form de Editar Requerimiento, para envío de notificación email
         public RequerimientoBackupDataDto BackupData { get; set; }
+        public int? SolicitudTramId { get; set; }
+        public string NombreProyecto { get; set; }
+        public int EstadoTramitesId { get; set; }
+        public string EstadoTramitesTitulo { get; set; }
     }
 }

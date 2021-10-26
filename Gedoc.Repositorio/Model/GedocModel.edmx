@@ -1020,6 +1020,7 @@ warning 6002: The table/view 'GedocMvc_PROD.dbo.vw_BandejaEntrada' does not have
           <Property Name="ForzarPrioridad" Type="bit" />
           <Property Name="ForzarPrioridadFecha" Type="datetime" />
           <Property Name="ForzarPrioridadMotivo" Type="varchar(max)" />
+          <Property Name="SolicitudTramId" Type="int" />
         </EntityType>
         <!--Errors Found During Generation:
 warning 6002: The table/view 'GedocMvc_PROD.dbo.vw_BandejaEntradaDespachoInic' does not have a primary key defined. The key has been inferred and the definition was created as a read-only table/view.-->
@@ -3431,7 +3432,8 @@ warning 6002: The table/view 'GedocMvc_PROD.dbo.vw_Usuario' does not have a prim
     [vw_BandejaEntrada].[LiberarAsignacionTemp] AS [LiberarAsignacionTemp], 
     [vw_BandejaEntrada].[ForzarPrioridad] AS [ForzarPrioridad], 
     [vw_BandejaEntrada].[ForzarPrioridadFecha] AS [ForzarPrioridadFecha], 
-    [vw_BandejaEntrada].[ForzarPrioridadMotivo] AS [ForzarPrioridadMotivo]
+    [vw_BandejaEntrada].[ForzarPrioridadMotivo] AS [ForzarPrioridadMotivo], 
+    [vw_BandejaEntrada].[SolicitudTramId] AS [SolicitudTramId]
     FROM [dbo].[vw_BandejaEntrada] AS [vw_BandejaEntrada]</DefiningQuery>
           </EntitySet>
           <EntitySet Name="vw_BandejaEntradaDespachoInic" EntityType="Self.vw_BandejaEntradaDespachoInic" store:Type="Views" store:Schema="dbo">
@@ -6350,6 +6352,7 @@ warning 6002: The table/view 'GedocMvc_PROD.dbo.vw_Usuario' does not have a prim
           <Property Name="ForzarPrioridad" Type="Boolean" />
           <Property Name="ForzarPrioridadFecha" Type="DateTime" Precision="3" />
           <Property Name="ForzarPrioridadMotivo" Type="String" MaxLength="Max" FixedLength="false" Unicode="false" />
+          <Property Name="SolicitudTramId" Type="Int32" />
         </EntityType>
         <Association Name="FK_Caso_UsuarioModif">
           <End Type="GedocDbModel.Usuario" Role="Usuario" Multiplicity="0..1" />
@@ -8414,6 +8417,7 @@ warning 6002: The table/view 'GedocMvc_PROD.dbo.vw_Usuario' does not have a prim
           <EntitySetMapping Name="vw_BandejaEntrada">
             <EntityTypeMapping TypeName="GedocDbModel.vw_BandejaEntrada">
               <MappingFragment StoreEntitySet="vw_BandejaEntrada">
+                <ScalarProperty Name="SolicitudTramId" ColumnName="SolicitudTramId" />
                 <ScalarProperty Name="ForzarPrioridadMotivo" ColumnName="ForzarPrioridadMotivo" />
                 <ScalarProperty Name="ForzarPrioridadFecha" ColumnName="ForzarPrioridadFecha" />
                 <ScalarProperty Name="ForzarPrioridad" ColumnName="ForzarPrioridad" />

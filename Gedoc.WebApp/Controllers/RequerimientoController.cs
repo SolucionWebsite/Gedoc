@@ -515,7 +515,7 @@ namespace Gedoc.WebApp.Controllers
             {
                 if (campo == CampoIngreso.Doc_DocIng) aspectoCampos[campo] = AspectoCampo.SoloLectura;
                 else if (campo == CampoIngreso.Doc_FechaIng) aspectoCampos[campo] = AspectoCampo.SoloLectura;
-                else if (campo == CampoIngreso.Doc_CanalLlegada) aspectoCampos[campo] = AspectoCampo.Deshabilitado;
+                else if (campo == CampoIngreso.Doc_CanalLlegada) aspectoCampos[campo] = AspectoCampo.Editable;
                 else if (campo == CampoIngreso.Doc_Estado) aspectoCampos[campo] = AspectoCampo.Oculto;
                 else if (campo == CampoIngreso.Doc_Etapa) aspectoCampos[campo] = AspectoCampo.Oculto;
                 else if (campo == CampoIngreso.Proy_ProyActiv) aspectoCampos[campo] = AspectoCampo.Oculto;

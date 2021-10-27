@@ -67,7 +67,7 @@
         });
     }
 
-    function NuevoRemitente() {
+    function nuevoRemitente() {
         var result = Main.muestraVentanaModal(
             "Nuevo remitente o destinatario",
             '@Url.Action("NuevoRemitente", "Remitente")',
@@ -133,14 +133,6 @@
         #gridRemitentes .k-grid-header th > .k-link > .k-icon {
             float: right;
         }
-
-        #gridRemitentes .k-grid-toolbar > span {
-            float: left !important;
-        }
-
-        #gridRemitentes .k-grid-toolbar > button {
-            float: left !important;
-        }
 </style>
 
 <h4 class="header-level1">@ViewBag.Title</h4>
@@ -148,7 +140,7 @@
 <div class="div-main">
     <form id="formRemitentes" class="form-datos">
 
-        <div class="form-row">
+        @*<div class="form-row">
             <div class="col-md-3">
                 <label class="label-dato-form">
                     Nombre Remitente / Destinatario
@@ -161,13 +153,49 @@
 
             </div>
             <div class="col-md-1" style="float:right">
-                <input type="button" onclick="NuevoRemitente();" class="btn btn-primary" value="Agregar nuevo elemento" />
+                <input type="button" onclick="nuevoRemitente();" class="btn btn-primary" value="Agregar nuevo elemento" />
             </div>
-        </div>
+        </div>*@
 
         <div id="divGrillaAdjuntos">
             @(Html.Kendo().Grid<Gedoc.Helpers.Dto.RemitenteDto>()
                     .Name("gridRemitentes")
+                    .HtmlAttributes(new { style = "height: 600px;", @class = "grilla-datos" })
+                    //.ToolBar(t => t.Search())
+                    //.Editable(editable=>editable.Mode(GridEditMode.PopUp))
+                    .Events(e => e.DataBound("formateaBotones"))
+                    .Pageable(pager => pager.AlwaysVisible(true).PageSizes(new List<object> { 10, 30, 100, 250 }))
+                    .Sortable(sortable =>
+                    {
+                        sortable.SortMode(GridSortMode.SingleColumn);
+
+                    })
+                    .Resizable(resize => resize.Columns(true))
+                    .Scrollable()
+                    .DataSource(dataSource => dataSource
+                        .Ajax()
+                        .ServerOperation(false)
+                        //.Model(model =>
+                        //{
+                        //    model.Id(u => u.Id);
+                        //    model.Field(u => u.Id).Editable(false);
+                        //})
+                        .Read(read => read.Action("GridBuscarRemitente_Read", "Remitente").Data("currentFilters"))
+                        //.Update(update => update.Action("Grid_Update", "Adjunto").Data("currentFilters"))
+                        .Model(m => m.Id(id => id.Id))
+                        .PageSize(30)
+                    )
+                    .ToolBar(toolbar =>
+                    {
+                        toolbar.Search();
+                        toolbar.Custom()
+                            .HtmlAttributes ( new { onclick= "nuevoRemitente(); return false;" } )
+                            .Name("NuevoRemitente")
+                            .Text("Agregar")
+                            .IconClass("k-icon k-i-plus-outline")
+                            .Url("#")
+                            ;
+                    })
                     .Columns(columns =>
                     {
                         //columns.Bound(c => c.Id)
@@ -196,31 +224,6 @@
                         columns.Bound(c => c.UsuarioModificacionNombre).Width(150).Title("Modificado Por");
                         columns.Bound(c => c.FechaModificacion).Width(125).Title("Modificado").Format("{0:dd/MM/yyyy HH:mm}");
                     })
-                    .HtmlAttributes(new { style = "height: 600px;", @class = "grilla-datos" })
-                    //.ToolBar(t => t.Search())
-                    //.Editable(editable=>editable.Mode(GridEditMode.PopUp))
-                    .Events(e => e.DataBound("formateaBotones"))
-                    .Pageable(pager => pager.AlwaysVisible(true).PageSizes(new List<object> { 10, 30, 100, 250 }))
-                    .Sortable(sortable =>
-                    {
-                        sortable.SortMode(GridSortMode.SingleColumn);
-
-                    })
-                    .Resizable(resize => resize.Columns(true))
-                    .Scrollable()
-                    .DataSource(dataSource => dataSource
-                        .Ajax()
-                        .ServerOperation(false)
-                        //.Model(model =>
-                        //{
-                        //    model.Id(u => u.Id);
-                        //    model.Field(u => u.Id).Editable(false);
-                        //})
-                        .Read(read => read.Action("GridBuscarRemitente_Read", "Remitente").Data("currentFilters"))
-                        //.Update(update => update.Action("Grid_Update", "Adjunto").Data("currentFilters"))
-                        .Model(m => m.Id(id => id.Id))
-                        .PageSize(30)
-                    )
                 )
         </div>
     </form>
@@ -231,8 +234,7 @@
             sFilter: $("#RemitenteFilter").val()
         }
     }
-</script>
-<script>
+
     function consultar() {
         $('#gridRemitentes').data('kendoGrid').dataSource.read();
         $("#gridRemitentes").data("kendoGrid").dataSource.page(0);
@@ -263,6 +265,9 @@
         }).replaceWith(function () {
             return this.nodeValue.replace('items per page', 'elementos por página');
         });
+
+        $(".k-grid-search input").prop("placeholder", "Buscar...");
+        $(".k-grid-search input").prop("title", "Buscar...");
     });
 
 </script>

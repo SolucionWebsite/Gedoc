@@ -42,14 +42,9 @@ namespace Gedoc.WebApp.Controllers
             }
 
             //verifica que venga almenos 1 filtro
-            if (!string.IsNullOrEmpty(sFilter))
-            {
-                var datos = _mantenedorSrv.GetRemitenteByFilter(sFilter); 
-                var remitentes = datos.ToDataSourceResult(request);
-                return Json(remitentes);
-            }
-            else 
-                return null;
+            var datos = _mantenedorSrv.GetRemitenteByFilter(sFilter);
+            var remitentes = datos.ToDataSourceResult(request);
+            return Json(remitentes);
         }
 
         public ActionResult NuevoRemitente()

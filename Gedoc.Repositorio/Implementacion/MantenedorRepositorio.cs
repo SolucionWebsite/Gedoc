@@ -628,8 +628,9 @@ namespace Gedoc.Repositorio.Implementacion
 
         public List<RemitenteDto> GetRemitenteByFilter(string filter)
         {
+            filter = filter ?? "";
             var datos = db.Remitente
-                .Where(x => x.Activo && x.Nombre.Contains(filter))
+                .Where(x => x.Activo && (filter == "" || x.Nombre.Contains(filter)) )
                 .Select(r => new RemitenteDto()
                 {
                     Id = r.Id,

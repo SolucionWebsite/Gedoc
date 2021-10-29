@@ -57,7 +57,7 @@
         }
     }
 
-    function buildAccionesPlantilla(id, titulo, TipoWord) {
+    function buildAccionesPlantilla(id, titulo, TipoWord, IdAdjunto) {
         var enlace = "";
 
         if (TipoWord) {
@@ -76,9 +76,9 @@
         enlace += btn;
 
         if (TipoWord) {
-            btn = "<a href='#' class='mr-1' id='btnDescargarWord" + id +
-                "' onclick='descargarWord(\"" + id + "\", \"" + titulo +
-                "\") return false;' title='DescargarWord'><img src='Content/images/word.png' width='28px'/></a>";
+            var href = "@Url.Action("GetArchivo", "Adjunto")" + "?idAdjunto=" + IdAdjunto;
+            btn = "<a href='" + href +"' class='mr-1' id='btnDescargarWord" + id +
+                "'title='DescargarWord' target='_blank'><img src='Content/images/word.png' width='28px'/></a>";
             enlace += btn;
         }
 
@@ -181,7 +181,7 @@
                 .Title("<center>Acción</center>")
                 .Sortable(false)
                 .Filterable(false)
-                .ClientTemplate("#= buildAccionesPlantilla(data.Id, data.Nombre, data.TipoWord) #");
+                .ClientTemplate("#= buildAccionesPlantilla(data.Id, data.Nombre, data.TipoWord, data.IdAdjunto) #");
         })
         )
 

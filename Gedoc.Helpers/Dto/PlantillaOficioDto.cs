@@ -25,5 +25,7 @@ namespace Gedoc.Helpers.Dto
         public bool TipoWord { get; set; }
         public string UsuarioActual { get; set; }
         public int UsuarioActualId { get; set; }
+        public string NombreDocumento { get; set; }
+        public int IdAdjunto { get; set; }
     }
 }

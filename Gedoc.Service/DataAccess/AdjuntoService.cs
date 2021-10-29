@@ -46,6 +46,12 @@ namespace Gedoc.Service.DataAccess
             return datos;
         }
 
+        public AdjuntoDto GetAdjuntoByUrl(string url)
+        {
+            var datos = _repoAdjunto.GetByUrl(url);
+            return datos;
+        }
+
         public DatosArchivo GetArchivo(int adjuntoId)
         {
             var result = new DatosArchivo
@@ -64,6 +70,39 @@ namespace Gedoc.Service.DataAccess
                 }
 
                 result.OrigenId = adjuntoId;
+                result.OrigenCodigo = adjunto.DocIngreso;
+                result.FileName = adjunto.NombreArchivo;
+                result.FilePath = adjunto.UrlArchivo;
+                result.TipoArchivo = TiposArchivo.Adjunto;
+                var fileHandler = new FileHandler();
+                fileHandler.GetFileStream(result);
+            }
+            catch (Exception ex)
+            {
+                LogError(ex);
+                result.Mensaje = "Ha ocurrido un error al descargar el archivo, por favor chequee el log de errores de la aplicación.";
+            }
+            return result;
+        }
+
+        public DatosArchivo GetArchivo(string url)
+        {
+            var result = new DatosArchivo
+            {
+                FileStream = null,
+                Mensaje = "Error"
+            };
+            try
+            {
+                // Datos del adjunto
+                var adjunto = _repoAdjunto.GetByUrl(url);
+                if (adjunto == null)
+                {
+                    result.Mensaje = "No se encontró el Adjunto especificado.";
+                    return result;
+                }
+
+                result.OrigenId = adjunto.Id;
                 result.OrigenCodigo = adjunto.DocIngreso;
                 result.FileName = adjunto.NombreArchivo;
                 result.FilePath = adjunto.UrlArchivo;
@@ -118,7 +157,7 @@ namespace Gedoc.Service.DataAccess
                             var adjuntosEnBd = adjunto.BandejaId == 7 
                                 ? _repoAdjunto.GetAdjuntosOficio(adjunto.Id, true) 
                                 : _repoAdjunto.GetAdjuntosIngreso(adjunto.RequerimientoId.GetValueOrDefault(0), true);
-                            if (adjuntosEnBd.Data.Any(a =>
+                            if (adjunto.BandejaId == null || adjuntosEnBd.Data.Any(a =>
                                 a.NombreArchivo.ToLower() == (datosArchivoAdj.File?.FileName ?? datosArchivoAdj.FileName ?? "").ToLower()))
                             {
                                 resultado.Mensaje = "El título indicado para la carga de un nuevo adjunto ya existe. Por favor, utilizar otro nombre.";

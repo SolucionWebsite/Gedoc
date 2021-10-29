@@ -35,6 +35,7 @@ namespace Gedoc.Repositorio.Model
         public bool Eliminado { get; set; }
         public int TipoPlantillaId { get; set; }
         public bool TipoWord { get; set; }
+        public string NombreDocumento { get; set; }
     
         public virtual TipoTramite TipoTramite { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]

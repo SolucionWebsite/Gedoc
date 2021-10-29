@@ -26,6 +26,12 @@ namespace Gedoc.Repositorio.Implementacion
                 .FirstOrDefault(r => r.Id == id);
             return _mapper.MapFromModelToDto<Adjunto, AdjuntoDto>(datos);
         }
+        
+        public AdjuntoDto GetByUrl(string url)
+        {
+            var datos = db.Adjunto.FirstOrDefault(r => r.UrlArchivo == url);
+            return _mapper.MapFromModelToDto<Adjunto, AdjuntoDto>(datos);
+        }
 
         public DatosAjax<List<AdjuntoDto>> GetAdjuntosIngreso(int idIngreso, bool incluyeEliminados = false)
         {

@@ -176,7 +176,6 @@
 @*Fin Editor en full screen*@
 
 <script>
-
     function onChangeCampo(e) {
         if (this.value()) {
             var editorK = $("#Contenido").data("kendoEditor");
@@ -292,8 +291,8 @@
                 $("#k-editor-cell-border-style_listbox li[data-offset-index='9']").text("Heredado");
                 $("#k-editor-cell-border-style_listbox li[data-offset-index='10']").text("Ninguno");
                 $("#k-editor-cell-border-style_listbox li[data-offset-index='11']").text("Oculto");
-				
-				$("#k-editor-table-alignment").data("kendoDropDownList").bind("change", 
+
+				$("#k-editor-table-alignment").data("kendoDropDownList").bind("change",
 					function(e) {
 						$(".k-i-align-remove").attr("title", "Sin alineación");
 						$(".k-i-table-align-middle-left").attr("title", "Alineación izquierda");
@@ -301,8 +300,8 @@
 						$(".k-i-table-align-middle-right").attr("title", "Alineación derecha");
 					}
 				);
-				
-				$("#k-editor-cell-alignment").data("kendoDropDownList").bind("change", 
+
+				$("#k-editor-cell-alignment").data("kendoDropDownList").bind("change",
 					function(e) {
 						$(".k-i-align-remove").attr("title", "Sin alineación");
 						$(".k-i-table-align-top-left").attr("title", "Alineación arriba izquierda");
@@ -350,7 +349,6 @@
         nombre = "PlantillaOficio_" + nombre + ".pdf";
         Main.exportaKendoEditorToPdf($("#Contenido"), url, nombre);
     }
-
     //# sourceURL=FormPlantilla2
 </script>
 
@@ -447,7 +445,9 @@
         </div>
         @if (Model.TipoWord)
         {
-            <div class="form-row">
+
+
+<div class="form-row">
                 <div class="col-md-2">
                     <label class="label-dato-form">
                         Modelo de plantilla
@@ -455,40 +455,42 @@
                 </div>
                 <div class="col-md-4">
                     <div class="demo-section k-content wide">
-                        <div>
+                        @if (string.IsNullOrEmpty(Model.Documento.FileName))
+                        {
                             @(Html.Kendo().Upload()
-                            .Name("files")
-                            .HtmlAttributes(new { accept = ".doc,.docx,application/msword" })
-                            .Multiple(false)
-                            .Async(a => a
-                                //.Save("Chunk_Upload_Save", "Upload")
-                                .Remove("Chunk_Upload_Remove", "Upload")
-                                .AutoUpload(false)
-                                .ChunkSize(14000)
+                                    .Name("Files")
+                                    .Multiple(false)
+                                    .HtmlAttributes(new { aria_label = "Files", @class = "upload-required" })
+                                    .Messages(msg => msg.InvalidFileExtension("Tipo de archivo no permitido").InvalidMaxFileSize("Tamaño de archivo demasiado grande"))
+                                    .Events(ev => ev.Select("function onselectFile(e) { setTimeout( function() { $(':focus').blur(); }, 200); }"))
+                                    .Validation(validation => validation.AllowedExtensions(WebConfigValues.AdjuntosPermitidosPlantillaOficio).MaxFileSize(50*1024*1024)
+                                ))
+                        }
+                        else
+                        {
+                            var fileName = Model.Documento.FileName;
+                            var fileExtension = "." + Model.Documento.FileName.Split('.')[1];
+                            var FileSize = Model.Documento.FileStream.Length;
+
+                            @(Html.Kendo().Upload()
+                                .Name("Files")
+                                .Multiple(false)
+                                .HtmlAttributes(new { aria_label = "Files", @class = "upload-required" })
+                                .Messages(msg => msg.InvalidFileExtension("Tipo de archivo no permitido").InvalidMaxFileSize("Tamaño de archivo demasiado grande"))
+                                .Events(ev => ev.Select("function onselectFile(e) { setTimeout( function() { $('.k-button.k-upload-selected').remove(); $('.k-button.k-clear-selected').remove()}, 10); }"))
+                                .Async(a => a.Save("Initial_Files_Save_And_Persist", "Upload").Remove("Initial_Files_Remove_And_Persist", "Upload").AutoUpload(false))
+                                .Files(files => { files.Add().Name(fileName).Extension(fileExtension).Size(FileSize); })
+                                .Validation(validation => validation.AllowedExtensions(WebConfigValues.AdjuntosPermitidosPlantillaOficio).MaxFileSize(50 * 1024 * 1024))
                             )
-                            .DropZone(".dropZoneElement")
-                            //.Validation(validation =>
-                            //{
-                            //    validation.AllowedExtensions(Model.AllowedExtensions);
-                            //    if (@Model.IsLimited)
-                            //    {
-                            //        validation.MaxFileSize(50000);
-                            //    }
-                            //})
-                            )
-                        </div>
+                        }
                     </div>
+                    <span class="k-invalid-msg" data-for="Files"></span>
+                    @*TODO: poner esta leyenda de manera dinámica tomando los datos según configuración de tipo y tamaño de archivos permitidos*@
+                    <span class="help-block" id="leyenda-file">Tamaño de archivo permitido: 50 Mb. Formatos permitidos: Word</span>
                 </div>
             </div>
             <div class="form-row">
                 <input class="" id="TipoWord" name="TipoWord" type="text" value="True" hidden="hidden">
-            </div>
-            <div class="form-row">
-                <div class="col-md-2">
-                </div>
-                <div class="col-md-4">
-                    <span><b>Tamaño de archivo permitido: 50 Mb. Formatos permitidos: Word</b></span>
-                </div>
             </div>
         }
         else
@@ -695,9 +697,18 @@
         }
         <div class="footer-modal" style="@(Model.TipoWord ? "border-radius: 0; bottom:0px; position:absolute; width:100%;" : "")">
             <div class="form-row">
-                <div class="offset-md-3 col-md-2 text-center">
-                    <button type="button" id="btngrabaPlantilla" class="k-primary-blue k-button" onclick="grabaPlantilla(event);">Guardar</button>
-                </div>
+                @if (Model.TipoWord)
+                {
+                    <div class="offset-md-3 col-md-2 text-center">
+                        <button type="button" id="btngrabaPlantilla" class="k-primary-blue k-button" onclick="grabaPlantillaWord(event);">Guardar</button>
+                    </div>
+                }
+                else
+                {
+                    <div class="offset-md-3 col-md-2 text-center">
+                        <button type="button" id="btngrabaPlantilla" class="k-primary-blue k-button" onclick="grabaPlantilla(event);">Guardar</button>
+                    </div>
+                }
                 <div class="offset-md-2 col-md-2 text-center">
                     <button type="button" id="btncancelaPlantilla" class="k-danger k-button" onclick="cancelaPlantilla(event);">Cancelar</button>
                 </div>
@@ -718,7 +729,7 @@
         </text>
     }
 
-    $(function() {
+    $(function () {
         var ds;
         if ($("#TipoTramiteId").length) {
             ds = Main.getDataSourceKendoGenerico($("#TipoTramiteId"),
@@ -782,22 +793,7 @@
         });
     }
 
-    function validarArchivo() {
-        if ($('#TipoWord').length > 0) {
-            var fileSize = $('.k-file-size').text();
-            if (fileSize.includes('KB') || (fileSize.includes('MB') && fileSize.split('.')[0] > 50)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
     function grabaPlantilla(e) {
-
-        if (!validarArchivo()) {
-            return false;
-        }
 
         Main.wait("Grabando...");
 
@@ -834,6 +830,50 @@
                     "Error");
             }
         }).fail(function(error) {
+            Main.unwait();
+            Main.showError("Ha ocurrido un error al realizar la operación, por favor, vuelva a intentarlo.",
+                "Error");
+        });
+    };
+
+    function grabaPlantillaWord(e) {
+
+        Main.wait("Grabando...");
+
+        var currentTarget = $(e.currentTarget);
+        var form = $("#formPlantilla");
+
+        var validator = form.data("kendoValidator");
+        if (!validator.validate() || $('.k-file-group-wrapper').length == 0) {
+            Main.unwait();
+            Main.showError("Por favor, revise los datos de la página. Hay datos incompletos o erróneos.");
+            return false;
+        }
+
+        var data = new FormData($(form).get(0));
+        var url = '/Oficio/SavePlantillaWord'
+        $.ajax({
+            type: "POST",
+            url: url,
+            data: data,
+            dataType: "json",
+            processData: false, //For posting uploaded files we add this
+            contentType: false, //For posting uploaded files we add this
+        }).done(function (response) {
+            Main.unwait();
+            if (response.Codigo) {
+                if (response.Codigo > 0) {
+                    Main.showInfo(response.Mensaje).then(function (result) {
+                        Main.cierraModal(currentTarget, true, "winFormIngreso");
+                    });
+                } else {
+                    Main.showError(response.Mensaje, "Error");
+                }
+            } else {
+                Main.showAlert("Error inesperado al realizar la operación, por favor, vuelva a intentarlo",
+                    "Error");
+            }
+        }).fail(function (error) {
             Main.unwait();
             Main.showError("Ha ocurrido un error al realizar la operación, por favor, vuelva a intentarlo.",
                 "Error");

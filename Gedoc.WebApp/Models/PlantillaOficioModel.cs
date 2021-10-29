@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Gedoc.Helpers.Dto;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -21,5 +22,7 @@ namespace Gedoc.WebApp.Models
         public DateTime? EliminacionFecha { get; set; }
         public int? UsuarioEliminacionId { get; set; }
         public bool TipoWord { get; set; }
+        public string NombreDocumento { get; set; }
+        public DatosArchivo Documento { get; set; }
     }
 }

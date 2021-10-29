@@ -12,6 +12,7 @@ namespace Gedoc.Repositorio.Interfaces
     public interface IAdjuntoRepositorio
     {
         AdjuntoDto GetById(int id);
+        AdjuntoDto GetByUrl(string url);
         DatosAjax<List<AdjuntoDto>> GetAdjuntosIngreso(int idIngreso, bool incluyeEliminados = false);
 
         ResultadoOperacion Save(AdjuntoDto datos);

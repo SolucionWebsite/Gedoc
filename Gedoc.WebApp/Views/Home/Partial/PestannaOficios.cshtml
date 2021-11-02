@@ -11,7 +11,7 @@
     int idBandeja = ViewBag.IdBandeja ?? 0;
     int[] rolesUsuario = ViewBag.CurrentUserRoles ?? new int[0];
     bool esProf = rolesUsuario.Contains((int) Rol.ProfesionalUt);
-
+    bool isAdmin = rolesUsuario.Contains((int)Rol.Administrador);
     #region Definición de acciones por Estado-Etapa del oficio
 
     List<AccionPermitidaBandejaDto> accionesEstadoEtapaOfic = ViewBag.AccionesOfic ?? new List<AccionPermitidaBandejaDto>();
@@ -109,7 +109,7 @@
                             "'></span></a>";
                     }
 
-                    if (accion.IdAccion == "@AccionOficio.URGENTE.ToString()") {
+                    if (accion.IdAccion == "@AccionOficio.URGENTE.ToString()" && @isAdmin) {
                         btnAcc = "<a href='#' class='mr-1' id='" +
                             accion.IdAccion +
                             id +

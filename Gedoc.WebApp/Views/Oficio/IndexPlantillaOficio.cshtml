@@ -57,15 +57,30 @@
         }
     }
 
-    function buildAccionesPlantilla(id, titulo) {
+    function buildAccionesPlantilla(id, titulo, TipoWord, IdAdjunto) {
         var enlace = "";
-        var btn = "<button class='k-button mr-1' onclick='editarPlantilla(\"" + id +
-            "\")' title='Editar' type='button' data-role='button' role='button'><span class='k-icon k-i-edit'></span></button>";
-        enlace += btn;
-        btn = "<button class='k-button' id='btnDelPlantilla" + id +
+
+        if (TipoWord) {
+            var btn = "<button data-attribute ='1' id='btnEditPlantilla" + id + "' class='k-button mr-1' onclick='editarPlantilla(\"" + id +
+                "\")' title='Editar' type='button' data-role='button' role='button'><span class='k-icon k-i-edit'></span></button>";
+            enlace += btn;
+        } else {
+            var btn = "<button class='k-button mr-1' id='btnEditPlantilla" + id + "' onclick='editarPlantilla(\"" + id +
+                "\")' title='Editar' type='button' data-role='button' role='button'><span class='k-icon k-i-edit'></span></button>";
+            enlace += btn;
+        }
+
+        btn = "<button class='k-button mr-1' id='btnDelPlantilla" + id +
             "' onclick='eliminarPlantilla(\"" + id + "\", \"" + titulo +
             "\")' title='Eliminar' type='button' data-role='button' role='button'><span class='k-icon k-i-trash'></span></button>";
         enlace += btn;
+
+        if (TipoWord) {
+            var href = "@Url.Action("GetArchivo", "Adjunto")" + "?idAdjunto=" + IdAdjunto;
+            btn = "<a href='" + href +"' class='mr-1' id='btnDescargarWord" + id +
+                "'title='DescargarWord' target='_blank'><img src='Content/images/word.png' width='28px'/></a>";
+            enlace += btn;
+        }
 
         enlace = '<div style="display: inline-flex;">' + enlace + '</div>';
         return enlace;
@@ -118,9 +133,16 @@
         {
             toolbar.Search();
             toolbar.Custom()
-                .HtmlAttributes ( new { onclick= "nuevaPlantilla(); return false;" } )
+                .HtmlAttributes ( new { onclick= "nuevaPlantilla(0); return false;" } )
                 .Name("NuevaPlantilla")
                 .Text("Agregar")
+                .IconClass("k-icon k-i-plus-outline")
+                .Url("#")
+                ;
+            toolbar.Custom()
+                .HtmlAttributes(new { onclick = "nuevaPlantilla(1); return false;" })
+                .Name("NuevaPlantillaWord")
+                .Text("Agregar mediante Word")
                 .IconClass("k-icon k-i-plus-outline")
                 .Url("#")
                 ;
@@ -159,7 +181,7 @@
                 .Title("<center>Acción</center>")
                 .Sortable(false)
                 .Filterable(false)
-                .ClientTemplate("#= buildAccionesPlantilla(data.Id, data.Nombre) #");
+                .ClientTemplate("#= buildAccionesPlantilla(data.Id, data.Nombre, data.TipoWord, data.IdAdjunto) #");
         })
         )
 
@@ -208,9 +230,9 @@
         });
     }
 
-    function nuevaPlantilla() {
+    function nuevaPlantilla(TipoWord) {
         Acciones.ejecutaAccionNuevaVentana("Nueva Plantilla de Oficio",
-            '@Url.Action("FormPlantillaOficio")' + '?id=0'
+            '@Url.Action("FormPlantillaOficio")' + '?id=0&tipoWord=' + TipoWord
             , "100%", 'MAX', "PLANT", refrescaGrid);
     }
 
@@ -224,8 +246,15 @@
     }*@
 
     function editarPlantilla(id) {
+        var btnElement = '#btnEditPlantilla' + id;
+        var esTipoWord = 0;
+
+        if ($(btnElement).attr("data-attribute") !== undefined) {
+            esTipoWord = 1;
+        }
+
         Acciones.ejecutaAccionNuevaVentana("Editar Plantilla Oficio ",
-            '@Url.Action("FormPlantillaOficio")' + '?id=' + id
+            '@Url.Action("FormPlantillaOficio")' + '?id=' + id + '&tipoWord=' + esTipoWord
             , "100%", "MAX", "PLANT", refrescaGrid, false);
         return false;
     }

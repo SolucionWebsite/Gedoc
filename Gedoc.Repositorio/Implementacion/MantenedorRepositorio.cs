@@ -1090,7 +1090,9 @@ namespace Gedoc.Repositorio.Implementacion
                         Nombre = d.Nombre,
                         Activo = d.Activo,
                         Descripcion = d.Descripcion,
-                        TipoTramiteId = d.TipoTramiteId
+                        TipoTramiteId = d.TipoTramiteId,
+                        TipoWord = d.TipoWord,
+                        NombreDocumento = d.NombreDocumento
                     })
                     .OrderBy(tp => tp.Nombre)
                     .ToList();
@@ -1145,6 +1147,7 @@ namespace Gedoc.Repositorio.Implementacion
                 plantilla.Descripcion = datos.Descripcion;
                 plantilla.Contenido = datos.Contenido;
                 plantilla.TipoTramiteId = datos.TipoTramiteId;
+                plantilla.NombreDocumento = datos.NombreDocumento;
             }
             plantilla.Activo = datos.Activo;
             db.SaveChanges();

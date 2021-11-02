@@ -641,6 +641,8 @@
           <Property Name="UsuarioEliminacionId" Type="int" />
           <Property Name="Eliminado" Type="bit" Nullable="false" />
           <Property Name="TipoPlantillaId" Type="int" Nullable="false" />
+          <Property Name="TipoWord" Type="bit" Nullable="false" />
+          <Property Name="NombreDocumento" Type="nvarchar" MaxLength="200" />
         </EntityType>
         <EntityType Name="Remitente">
           <Key>
@@ -6689,6 +6691,8 @@ advertencia 6002: La tabla o vista 'GedocMvc_Prod.dbo.vw_Usuario' no tiene defin
           <NavigationProperty Name="UsuarioEliminacion" Relationship="GedocDbModel.FK_PlantillaOficio_UsuarioElim" FromRole="PlantillaOficio" ToRole="Usuario" />
           <NavigationProperty Name="UsuarioEdicion" Relationship="GedocDbModel.FK_PlantillaOficio_UsuarioMod" FromRole="PlantillaOficio" ToRole="Usuario" />
           <Property Name="TipoPlantillaId" Type="Int32" Nullable="false" />
+          <Property Name="TipoWord" Type="Boolean" Nullable="false" />
+          <Property Name="NombreDocumento" Type="String" MaxLength="200" FixedLength="false" Unicode="true" />
         </EntityType>
         <Association Name="FK_PlantillaOficio_TipoTr">
           <End Type="GedocDbModel.TipoTramite" Role="TipoTramite" Multiplicity="0..1" />
@@ -8678,6 +8682,8 @@ advertencia 6002: La tabla o vista 'GedocMvc_Prod.dbo.vw_Usuario' no tiene defin
           <EntitySetMapping Name="PlantillaOficio">
             <EntityTypeMapping TypeName="GedocDbModel.PlantillaOficio">
               <MappingFragment StoreEntitySet="PlantillaOficio">
+                <ScalarProperty Name="NombreDocumento" ColumnName="NombreDocumento" />
+                <ScalarProperty Name="TipoWord" ColumnName="TipoWord" />
                 <ScalarProperty Name="TipoPlantillaId" ColumnName="TipoPlantillaId" />
                 <ScalarProperty Name="Eliminado" ColumnName="Eliminado" />
                 <ScalarProperty Name="UsuarioEliminacionId" ColumnName="UsuarioEliminacionId" />

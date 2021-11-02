@@ -53,6 +53,17 @@ namespace Gedoc.Service.DataAccess
             try
             {
                 var datos = _repoMant.GetPlantillaOficioAll(resumen);
+
+                foreach (var dato in datos)
+                {
+                    if (dato.TipoWord)
+                    {
+                        string url = "Adjuntos\\Adjuntos de Plantilla Oficio\\" + dato.NombreDocumento;
+                        var idAdjunto = _adjSvc.GetArchivo(url).OrigenId;
+                        dato.IdAdjunto = idAdjunto;
+                    }
+                }
+
                 resultado.Data = datos;
                 resultado.Total = datos?.Count ?? 0;
             }

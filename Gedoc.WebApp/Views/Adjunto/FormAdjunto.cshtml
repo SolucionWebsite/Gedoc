@@ -51,9 +51,9 @@
                     .Messages(msg => msg.InvalidFileExtension("Tipo de archivo no permitido").InvalidMaxFileSize("Tamaño de archivo demasiado grande"))
                     .Events(ev => ev.Select("function onselectFile(e) { setTimeout( function() { $(':focus').blur(); }, 200); }"))
                     .Validation(validation => validation
-                        .AllowedExtensions(WebConfigValues.AdjuntosPermitidos)
+                        .AllowedExtensions(WebConfigValues.AdjuntosPermitidosPlantillaOficio)
                         .MaxFileSize(50*1024*1024)
-                    ) )
+                    ))
                 <span class="k-invalid-msg" data-for="Files"></span>
                 @*TODO: poner esta leyenda de manera dinámica tomando los datos según configuración de tipo y tamaño de archivos permitidos*@
                 <span class="help-block" id="leyenda-file">@Gedoc.Helpers.GeneralData.ARCHIVOS_PERMITIDOS</span>

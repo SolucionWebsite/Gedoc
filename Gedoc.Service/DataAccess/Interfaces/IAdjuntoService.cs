@@ -12,6 +12,7 @@ namespace Gedoc.Service.DataAccess.Interfaces
         DatosAjax<List<AdjuntoDto>> GetAdjuntosIngreso(int idIngreso);
         AdjuntoDto GetAdjuntoById(int id);
         DatosArchivo GetArchivo(int adjuntoId);
+        DatosArchivo GetArchivo(string url);
         ResultadoOperacion Save(AdjuntoDto adjunto, IEnumerable<HttpPostedFileBase> files);
         ResultadoOperacion MarcaAdjuntosEliminado(int[] adjIds, int usuarioId);
         DatosAjax<List<AdjuntoDto>> GetAdjuntosUsuario(DateTime fechaD, DateTime fechaH, int usuarioId);

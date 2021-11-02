@@ -22,8 +22,10 @@ namespace Gedoc.Helpers.Dto
         public int? UsuarioModificacionId { get; set; }
         public DateTime? EliminacionFecha { get; set; }
         public int? UsuarioEliminacionId { get; set; }
-
+        public bool TipoWord { get; set; }
         public string UsuarioActual { get; set; }
         public int UsuarioActualId { get; set; }
+        public string NombreDocumento { get; set; }
+        public int IdAdjunto { get; set; }
     }
 }

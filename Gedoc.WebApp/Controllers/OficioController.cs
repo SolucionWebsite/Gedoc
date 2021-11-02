@@ -22,13 +22,19 @@ namespace Gedoc.WebApp.Controllers
         private readonly IDespachoService _despachoSrv;
         private readonly IMantenedorService _mantenedorSrv;
         private readonly IOficioService _oficioSrv;
+        private readonly IAdjuntoService _adjuntoSrv;
         private readonly IGenericMap _mapper;
 
-        public OficioController(IDespachoService despachoSrv, IMantenedorService mantenedorSrv,
-            IOficioService oficioSrv, IGenericMap mapper)
+        public OficioController(
+            IDespachoService despachoSrv,
+            IMantenedorService mantenedorSrv,
+            IOficioService oficioSrv,
+            IAdjuntoService adjuntoSrv,
+            IGenericMap mapper)
         {
             _despachoSrv = despachoSrv;
             _mantenedorSrv = mantenedorSrv;
+            _adjuntoSrv = adjuntoSrv;
             _oficioSrv = oficioSrv;
             _mapper = mapper;
         }
@@ -75,7 +81,7 @@ namespace Gedoc.WebApp.Controllers
             return Json(reqMain);
         }
 
-        public ActionResult FormPlantillaOficio(int id)
+        public ActionResult FormPlantillaOficio(int id, int tipoWord)
         {
             ViewBag.AccesoForm = ValidaAccesoUtForm();
             var tipoPlant = (int) TipoPlantillaOficio.Despacho;
@@ -89,7 +95,15 @@ namespace Gedoc.WebApp.Controllers
                 tipoPlant = datos.TipoPlantillaId.GetValueOrDefault((int)TipoPlantillaOficio.Despacho);
             }
             ViewBag.CamposSeleccionables = _oficioSrv.GetCamposSeleccionablePorGrupos(tipoPlant);
-            var model = _mapper.MapFromDtoToModel < PlantillaOficioDto, PlantillaOficioModel>(datos);
+            var model = _mapper.MapFromDtoToModel<PlantillaOficioDto, PlantillaOficioModel>(datos);
+            model.TipoWord = tipoWord == 1;
+
+            if (model.TipoWord)
+            {
+                string url = "Adjuntos\\Adjuntos de Plantilla Oficio\\" + datos.NombreDocumento;
+                model.Documento = _adjuntoSrv.GetArchivo(url);
+            }
+
             return View(model);
         }
 
@@ -117,6 +131,47 @@ namespace Gedoc.WebApp.Controllers
             var resultadoOper = _oficioSrv.SavePlantillaOficio(datos, false);
 
             return Json(resultadoOper);
+        }
+
+        [HttpPost]
+        public ActionResult SavePlantillaWord(PlantillaOficioModel model, AdjuntoModel adjuntoModel, IEnumerable<HttpPostedFileBase> files)
+        {
+            if (!HaySesionActiva())
+            {
+                return Json(new ResultadoOperacion(-1, "La sesión ha expirado, por favor, vuelva a <a href='/Home/Login'>iniciar sesión</a>.", null));
+            }
+
+            _ = new ResultadoOperacion();
+            var resultadoSubidaDocumento = new ResultadoOperacion();
+
+            if (model.Id != 0 && files.FirstOrDefault() != null)
+            {
+                adjuntoModel.DocIngreso = "Plantilla Oficio";
+                AdjuntoDto datos = _mapper.MapFromModelToDto<AdjuntoModel, AdjuntoDto>(adjuntoModel);
+                datos.CreadoPor = CurrentUserName;
+                datos.UsuarioActual = CurrentUserName;
+                datos.UsuarioCreacionId = CurrentUserId;
+                datos.Id = 0;
+                resultadoSubidaDocumento = _adjuntoSrv.Save(datos, files);
+            }
+
+            ResultadoOperacion resultadoPlantilla;
+            if (resultadoSubidaDocumento.Codigo == 1)
+            {
+                var datosPlantilla = _mapper.MapFromModelToDto<PlantillaOficioModel, PlantillaOficioDto>(model);
+                datosPlantilla.UsuarioActual = CurrentUserName;
+                datosPlantilla.UsuarioActualId = CurrentUserId.GetValueOrDefault(0);
+                datosPlantilla.UsuarioCreacionId = CurrentUserId;
+                datosPlantilla.Contenido = WebUtility.HtmlDecode(datosPlantilla.Contenido);
+                datosPlantilla.NombreDocumento = files.FirstOrDefault() == null ? _oficioSrv.GetPlantillaOficioById(model.Id).NombreDocumento : files.FirstOrDefault().FileName;
+                resultadoPlantilla = _oficioSrv.SavePlantillaOficio(datosPlantilla, false);
+            }
+            else
+            {
+                return Json(resultadoSubidaDocumento);
+            }
+
+            return Json(resultadoPlantilla);
         }
 
         [HttpPost]

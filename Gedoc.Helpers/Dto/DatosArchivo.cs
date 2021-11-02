@@ -10,6 +10,7 @@ namespace Gedoc.Helpers.Dto
 {
     public class DatosArchivo
     {
+        public int AdjuntoId { get; set; }
         public int OrigenId { get; set; }
         public string OrigenCodigo { get; set; }
         public HttpPostedFileBase File { get; set; }

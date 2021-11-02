@@ -96,6 +96,14 @@ namespace Gedoc.Helpers
             }
         }
 
+        public static string[] AdjuntosPermitidosPlantillaOficio
+        {
+            get
+            {
+                return new string[] { ".doc", ".docx" };
+            }
+        }
+
         public static int SqlCommandTimeOut
         {
             get

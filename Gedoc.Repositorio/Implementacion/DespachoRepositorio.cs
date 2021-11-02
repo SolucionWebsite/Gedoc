@@ -709,6 +709,7 @@ namespace Gedoc.Repositorio.Implementacion
             oficio.EtapaId = datos.EtapaId == -1 ? oficio.EtapaId : datos.EtapaId;
             oficio.UrlArchivo = datos.UrlArchivo ?? oficio.UrlArchivo;
             oficio.NombreArchivo = datos.NombreArchivo ?? oficio.NombreArchivo;
+            oficio.Urgente = datos.Urgente;
             if (datos.Accion != AccionOficio.EDITFIRMADO.ToString())
             {
                 oficio.FechaUltEstado = datos.FechaUltEstado;

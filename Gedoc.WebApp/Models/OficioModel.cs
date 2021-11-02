@@ -38,6 +38,7 @@ namespace Gedoc.WebApp.Models
         public string PlantillaOficioNombre { get; set; }
         public string Contenido { get; set; }
         public string Observaciones { get; set; }
+        public bool Urgente { get; set; }
 
         public string UsuarioActual { get; set; }
         public int UsuarioActualId { get; set; }

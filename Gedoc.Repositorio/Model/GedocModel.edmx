@@ -609,6 +609,7 @@
           <Property Name="NombreArchivo" Type="varchar" MaxLength="1000" />
           <Property Name="UnidadTecnicaId" Type="int" />
           <Property Name="CodigoDocFirmado" Type="varchar" MaxLength="50" />
+          <Property Name="Urgente" Type="bit" />
         </EntityType>
         <EntityType Name="OficioObservacion">
           <Key>
@@ -6774,6 +6775,7 @@ advertencia 6002: La tabla o vista 'GedocMvc_Prod.dbo.vw_Usuario' no tiene defin
           <NavigationProperty Name="UnidadTecnica" Relationship="GedocDbModel.FK_Oficio_UnidadTecnica" FromRole="Oficio" ToRole="UnidadTecnica" />
           <Property Name="CodigoDocFirmado" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <NavigationProperty Name="AdjuntoOficio" Relationship="GedocDbModel.FK_AdjuntoOficio_Oficio" FromRole="Oficio" ToRole="AdjuntoOficio" />
+          <Property Name="Urgente" Type="Boolean" />
         </EntityType>
         <Association Name="FK_Oficio_Estado">
           <End Type="GedocDbModel.EstadoOficio" Role="EstadoOficio" Multiplicity="1" />
@@ -8730,6 +8732,7 @@ advertencia 6002: La tabla o vista 'GedocMvc_Prod.dbo.vw_Usuario' no tiene defin
           <EntitySetMapping Name="Oficio">
             <EntityTypeMapping TypeName="GedocDbModel.Oficio">
               <MappingFragment StoreEntitySet="Oficio">
+                <ScalarProperty Name="Urgente" ColumnName="Urgente" />
                 <ScalarProperty Name="CodigoDocFirmado" ColumnName="CodigoDocFirmado" />
                 <ScalarProperty Name="UnidadTecnicaId" ColumnName="UnidadTecnicaId" />
                 <ScalarProperty Name="NombreArchivo" ColumnName="NombreArchivo" />

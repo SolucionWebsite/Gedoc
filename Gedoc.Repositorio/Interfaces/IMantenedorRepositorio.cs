@@ -29,6 +29,8 @@ namespace Gedoc.Repositorio.Interfaces
         List<PrioridadDto> GetPrioridadAll();
         PrioridadDto GetPrioridadById(string cod);
         UsuarioDto GetUsuarioById(int id);
+        OficioDto GetOficioById(int id);
+        bool IsAdminUser(int id);
         UsuarioDto GetUsuarioByUserNamePassword(string userName, string passw);
         UsuarioDto GetUsuarioByUserName(string userName);
         List<CalendarioBitacoraDto> GetCalendarioBitacoraByTipo(string tipoBitacoraId, int anno);

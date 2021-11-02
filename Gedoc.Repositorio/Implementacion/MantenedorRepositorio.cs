@@ -456,6 +456,18 @@ namespace Gedoc.Repositorio.Implementacion
             return _mapper.MapFromOrigenToDestino<Usuario, UsuarioDto>(usuario);
         }
 
+        public OficioDto GetOficioById(int id)
+        {
+            var oficio = db.Oficio.Where(x => x.Id == id).FirstOrDefault();
+            return _mapper.MapFromOrigenToDestino<Oficio, OficioDto>(oficio);
+        }
+
+        public bool IsAdminUser(int id)
+        {
+            var user = (db.Usuario.Include(u => u.Rol).FirstOrDefault(u => u.Id == id) ?? new Usuario());
+            return user.Rol?.Any(r => r.Id == (int)Rol.Administrador) ?? false;
+        }
+
         public UsuarioDto GetUsuarioByUserNamePassword(string userName, string passw)
         {
             var usuario = db.Usuario

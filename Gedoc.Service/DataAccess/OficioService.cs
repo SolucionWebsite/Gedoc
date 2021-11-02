@@ -830,6 +830,7 @@ namespace Gedoc.Service.DataAccess
                 "Lo sentimos, ha ocurrido un error al grabar los datos.<br/>Por favor, revise el log de error de la aplicación.<br/>{ID de Error: " + errorId + "}", null);
             try
             {
+                var dataOficio = _repoMant.GetOficioById(oficio.Id);
                 var logSistema = new LogSistemaDto()
                 {
                     Flujo = oficio.Flujo.ToString().ToUpper(),
@@ -844,6 +845,7 @@ namespace Gedoc.Service.DataAccess
 
                 oficio.FechaModificacion = DateTime.Now;
                 oficio.UsuarioModificacionId = oficio.DatosUsuarioActual?.UsuarioId;
+                oficio.Urgente = dataOficio.Urgente;
                 if (oficio.Id == 0)
                 {  // Nuevo Oficio
                     oficio.NumeroOficio = ""; // Se genera al firmar el oficio
@@ -952,6 +954,21 @@ namespace Gedoc.Service.DataAccess
                                 oficio.EstadoId = -1; // Para conservar el estado actual
                                 oficio.EtapaId = -1; // Para conservar la etapa actual
                                 break;
+                            case nameof(AccionOficio.URGENTE):
+                                logSistema.Accion = "MARCADO COMO URGENTE";
+                                if (_repoMant.IsAdminUser(oficio.DatosUsuarioActual?.UsuarioId ?? 0) && dataOficio.Urgente)
+                                {
+                                    oficio.Urgente = false;
+                                    oficio.EstadoId = dataOficio.EstadoId;
+                                    oficio.EtapaId = dataOficio.EtapaId;
+                                }
+                                else
+                                {
+                                    oficio.Urgente = true;
+                                    oficio.EstadoId = dataOficio.EstadoId;
+                                    oficio.EtapaId = dataOficio.EtapaId;
+                                }
+                                break;
                             case nameof(AccionOficio.AFIRMA):
                                 // Se obtiene el Rut y Pin de firma digital del usuario
                                 var datosUser = _repoMant.GetUsuarioById(oficio.DatosUsuarioActual?.UsuarioId ?? 0);
@@ -967,6 +984,7 @@ namespace Gedoc.Service.DataAccess
                                 logSistema.Accion = "FIRMADO JEFATURA CMN";
                                 oficio.EstadoId = (int)EstadoOficio.EnviadoFirma;
                                 oficio.EtapaId = (int)EtapaOficio.FirmadoSecTecn;
+                                oficio.Urgente = false;
 
                                 // Datos del archivo adjunto al Despacho
                                 oficio.datosArchivo = new DatosArchivo();

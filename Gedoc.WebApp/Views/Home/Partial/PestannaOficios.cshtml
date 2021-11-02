@@ -109,7 +109,7 @@
                             "'></span></a>";
                     }
 
-                    if (accion.IdAccion == "@AccionOficio.URGENTE.ToString()" && @isAdmin) {
+                    if (accion.IdAccion == "@AccionOficio.URGENTE.ToString()" && @Json.Encode(isAdmin)) {
                         btnAcc = "<a href='#' class='mr-1' id='" +
                             accion.IdAccion +
                             id +

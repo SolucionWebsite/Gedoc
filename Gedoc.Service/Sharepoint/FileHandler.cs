@@ -229,6 +229,10 @@ namespace Gedoc.Service.Sharepoint
                         pathArchivo.BibliotecaSp = "Despachos";
                         pathArchivo.PathRelative = $"{pathArchivo.BibliotecaSp}\\Oficios\\{DateTime.Now.Year}";
                         break;
+                    case TiposArchivo.AdjuntoWord:
+                        pathArchivo.BibliotecaSp = "Adjuntos";
+                        pathArchivo.PathRelative = $"{pathArchivo.BibliotecaSp}\\Adjuntos de Plantilla Oficio";
+                        break;
                 }
 
                 pathArchivo.PathFull = Path.Combine(
@@ -277,6 +281,11 @@ namespace Gedoc.Service.Sharepoint
                         pathArchivo.BibliotecaSp = "Despachos";
                         pathArchivo.PathFull = $"{pathArchivo.BibliotecaSp}/Oficios/{DateTime.Now.Year}";
                         pathArchivo.PathRelative = $"Oficios/{DateTime.Now.Year}";
+                        break;
+                    case TiposArchivo.AdjuntoWord:
+                        pathArchivo.BibliotecaSp = "Adjuntos";
+                        pathArchivo.PathFull = $"{pathArchivo.BibliotecaSp}\\Adjuntos de Plantilla Oficio";
+                        pathArchivo.PathRelative = $"{pathArchivo.BibliotecaSp}\\Adjuntos de Plantilla Oficio";
                         break;
                 }
             }

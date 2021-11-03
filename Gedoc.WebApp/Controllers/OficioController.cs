@@ -144,13 +144,17 @@ namespace Gedoc.WebApp.Controllers
             _ = new ResultadoOperacion();
             var resultadoSubidaDocumento = new ResultadoOperacion();
 
-            if (model.Id != 0 && files.FirstOrDefault() != null)
+            if (model.Id != 0 && files.FirstOrDefault() != null || (adjuntoModel.Id == 0 && files.FirstOrDefault() != null))
             {
                 adjuntoModel.DocIngreso = "Plantilla Oficio";
                 AdjuntoDto datos = _mapper.MapFromModelToDto<AdjuntoModel, AdjuntoDto>(adjuntoModel);
                 datos.CreadoPor = CurrentUserName;
                 datos.UsuarioActual = CurrentUserName;
                 datos.UsuarioCreacionId = CurrentUserId;
+                datos.DatosArchivo = new DatosArchivo
+                {
+                    TipoArchivo = TiposArchivo.AdjuntoWord
+                };
                 datos.Id = 0;
                 resultadoSubidaDocumento = _adjuntoSrv.Save(datos, files);
             }

@@ -142,7 +142,7 @@ namespace Gedoc.Service.DataAccess
                     {
                         var fileHandlerAdj = new FileHandler();
                         var datosArchivoAdj = new DatosArchivo();
-                        datosArchivoAdj.TipoArchivo = TiposArchivo.Adjunto;
+                        datosArchivoAdj.TipoArchivo = adjunto.DatosArchivo.TipoArchivo.Equals(TiposArchivo.AdjuntoWord) ? TiposArchivo.AdjuntoWord : TiposArchivo.Adjunto;
                         datosArchivoAdj.File = file;
                         datosArchivoAdj.OrigenCodigo = adjunto.DocIngreso;
                         datosArchivoAdj.OrigenId = adjunto.Id; // adjunto.RequerimientoId.GetValueOrDefault(0); //

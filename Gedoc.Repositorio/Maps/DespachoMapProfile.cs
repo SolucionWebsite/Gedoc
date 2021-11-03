@@ -95,6 +95,16 @@ namespace Gedoc.Repositorio.Maps
             CreateMap<Oficio, OficioDto>()
                 .ForMember(dst => dst.TipoPlantillaId,
                     opt => opt.MapFrom(src => src.PlantillaOficio.TipoPlantillaId))
+                .ForMember(dst => dst.UnidadTecnicaId,
+                    opt => opt.MapFrom(src => src.Requerimiento.Any() ? src.Requerimiento.FirstOrDefault().UnidadTecnicaAsign.Id : 0))
+                //.ForMember(dst => dst.UnidadTecnicaNombre,
+                //    opt => opt.MapFrom(src => src.Requerimiento.Any() ? src.Requerimiento.FirstOrDefault().UnidadTecnicaAsign.Titulo : ""))
+                .ForMember(dst => dst.UnidadTecnicaNombre,
+                    opt => opt.MapFrom(src => src.UnidadTecnica.Titulo))
+                .ForMember(dst => dst.ProfesionalId,
+                    opt => opt.MapFrom(src => src.UsuarioCreacion.Id))
+                .ForMember(dst => dst.ProfesionalNombre,
+                    opt => opt.MapFrom(src => src.UsuarioCreacion.NombresApellidos))
                 .ReverseMap();
 
             CreateMap<OficioDto, Oficio>()

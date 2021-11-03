@@ -406,21 +406,13 @@ namespace Gedoc.Repositorio.Implementacion
 
             var query = db.Oficio
                 .Include(o => o.Requerimiento)
+                .Include(o => o.UnidadTecnica)
                 .Include(o => o.EstadoOficio)
                 .Include(o => o.EtapaOficio)
-                .Take(configBandeja.CantRegistros)
+                .Include(o => o.UsuarioCreacion)
+                //.Include(o => o.UsuarioCreacion.UnidadTecnicaIntegrante)
+             //   .Take(configBandeja.CantRegistros)
                 .Where(d => !d.Eliminado);
-                //.Where(d => !d.Eliminado &&
-                //            (hayFiltroExtra == 0 ||
-                //             SqlFunctions.StringConvert((double)d.Id).Contains(filterText) ||
-                //             d.NumeroOficio.Contains(filterText) ||
-                //             //d.FechaCreacion.ToCustomDateFormat().Contains(filterText) ||
-                //             (d.FechaCreacion.Day + "/" + d.FechaCreacion.Month + "/" + d.FechaCreacion.Year).Contains(filterText) ||
-                //             //d.FechaUltEstado.ToCustomDateFormat().Contains(filterText) ||
-                //             d.EtapaOficio.Titulo.Contains(filterText) ||
-                //             d.EstadoOficio.Titulo.Contains(filterText) ||
-                //             d.Observaciones.Contains(filterText) ||
-                //             d.Requerimiento.Any(r => r.DocumentoIngreso.Contains(filterText)) ) );
             if (hayFiltroExtra == 1)
                 query = query
                     .Where(d => SqlFunctions.StringConvert((double)d.Id).Contains(filterText) ||
@@ -447,6 +439,7 @@ namespace Gedoc.Repositorio.Implementacion
             filtro += filtro == "" ? "" : ")";
             if (!string.IsNullOrWhiteSpace(filtro))
             {
+                filtro = "( " + filtro + $" OR (UltimoUsuarioFlujoId = {idUsuario}) )";
                 query = query.Where(filtro, new object[0]);
             }
 
@@ -525,6 +518,11 @@ namespace Gedoc.Repositorio.Implementacion
                     }
                 }
             }
+
+            //// Si el usuario es el último q cambió el oficio de etapa se le va a mostrar en su bandeja, pero sin acciones, solo ver
+            //query = query.Where(d => d.UltimoUsuarioFlujoId == idUsuario);
+
+            //****var test = query.ToList();
 
             var datos = query
                 .OrderBy($"{sort.Field} {sort.Dir}")
@@ -625,6 +623,7 @@ namespace Gedoc.Repositorio.Implementacion
                 var reqIds = datos.Requerimiento.Select(r => r.IdInt).ToList();
                 var reqs = db.Requerimiento.Where(r => reqIds.Contains(r.Id)).ToList();
                 oficio.Requerimiento = reqs;
+                oficio.UnidadTecnicaId = reqs.FirstOrDefault()?.UtAsignadaId;
             }
 
             // Evitar insert en tablas hijas
@@ -633,6 +632,7 @@ namespace Gedoc.Repositorio.Implementacion
                 db.Entry(det).State = EntityState.Unchanged;
             }
 
+            oficio.UltimoUsuarioFlujoId = datos.UsuarioCreacionId;
             db.Oficio.Add(oficio);
             db.SaveChanges();
             datos.Id = oficio.Id;
@@ -670,6 +670,7 @@ namespace Gedoc.Repositorio.Implementacion
             // Update Requerimientos
             var ids2 = datos.Requerimiento.Select(d => d.IdInt).ToList();
             oficio.Requerimiento = db.Requerimiento.Where(x => ids2.Any(d => d == x.Id)).ToList();
+            oficio.UnidadTecnicaId = oficio.Requerimiento.FirstOrDefault()?.UtAsignadaId;
 
             // Evita Insert Hijo
             foreach (var det in oficio.Requerimiento ?? Enumerable.Empty<Requerimiento>())
@@ -722,6 +723,8 @@ namespace Gedoc.Repositorio.Implementacion
                 oficio.EliminacionFecha = datos.EliminacionFecha;
                 oficio.UsuarioEliminacionId = datos.UsuarioEliminacionId;
             }
+
+            oficio.UltimoUsuarioFlujoId = datos.UsuarioModificacionId ?? oficio.UltimoUsuarioFlujoId;
 
             if (datos.NuevaObservacion)
             {

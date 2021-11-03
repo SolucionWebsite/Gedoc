@@ -724,6 +724,8 @@ namespace Gedoc.Service.DataAccess
                     : new SortParam() { Field = param.Sort.Split('-')[0], Dir = param.Sort.Contains("-") ? param.Sort.Split('-')[1] : "DESC" };
                 sort.Field = sort.Field == "EstadoOficioTitulo" ? "EstadoOficio.Titulo" : sort.Field;
                 sort.Field = sort.Field == "EtapaOficioTitulo" ? "EtapaOficio.Titulo" : sort.Field;
+                sort.Field = sort.Field == "ProfesionalNombre" ? "UsuarioCreacion.NombresApellidos" : sort.Field;
+                sort.Field = sort.Field == "UnidadTecnicaNombre" ? "UnidadTecnica.Titulo" : sort.Field;
                 var fechaDesde = DateTime.Now.AddDays(configBandeja.DiasAtras > 0 ? -1 * configBandeja.DiasAtras : configBandeja.DiasAtras);
 
                 resultado = _repoDespacho.GetDatosBandejaEntradaOficio(idBandejaMain, skip, take, sort, param.FilterText, fechaDesde, idUsuario, configBandeja);
@@ -845,7 +847,7 @@ namespace Gedoc.Service.DataAccess
 
                 oficio.FechaModificacion = DateTime.Now;
                 oficio.UsuarioModificacionId = oficio.DatosUsuarioActual?.UsuarioId;
-                oficio.Urgente = dataOficio.Urgente;
+                oficio.Urgente = dataOficio != null && dataOficio.Urgente;
                 if (oficio.Id == 0)
                 {  // Nuevo Oficio
                     oficio.NumeroOficio = ""; // Se genera al firmar el oficio
@@ -904,6 +906,7 @@ namespace Gedoc.Service.DataAccess
                     else
                     {
                         oficio.Eliminado = false;
+                        oficio.UltimoUsuarioFlujoId = oficio.UsuarioModificacionId;
                         switch (oficio.Accion)
                         {
                             case nameof(AccionOficio.AENCARGADO):

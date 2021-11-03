@@ -185,6 +185,7 @@
         <EntityTypeShape EntityType="GedocDbModel.RemitenteRelacionBackup" Width="1.5" PointX="21.375" PointY="16.75" />
         <AssociationConnector Association="GedocDbModel.FK_Remitente_UsuarioElim" />
         <EntityTypeShape EntityType="GedocDbModel.vw_DestinatarioDesp" Width="1.5" PointX="21.375" PointY="19.75" />
+        <AssociationConnector Association="GedocDbModel.FK_Oficio_UltimoUsuarioFlujoId" />
         </Diagram>
     </edmx:Diagrams>
   </edmx:Designer>

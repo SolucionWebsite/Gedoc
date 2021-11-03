@@ -51,6 +51,7 @@ namespace Gedoc.Repositorio.Model
             this.AdjuntoOficio = new HashSet<AdjuntoOficio>();
             this.AdjuntoOficio1 = new HashSet<AdjuntoOficio>();
             this.Remitente2 = new HashSet<Remitente>();
+            this.Oficio3 = new HashSet<Oficio>();
         }
     
         public int Id { get; set; }
@@ -132,5 +133,7 @@ namespace Gedoc.Repositorio.Model
         public virtual ICollection<AdjuntoOficio> AdjuntoOficio1 { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<Remitente> Remitente2 { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<Oficio> Oficio3 { get; set; }
     }
 }

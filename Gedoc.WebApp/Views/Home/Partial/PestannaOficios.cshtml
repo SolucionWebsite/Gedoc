@@ -692,6 +692,14 @@
                 .Title("<center>Fecha<br>Estado <span class='k-icon k-i-kpi' style='color: lightgray;'></span></center>")
                 .Format(GeneralData.FORMATO_FECHA_LARGO_GRID)
                 .Filterable(false);
+            columns.Bound(c => c.UnidadTecnicaNombre)
+                .Width(200)
+                .Title("<center>Unidad Técnica <span class='k-icon k-i-kpi' style='color: lightgray;'></span></center>")
+                .Filterable(false);
+            columns.Bound(c => c.ProfesionalNombre)
+                .Width(200)
+                .Title("<center>Profesional UT <span class='k-icon k-i-kpi' style='color: lightgray;'></span></center>")
+                .Filterable(false);
             columns.Bound(c => c.Observaciones)
                 .Width(250)
                 .Title("<center>Observaciones <span class='k-icon k-i-kpi' style='color: lightgray;'></span></center>")

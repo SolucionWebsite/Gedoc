@@ -32,7 +32,7 @@ namespace Gedoc.Helpers.Dto
         Adjunto = 3,
         Bitacora = 4,
         Oficio = 5,
-        AdjuntoOficio = 6
-
+        AdjuntoOficio = 6,
+        AdjuntoWord = 7
     }
 }

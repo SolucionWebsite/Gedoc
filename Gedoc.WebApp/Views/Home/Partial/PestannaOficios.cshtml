@@ -528,6 +528,18 @@
         });*@
     }
 
+
+    function verHistorialOficio(id, numOficio) {
+        var url = '@Url.Action("GrillaHistorialOficio", "Oficio")' + "?id=" + id;
+        var result = Main.muestraVentanaModal('Historial - Oficio ID ' + id,
+            url,
+            960,
+            '',
+            false,
+            "winGrillaHistOfic");
+
+    }
+
     function ejecutaAccionOficio(id, numOficio, accion, observaciones) {
 
         var data = {

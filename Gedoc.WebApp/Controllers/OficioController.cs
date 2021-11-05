@@ -577,5 +577,23 @@ namespace Gedoc.WebApp.Controllers
             }
             return Json(result);
         }
+
+        public ActionResult GrillaHistorialOficio(int id)
+        {
+            ViewBag.OficioId = id;
+
+            return View();
+        }
+
+        public ActionResult HistorialOficio(int oficioId)
+        {
+            var datos = _oficioSrv.HistorialOficio(oficioId);
+
+            var jsonResult = Json(datos);
+            jsonResult.MaxJsonLength = int.MaxValue;
+            return jsonResult;
+        }
+
+
     }
 }

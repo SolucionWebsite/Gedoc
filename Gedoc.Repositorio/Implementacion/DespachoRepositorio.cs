@@ -1252,6 +1252,46 @@ namespace Gedoc.Repositorio.Implementacion
             return datos;
         }
 
+        #region Historial Oficio
+
+        public List<LogSistemaDto> HistorialOficio(int oficioId)
+        {
+
+            var consulta = "SELECT " +
+                           " logs.Id as Id, " +
+                           " logs.UnidadTecnicaId as UnidadTecnicaId, " +
+                        "(SELECT TOP 1 Titulo FROM UsuariosUnidadTecnica uut JOIN UnidadTecnica ut ON ut.Id = uut.UnidadTecnicaId WHERE uut.UsuarioId = usu.Id) as UnidadTecnica, " +
+                        "logs.Accion as Accion, " +
+                        "logs.Fecha as Fecha, " +
+                        "logs.ExtraData as ExtraData, " +
+                        "usu.NombresApellidos as Usuario " +
+                        "FROM LogSistema logs " +
+                        "    LEFT JOIN Usuario usu ON usu.Id = logs.UsuarioId " +
+                        $"WHERE logs.Origen = 'OFICIO' and OrigenId = {oficioId}";
+            var datos = db.Database.SqlQuery<LogSistemaDto>(consulta).ToList();
+
+            datos.ForEach(d =>
+            {
+                if (d.Accion == "CREACION") d.Accion = "Se crea el borrador";
+                if (d.Accion == "EDICION") d.Accion = "Se modifica el borrador";
+                if (d.Accion == "ENVIAR A ENCARGADO UT") d.Accion = "Se envía el borrador al Encargado UT";
+                if (d.Accion == "DEVOLVER A PROFESIONAL UT") d.Accion = "Se devuelve el borrador al Profesional";
+                if (d.Accion == "ENVIAR A VISADOR GENERAL") d.Accion = "Se envía el borrador al Visador General";
+                if (d.Accion == "DEVOLVER A ENCARGADO UT") d.Accion = "Se devuelve el borrador al Encargado UT";
+                if (d.Accion == "ENVIAR A JEFATURA CMN") d.Accion = "Se envía el borrador a Jefatura CMN";
+                if (d.Accion == "DEVOLVER A VISADOR GENERAL") d.Accion = "Se devuelve el borrador al Visador General";
+                if (d.Accion == "EDICION FIRMADO") d.Accion = "Se modifica el oficio firmado";
+                if (d.Accion == "ELIMINADO") d.Accion = "Se elimina el borrador";
+                if (d.Accion == "MARCADO COMO URGENTE") d.Accion = "Se marca el borrador como Urgente";
+                if (d.Accion == "DESMARCADO COMO URGENTE") d.Accion = "Se elimina marca de Urgente del borrador";
+                if (d.Accion == "FIRMADO JEFATURA CMN") d.Accion = "Se firma el borrador";
+            });
+            return datos;
+
+        }
+
+        #endregion
+
 
     }
 }

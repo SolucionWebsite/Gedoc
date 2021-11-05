@@ -832,7 +832,6 @@ namespace Gedoc.Service.DataAccess
                 "Lo sentimos, ha ocurrido un error al grabar los datos.<br/>Por favor, revise el log de error de la aplicación.<br/>{ID de Error: " + errorId + "}", null);
             try
             {
-                var dataOficio = _repoMant.GetOficioById(oficio.Id);
                 var logSistema = new LogSistemaDto()
                 {
                     Flujo = oficio.Flujo.ToString().ToUpper(),
@@ -843,11 +842,11 @@ namespace Gedoc.Service.DataAccess
                     DireccionIp = oficio.DatosUsuarioActual?.DireccionIp,
                     NombrePc = oficio.DatosUsuarioActual?.NombrePc,
                     UserAgent = oficio.DatosUsuarioActual?.UserAgent,
+                    ExtraData = oficio.Observaciones
                 };
 
                 oficio.FechaModificacion = DateTime.Now;
                 oficio.UsuarioModificacionId = oficio.DatosUsuarioActual?.UsuarioId;
-                oficio.Urgente = dataOficio != null && dataOficio.Urgente;
                 if (oficio.Id == 0)
                 {  // Nuevo Oficio
                     oficio.NumeroOficio = ""; // Se genera al firmar el oficio
@@ -958,15 +957,17 @@ namespace Gedoc.Service.DataAccess
                                 oficio.EtapaId = -1; // Para conservar la etapa actual
                                 break;
                             case nameof(AccionOficio.URGENTE):
-                                logSistema.Accion = "MARCADO COMO URGENTE";
+                                var dataOficio = _repoMant.GetOficioById(oficio.Id);
                                 if (_repoMant.IsAdminUser(oficio.DatosUsuarioActual?.UsuarioId ?? 0) && dataOficio.Urgente)
                                 {
+                                    logSistema.Accion = "DESMARCADO COMO URGENTE";
                                     oficio.Urgente = false;
                                     oficio.EstadoId = dataOficio.EstadoId;
                                     oficio.EtapaId = dataOficio.EtapaId;
                                 }
                                 else
                                 {
+                                    logSistema.Accion = "MARCADO COMO URGENTE";
                                     oficio.Urgente = true;
                                     oficio.EstadoId = dataOficio.EstadoId;
                                     oficio.EtapaId = dataOficio.EtapaId;
@@ -1488,6 +1489,28 @@ namespace Gedoc.Service.DataAccess
             }
 
             return new byte[0];
+        }
+
+        #endregion
+
+        #region Historial de oficios
+        public DatosAjax<List<LogSistemaDto>> HistorialOficio(int oficioId)
+        {
+            var resultadoOper = new ResultadoOperacion();
+            var resultado = new DatosAjax<List<LogSistemaDto>>(new List<LogSistemaDto>(), resultadoOper);
+            try
+            {
+                var datos = _repoDespacho.HistorialOficio(oficioId);
+                resultado.Data = datos;
+                resultado.Total = datos?.Count ?? 0;
+            }
+            catch (Exception ex)
+            {
+                LogError(resultadoOper, ex, "Lo sentimos, ha ocurrido un error al obtener los datos.");
+            }
+            resultado.Resultado = resultadoOper;
+            return resultado;
+
         }
 
         #endregion

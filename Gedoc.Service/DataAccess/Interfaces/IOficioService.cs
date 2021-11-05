@@ -38,6 +38,7 @@ namespace Gedoc.Service.DataAccess.Interfaces
         DatosArchivo GetArchivo(int oficioId);
         byte[] GetOficioPdfFromHtmlById(int oficioId, string baseUrl);
         byte[] GetPdfFromHtml(string contenido, string baseUrl);
+        DatosAjax<List<LogSistemaDto>> HistorialOficio(int oficioId);
 
         #endregion
     }

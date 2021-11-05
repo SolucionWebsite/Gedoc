@@ -1,0 +1,86 @@
+﻿@using Gedoc.Helpers
+@using Gedoc.Helpers.Dto
+@using Gedoc.Helpers.Enum
+
+@{
+    Layout = null; // "~/Views/Shared/_LayoutVacio.cshtml";
+    ViewBag.Title = "Observaciones Oficio";
+    int oficioId = ViewBag.OficioId ?? 0;
+}
+
+<style>
+    .k-grid {
+        font-size: 0.8em;
+    }
+</style>
+
+<script src="~/Scripts/form.js"></script>
+<script src="~/Scripts/accionesbandeja.js"></script>
+
+@*@section scripts{
+    }*@
+
+
+<script>
+
+    $(function () {
+
+    });
+
+    function refrescaGrid() {
+        var gridK = $("#gridHistorialOficio").data("kendoGrid");
+        if (gridK) {
+            gridK.dataSource.read();
+        }
+    }
+
+    function extraDataGrillaHist() {
+        return {
+        };
+    }
+
+    //# sourceURL=GrillaOficios
+
+</script>
+
+<div id="divGrillaHistorialOficios">
+    @(Html.Kendo().DataSource<LogSistemaDto>()
+        .Name("dataSourceGridHistOfic")
+        .Ajax(dataSource => dataSource
+            .Read(read =>
+            {
+                read.Action("HistorialOficio", "Oficio", new { oficioId = oficioId })
+                    .Type(HttpVerbs.Post)
+                    .Data("extraDataGrillaHist");
+            })
+            .Events(ev =>
+            {
+                //ev.RequestStart("function() { Main.enEspera($('#gridHistorialOficio'), true) }")
+                // ev.RequestEnd("function(e) {  Main.enEspera($('#gridHistorialOficio'), false); Main.notificaResultado(e); }");
+            })
+            .PageSize(10)
+            .ServerOperation(false)
+            .Sort(sort => sort.Add("Fecha"))
+        )
+        )
+    @(Html.Kendo().Grid<LogSistemaDto>()
+        .Name("gridHistorialOficio")
+        .EnableCustomBinding(true)
+        .DataSource("dataSourceGridHistOfic")
+        .Scrollable(scr => scr.Height("auto"))
+        .Pageable(p => p.AlwaysVisible(false).PageSizes(new int[3] {10, 50, 100}).Enabled(true))
+        .Sortable()
+        .Navigatable()
+        .NoRecords("No existen documentos.")
+        .Columns(columns =>
+        {
+            columns.Bound(c => c.Fecha).Width(120).Title("<center>Fecha</center>").Format(GeneralData.FORMATO_FECHA_LARGO_GRID);
+            columns.Bound(c => c.Usuario).Width(150).Title("<center>Usuario</center>");
+            columns.Bound(c => c.UnidadTecnica).Width(130).Title("<center>Unidad Técnica</center>");
+            columns.Bound(c => c.Accion).Width(130).Title("<center>Descripción</center>");
+            columns.Bound(c => c.ExtraData).Width(130).Title("<center>Observaciones</center>");
+        })
+        )
+
+
+</div>

@@ -23,6 +23,7 @@ namespace Gedoc.Helpers.Dto
         public string UserAgent { get; set; }
         public string ExtraData { get; set; }
         public Nullable<int> UnidadTecnicaId { get; set; }
+        public string UnidadTecnica { get; set; }
         public Nullable<int> UsuarioId { get; set; }
         public System.DateTime? OrigenFecha { get; set; }
     }

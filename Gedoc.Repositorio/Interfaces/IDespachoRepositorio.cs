@@ -68,6 +68,7 @@ namespace Gedoc.Repositorio.Interfaces
         #endregion
 
         List<RequerimientoDto> GetRequerimientosDespacho(int idDespacho);
+        List<LogSistemaDto> HistorialOficio(int oficioId);
 
     }
 }

@@ -57,7 +57,7 @@
         return texto;
     }
 
-    function buildAccionesOficios(estadoId, etapaId, id, numOficio, urlArchivo, reqDatos) {
+    function buildAccionesOficios(estadoId, etapaId, id, numOficio, urlArchivo, reqDatos, TipoWord, IdAdjunto) {
         var acciones = @Html.Raw(Json.Encode(accionesEstadoEtapaOfic));
         var numDocsReq = reqDatos && reqDatos.length ? reqDatos.map(a => a.Titulo).join(';') : "";
 
@@ -126,13 +126,20 @@
                             "' >" +
                             "<img src='Content/images/" + accion.Icono + "' width='16px' title='Urgente' /></a>";
                     }
-
                     accionesHtml.push(btnAcc);
                 }
                 break;
             }
         }
 
+        if (TipoWord) {
+            var href = "@Url.Action("GetArchivo", "Adjunto")" + "?idAdjunto=" + IdAdjunto;
+            btnAcc = "<a href='" + href +"' class='mr-1' id='btnDescargarWord" + id +
+                "'title='DescargarWord' target='_blank'><img src='Content/images/word.png' width='16px'/></a>";
+
+            accionesHtml.push(btnAcc);
+        }
+        
         return accionesHtml.join(' '); // .replace('"', '\\"');
     }
 
@@ -708,7 +715,7 @@
             columns.Bound(c => c.Id)
                 .Title("<center>Acciones</center>")
                 .Width(170)
-                .ClientTemplate("#= buildAccionesOficios(data.EstadoId, data.EtapaId, data.Id, data.NumeroOficio, data.UrlArchivo, data.Requerimiento)#")
+                .ClientTemplate("#= buildAccionesOficios(data.EstadoId, data.EtapaId, data.Id, data.NumeroOficio, data.UrlArchivo, data.Requerimiento, data.TipoWord, data.IdAdjunto)#")
                 .Sortable(false)
                 .Filterable(false);
         }))

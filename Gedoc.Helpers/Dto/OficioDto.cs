@@ -47,6 +47,8 @@ namespace Gedoc.Helpers.Dto
         public bool Urgente { get; set; }
         public int? ProfesionalId { get; set; }
         public string NombreDocumento { get; set; }
+        public bool TipoWord { get; set; }
+        public int IdAdjunto { get; set; }
         public string ProfesionalNombre { get; set; }
         public string UnidadTecnicaNombre { get; set; }
         public int? UltimoUsuarioFlujoId { get; set; }

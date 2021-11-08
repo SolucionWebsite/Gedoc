@@ -72,13 +72,23 @@
         .Sortable()
         .Navigatable()
         .NoRecords("No existen documentos.")
+        .ToolBar(t =>
+        {
+            t.Search();
+            t.Excel().Text("Excel");
+        })
+        .Excel(excel =>
+        {
+            excel.FileName($"Historial del Oficio ID{oficioId}.xlsx");
+            excel.AllPages(true);
+        })
         .Columns(columns =>
         {
-            columns.Bound(c => c.Fecha).Width(120).Title("<center>Fecha</center>").Format(GeneralData.FORMATO_FECHA_LARGO_GRID);
-            columns.Bound(c => c.Usuario).Width(150).Title("<center>Usuario</center>");
-            columns.Bound(c => c.UnidadTecnica).Width(130).Title("<center>Unidad Técnica</center>");
-            columns.Bound(c => c.Accion).Width(130).Title("<center>Descripción</center>");
-            columns.Bound(c => c.ExtraData).Width(130).Title("<center>Observaciones</center>");
+            columns.Bound(c => c.Fecha).Width(120).Title("Fecha").Format(GeneralData.FORMATO_FECHA_LARGO_GRID);
+            columns.Bound(c => c.Usuario).Width(150).Title("Usuario");
+            columns.Bound(c => c.UnidadTecnica).Width(130).Title("Unidad Técnica");
+            columns.Bound(c => c.Accion).Width(130).Title("Descripción");
+            columns.Bound(c => c.ExtraData).Width(130).Title("Observaciones");
         })
         )
 

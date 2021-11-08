@@ -845,7 +845,7 @@ namespace Gedoc.Service.DataAccess
 
                 oficio.FechaModificacion = DateTime.Now;
                 oficio.UsuarioModificacionId = oficio.DatosUsuarioActual?.UsuarioId;
-                oficio.Urgente = dataOficio.Urgente;
+                oficio.Urgente = dataOficio != null && dataOficio.Urgente;
                 if (oficio.Id == 0)
                 {  // Nuevo Oficio
                     oficio.NumeroOficio = ""; // Se genera al firmar el oficio

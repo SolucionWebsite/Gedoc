@@ -81,6 +81,22 @@ namespace Gedoc.WebApp.Controllers
             return Json(reqMain);
         }
 
+        [HttpPost]
+        public ActionResult DatosPlantilla(int id)
+        {
+            if (id <= 0)
+            {
+                return Json(false);
+            }
+            
+            var plantilla = _oficioSrv.GetPlantillaOficioById(id);
+            var plantillaModel = _mapper.MapFromDtoToModel<PlantillaOficioDto, PlantillaOficioModel>(plantilla);
+
+            bool result = plantillaModel != null && plantilla.TipoWord;
+
+            return Json(result);
+        }
+
         public ActionResult FormPlantillaOficio(int id, int tipoWord)
         {
             ViewBag.AccesoForm = ValidaAccesoUtForm();
@@ -307,6 +323,24 @@ namespace Gedoc.WebApp.Controllers
             param.FilterParameters = filterSqlParams.ToArray();
 
             var datos = _oficioSrv.GetDatosBandejaOficio(param, CurrentUserId.GetValueOrDefault()); //idBandeja);
+
+            if (datos != null && datos.Data.Count > 0)
+            {
+                foreach (var dato in datos.Data)
+                {
+                    if (dato.PlantillaId > 0)
+                    {
+                        var plantilla = _oficioSrv.GetPlantillaOficioById(dato.PlantillaId.GetValueOrDefault());
+
+                        if (plantilla != null && plantilla.NombreDocumento != null)
+                        {
+                            dato.NombreDocumento = plantilla.NombreDocumento;
+                            string url = "Adjuntos\\Adjuntos de Plantilla Oficio\\" + dato.NombreDocumento;
+                            dato.datosArchivo = _adjuntoSrv.GetArchivo(url);
+                        }
+                    }
+                }
+            }
 
             var jsonResult = Json(datos);
             jsonResult.MaxJsonLength = int.MaxValue;

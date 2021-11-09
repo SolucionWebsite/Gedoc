@@ -335,8 +335,9 @@ namespace Gedoc.WebApp.Controllers
                         if (plantilla != null && plantilla.NombreDocumento != null)
                         {
                             dato.NombreDocumento = plantilla.NombreDocumento;
+                            dato.TipoWord = true;
                             string url = "Adjuntos\\Adjuntos de Plantilla Oficio\\" + dato.NombreDocumento;
-                            dato.datosArchivo = _adjuntoSrv.GetArchivo(url);
+                            dato.IdAdjunto = _adjuntoSrv.GetArchivo(url).OrigenId;
                         }
                     }
                 }

@@ -104,7 +104,7 @@ namespace Gedoc.Service.DataAccess
                                 ? (int)EtapaIngreso.IngresoCentral
                                 : (int)EtapaIngreso.Asignacion;
                         }
-                        //ingreso.CanalLlegadaTramiteCod = CanalLlegada.Presencial.ToString("D");
+                        ingreso.CanalLlegadaTramiteCod = CanalLlegada.Presencial.ToString("D");
                     }
 
                     resultado = _repoReq.New(ingreso);

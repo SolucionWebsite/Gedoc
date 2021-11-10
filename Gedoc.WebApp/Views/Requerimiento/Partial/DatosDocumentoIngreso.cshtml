@@ -126,7 +126,7 @@
             {
                 <label id="lbCanalLlegada">@Model.CanalLlegadaTramiteTitulo</label>
             }
-            else if (accesoCampos[CampoIngreso.Doc_CanalLlegada] == AspectoCampo.Editable)
+            else if (accesoCampos[CampoIngreso.Doc_CanalLlegada] == AspectoCampo.Editable && (Model.EstadoTitulo == null || Model.EstadoTitulo == "Asignación" || Model.EstadoTitulo == "Ingreso Central"))
             {
                 @(Html.Kendo().ComboBox()
                 .Name("CanalLlegadaTramiteCod")

@@ -101,6 +101,8 @@
                             numOficio +
                             "\", \"" +
                             numDocsReq +
+                            "\", \"" +
+                            TipoWord +
                             "\"); return false;' title='" +
                             accion.Titulo +
                             "' >" +
@@ -139,7 +141,7 @@
 
             accionesHtml.push(btnAcc);
         }
-        
+
         return accionesHtml.join(' '); // .replace('"', '\\"');
     }
 
@@ -420,8 +422,25 @@
 
     }*@
 
-    function enviarEncargadoOficio(id, numOficio) {
-        Main.showConfirm(
+    function enviarEncargadoOficio(id, vacio, numOficio, tipoWord) {
+        if (tipoWord) {
+            debugger;
+            Acciones.ejecutaAccionNuevaVentana(
+            id == 0
+            ? "Nuevo Oficio"
+            : "Editar Oficio - " + "ID " + id,
+            '@Url.Action("FormOficio", "Oficio")' +
+            '?id=' +
+            id +
+            '&tipoWord=' +
+            tipoWord,
+            null,
+            id == 0 ? '100%' : "MAX",
+            "OFIC",
+            refrescaGridOfic,
+            false);
+        } else {
+            Main.showConfirm(
                 "El oficio " +
                 (numOficio ? " con Número de Oficio " + numOficio : " de ID " + id) +
                 " será enviado al Encargado UT. ¿Desea continuar?",
@@ -432,6 +451,7 @@
                     ejecutaAccionOficio(id, numOficio, "@AccionOficio.AENCARGADO.ToString()");
                 }
             });
+        }
     }
 
     function devolverProfesionalOficio(id, numOficio, numDocsReq) {

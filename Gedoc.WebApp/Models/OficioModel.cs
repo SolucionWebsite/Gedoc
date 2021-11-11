@@ -47,5 +47,7 @@ namespace Gedoc.WebApp.Models
         public string Pie { get; set; }
         public string Accion { get; set; }
         public string PdfBase64 { get; set; }
+        public bool TipoWord { get; set; }
+        public DatosArchivo Documento { get; set; }
     }
 }

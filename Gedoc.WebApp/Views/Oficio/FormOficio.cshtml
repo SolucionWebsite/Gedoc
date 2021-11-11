@@ -280,27 +280,75 @@
 
 <div class="div-main-form">
 
-    <form id="formOficio" action="@Url.Action("SaveOficio", "Oficio")" class="form-datos">
-        @Html.AntiForgeryToken()
+    @if (Model.TipoWord)
+    {
+        <div class="form-row">
+            <div class="col-md-2">
+                <label class="label-dato-form">
+                    Adjuntar Archivo
+                </label>
+            </div>
+            <div class="col-md-4">
+                <div class="demo-section k-content wide">
+                    @if (string.IsNullOrEmpty(Model.Documento.FileName))
+                    {
+                        @(Html.Kendo().Upload()
+                                    .Name("Files")
+                                    .Multiple(false)
+                                    .HtmlAttributes(new { aria_label = "Files", @class = "upload-required" })
+                                    .Messages(msg => msg.InvalidFileExtension("Tipo de archivo no permitido").InvalidMaxFileSize("Tamaño de archivo demasiado grande"))
+                                    .Events(ev => ev.Select("function onselectFile(e) { setTimeout( function() { $(':focus').blur(); }, 200); }"))
+                                    .Validation(validation => validation.AllowedExtensions(WebConfigValues.AdjuntosPermitidosPlantillaOficio).MaxFileSize(50*1024*1024)
+                                ))
+                    }
+                    else
+                    {
+                        var fileName = Model.Documento.FileName;
+                        var fileExtension = "." + Model.Documento.FileName.Split('.')[1];
+                        var FileSize = Model.Documento.FileStream.Length;
 
-        @Html.HiddenFor(a => a.Id)
-        @Html.HiddenFor(a => a.NumeroOficio)
-        @Html.HiddenFor(a => a.FechaEmisionOficio)
-        @Html.HiddenFor(a => a.PlantillaId)
-        @Html.HiddenFor(a => a.TipoTramiteId)
-        @Html.HiddenFor(a => a.RequerimientoPrincipalId)
-        @Html.HiddenFor(a => a.TipoPlantillaId)
-
-        @if (Model.TipoPlantillaId == (int)TipoPlantillaOficio.DespachoIniciativa)
-        {
-            <div class="form-row ">
-                <div class="col-md-3">
-                    <label class="label-dato-form no-wrap">
-                        Unidad Técnica<span class="marca-obligatorio" title="Este campo es obligatorio."> *</span>
-                    </label>
+                        @(Html.Kendo().Upload()
+                                .Name("Files")
+                                .Multiple(false)
+                                .HtmlAttributes(new { aria_label = "Files", @class = "upload-required" })
+                                .Messages(msg => msg.InvalidFileExtension("Tipo de archivo no permitido").InvalidMaxFileSize("Tamaño de archivo demasiado grande"))
+                                .Events(ev => ev.Select("function onselectFile(e) { setTimeout( function() { $('.k-button.k-upload-selected').remove(); $('.k-button.k-clear-selected').remove()}, 10); }"))
+                                .Async(a => a.Save("Initial_Files_Save_And_Persist", "Upload").Remove("Initial_Files_Remove_And_Persist", "Upload").AutoUpload(false))
+                                .Files(files => { files.Add().Name(fileName).Extension(fileExtension).Size(FileSize); })
+                                .Validation(validation => validation.AllowedExtensions(WebConfigValues.AdjuntosPermitidosPlantillaOficio).MaxFileSize(50 * 1024 * 1024))
+                            )
+                    }
                 </div>
-                <div class="col-md-9">
-                    @(Html.Kendo().ComboBox()
+                <span class="k-invalid-msg" data-for="Files"></span>
+            </div>
+        </div>
+        <div class="form-row">
+            <input class="" id="TipoWord" name="TipoWord" type="text" value="True" hidden="hidden">
+        </div>
+    }
+    else
+    {
+        <form id="formOficio" action="@Url.Action("SaveOficio", "Oficio")" class="form-datos">
+            @Html.AntiForgeryToken()
+
+            @Html.HiddenFor(a => a.Id)
+            @Html.HiddenFor(a => a.NumeroOficio)
+            @Html.HiddenFor(a => a.FechaEmisionOficio)
+            @Html.HiddenFor(a => a.PlantillaId)
+            @Html.HiddenFor(a => a.TipoTramiteId)
+            @Html.HiddenFor(a => a.RequerimientoPrincipalId)
+            @Html.HiddenFor(a => a.TipoPlantillaId)
+
+            @if (Model.TipoPlantillaId == (int)TipoPlantillaOficio.DespachoIniciativa)
+            {
+                <div class="form-row ">
+                    <div class="col-md-3">
+                        <label class="label-dato-form no-wrap">
+                            Unidad Técnica<span class="marca-obligatorio" title="Este campo es obligatorio."> *</span>
+                        </label>
+                    </div>
+                    <div class="col-md-9">
+                        @(Html.Kendo().ComboBox()
                         .Name("UnidadTecnicaId")
                         .DataTextField("Titulo")
                         .DataValueField("Id")
@@ -308,48 +356,48 @@
                         .HtmlAttributes(new { required = "required", @class = "w-100" })
                         .Messages(Gedoc.WebApp.Helpers.KendoHelper.SetComboBoxMessages)
                         )
-                    <span class="k-invalid-msg" data-for="UnidadTecnicaId"></span><br />
+                        <span class="k-invalid-msg" data-for="UnidadTecnicaId"></span><br />
+                    </div>
                 </div>
-            </div>
-        }
-        else
-        {
-            <div class="form-row ">
-                <div class="col-md-3">
-                    <label class="label-dato-form no-wrap">
-                        Documento de ingreso<span class="marca-obligatorio" title="Este campo es obligatorio."> *</span>
-                    </label>
+            }
+            else
+            {
+                <div class="form-row ">
+                    <div class="col-md-3">
+                        <label class="label-dato-form no-wrap">
+                            Documento de ingreso<span class="marca-obligatorio" title="Este campo es obligatorio."> *</span>
+                        </label>
+                    </div>
+                    <div class="col-md-9">
+                        <select id="Requerimiento" name="Requerimiento" multiple required></select>
+                        <span class="k-invalid-msg" data-for="Requerimiento"></span><br />
+                    </div>
                 </div>
-                <div class="col-md-9">
-                    <select id="Requerimiento" name="Requerimiento" multiple required></select>
-                    <span class="k-invalid-msg" data-for="Requerimiento"></span><br />
-                </div>
-            </div>
-        }
+            }
 
-        <div class="form-row" id="rowEditor">
-            <div class="col-md-12">
+            <div class="form-row" id="rowEditor">
+                <div class="col-md-12">
 
-                @*Plantilla para el PDF q se genera al visualizar el oficio, tiene el encabezado y pie de página*@
-                <script type="x/kendo-template" id="page-oficio-template">
+                    @*Plantilla para el PDF q se genera al visualizar el oficio, tiene el encabezado y pie de página*@
+                    <script type="x/kendo-template" id="page-oficio-template">
                     <div class="page-template">
                         @Html.Raw(Model.Encabezado.Replace("#", "\\#"))
                         @Html.Raw(Model.Pie.Replace("#", "\\#"))
                     </div>
-                </script>
+                    </script>
 
-                @*Se cambia la función de la tecla Enter: inserta un linebreak en vez de un separador de parrafo (Shift+Enter agregar separador de parrafo) -> el default del editor es al revés,*@
-                @*<script>
-                        var editorNS = kendo.ui.editor,
-                            registerTool = editorNS.EditorUtils.registerTool,
-                            Tool = editorNS.Tool;
-                        registerTool("insertLineBreak", new Tool({ key: 13, command: editorNS.NewLineCommand }));
-                        registerTool("insertParagraph", new Tool({ key: 13, shift: true, command: editorNS.ParagraphCommand }));
-                    </script>*@
+                    @*Se cambia la función de la tecla Enter: inserta un linebreak en vez de un separador de parrafo (Shift+Enter agregar separador de parrafo) -> el default del editor es al revés,*@
+                    @*<script>
+                            var editorNS = kendo.ui.editor,
+                                registerTool = editorNS.EditorUtils.registerTool,
+                                Tool = editorNS.Tool;
+                            registerTool("insertLineBreak", new Tool({ key: 13, command: editorNS.NewLineCommand }));
+                            registerTool("insertParagraph", new Tool({ key: 13, shift: true, command: editorNS.ParagraphCommand }));
+                        </script>*@
 
 
-                <div id="editorWrapper">
-                    @(Html.Kendo().Editor()
+                    <div id="editorWrapper">
+                        @(Html.Kendo().Editor()
                         .Name("Contenido")
                         .HtmlAttributes(new {style = "height:600px", aria_label = "editor", required = "required"})
                         .PasteCleanup(p => p
@@ -433,25 +481,25 @@
                         )
                         //.Value(Model.Mensaje)
                         )
-                    <span class="k-invalid-msg" data-for="Contenido"></span>
+                        <span class="k-invalid-msg" data-for="Contenido"></span>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="footer-modal">
+                <div class="form-row">
+                    <div class="offset-md-3 col-md-2 text-center">
+                        <button type="button" id="btngrabaOficio" class="k-primary-blue k-button" onclick="grabaOficio(event);">Guardar</button>
+                    </div>
+                    <div class="offset-md-2 col-md-2 text-center">
+                        <button type="button" id="btncancelaOficio" class="k-danger k-button" onclick="cancelaOficio(event);">Cancelar</button>
+                    </div>
                 </div>
             </div>
 
-        </div>
-
-        <div class="footer-modal">
-            <div class="form-row">
-                <div class="offset-md-3 col-md-2 text-center">
-                    <button type="button" id="btngrabaOficio" class="k-primary-blue k-button" onclick="grabaOficio(event);">Guardar</button>
-                </div>
-                <div class="offset-md-2 col-md-2 text-center">
-                    <button type="button" id="btncancelaOficio" class="k-danger k-button" onclick="cancelaOficio(event);">Cancelar</button>
-                </div>
-            </div>
-        </div>
-
-    </form>
-
+        </form>
+    }
 </div>
 
 

@@ -370,14 +370,14 @@ namespace Gedoc.WebApp.Controllers
             return View();
         }
 
-        public ActionResult FormOficio(int id, int? tramId, int? plantId, string reqsId, int? utId)
+        public ActionResult FormOficio(int id, bool tipoWord, int? tramId, int? plantId, string reqsId, int? utId)
         {
             ViewBag.AccesoForm = ValidaAccesoUtForm();
             //ViewBag.CamposSeleccionables = _oficioSrv.GetCamposSeleccionablePorGrupos();
             var oficio = new OficioDto();
             if (id > 0)
             {
-                oficio = _oficioSrv.GetOficoById(id, true);
+                oficio = _oficioSrv.GetOficoById(id, true, tipoWord);
                 if (oficio.EstadoId == (int) EstadoOficio.Firmado)
                 {
                     ViewBag.AccesoForm = new ResultadoOperacion(-1, "El oficio se encuentra en estado Firmado.", null);
@@ -399,6 +399,15 @@ namespace Gedoc.WebApp.Controllers
                 _oficioSrv.SeparaEncabezadoPiePagina(oficio);
             }
             var model = _mapper.MapFromDtoToModel<OficioDto, OficioModel>(oficio);
+            model.TipoWord = tipoWord;
+
+            if (model.TipoWord)
+            {
+                var datos = _oficioSrv.GetPlantillaOficioById(model.PlantillaId.GetValueOrDefault());
+                string url = "Adjuntos\\Adjuntos de Plantilla Oficio\\" + datos.NombreDocumento;
+                model.Documento = _adjuntoSrv.GetArchivo(url);
+            }
+
             ViewBag.UsuarioId = EsAdmin() ? -1 : CurrentUserId;
             return View(model);
         }

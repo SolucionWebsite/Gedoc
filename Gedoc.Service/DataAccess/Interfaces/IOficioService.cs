@@ -30,7 +30,7 @@ namespace Gedoc.Service.DataAccess.Interfaces
 
         DatosAjax<List<OficioDto>> GetDatosBandejaOficio(ParametrosGrillaDto<int> param, int idUsuario);
         DatosAjax<List<OficioDto>> GetOficoAll();
-        OficioDto GetOficoById(int id, bool procesaEncabezado = false);
+        OficioDto GetOficoById(int id, bool procesaEncabezado = false, bool tipoWord = false);
         DatosAjax<List<OficioObservacionDto>> GetObservacionesOficio(int oficioId);
         void SeparaEncabezadoPiePagina(OficioDto oficio);
         ResultadoOperacion SaveOficio(OficioDto oficio, byte[] file);

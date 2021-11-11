@@ -756,12 +756,12 @@ namespace Gedoc.Service.DataAccess
             return resultado;
         }
 
-        public OficioDto GetOficoById(int id, bool procesaEncabezado = false)
+        public OficioDto GetOficoById(int id, bool procesaEncabezado = false, bool tipoWord = false)
         {
             try
             {
                 var oficio = _repoDespacho.GetOficoById(id);
-                if (procesaEncabezado)
+                if (procesaEncabezado && !tipoWord)
                 {
                     SeparaEncabezadoPiePagina(oficio);
                 }

@@ -365,7 +365,8 @@
         }
     }
 
-    function editarOficio(id, numOficio) {
+    function editarOficio(id, vacio, numOficio) {
+        debugger;
         Acciones.ejecutaAccionNuevaVentana(
             id == 0
             ? "Nuevo Oficio"
@@ -423,8 +424,7 @@
     }*@
 
     function enviarEncargadoOficio(id, vacio, numOficio, tipoWord) {
-        if (tipoWord) {
-            debugger;
+        if (tipoWord == "true") {
             Acciones.ejecutaAccionNuevaVentana(
             id == 0
             ? "Nuevo Oficio"
@@ -468,7 +468,7 @@
             });
     }
 
-    function enviarVisadorOficio(id, numOficio) {
+    function enviarVisadorOficio(id, vacio, numOficio) {
         Main.showConfirm(
                 "El oficio " +
                 (numOficio ? " con Número de Oficio " + numOficio : " de ID " + id) +
@@ -496,7 +496,7 @@
             });
     }
 
-    function enviarJefaturaOficio(id, numOficio) {
+    function enviarJefaturaOficio(id, vacio, numOficio) {
         Main.showConfirm(
                 "El oficio " +
                 (numOficio ? " con Número de Oficio " + numOficio : " de ID " + id) +
@@ -510,7 +510,7 @@
             });
     }
 
-    function devolverVisadorOficio(id, numOficio, numDocsReq) {
+    function devolverVisadorOficio(id, vacio, numOficio, numDocsReq) {
         var titulo = "Devolver a Visador General - ID " + id + (numDocsReq ? " - Ingreso " + numDocsReq : "");
         Main.showPrompt(titulo, "Observaciones", "Aceptar", false, 500, true)
             .then(function(isOk) {
@@ -530,7 +530,7 @@
             , "550", "200", "OFIC", refrescaGridOfic);
     }*@
 
-    function enviarFirmaOficio(id, numOficio) {
+    function enviarFirmaOficio(id, vacio, numOficio) {
         Main.showConfirm(
                 "El oficio " +
                 (numOficio ? " con Número de Oficio " + numOficio : " de ID " + id) +
@@ -556,7 +556,7 @@
     }
 
 
-    function verHistorialOficio(id, numOficio) {
+    function verHistorialOficio(id, vacio, numOficio) {
         var url = '@Url.Action("GrillaHistorialOficio", "Oficio")' + "?id=" + id;
         var result = Main.muestraVentanaModal('Historial - Oficio ID ' + id,
             url,

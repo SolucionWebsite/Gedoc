@@ -69,6 +69,46 @@
         });
     }
 
+    function grabaOficioWord(e) {
+        Main.wait("Grabando...");
+
+        var currentTarget = $(e.currentTarget);
+        var form = $("#formOficio");
+
+        var validator = form.data("kendoValidator");
+        if (!validator.validate()) {
+            Main.unwait();
+            Main.showError("Por favor, revise los datos de la página. Hay datos incompletos o erróneos.");
+            return false;
+        }
+        var data = $(form).serialize();
+        var url = $(form).attr("action");
+
+        $.ajax({
+            type: "POST",
+            url: url,
+            data: data
+        }).done(function (response) {
+            Main.unwait();
+            if (response.Codigo) {
+                if (response.Codigo > 0) {
+                    Main.showInfo(response.Mensaje).then(function (result) {
+                        Main.cierraModal(currentTarget, true, "winFormIngreso");
+                    });
+                } else {
+                    Main.showError(response.Mensaje, "Error");
+                }
+            } else {
+                Main.showAlert("Error inesperado al realizar la operación, por favor, vuelva a intentarlo",
+                    "Error");
+            }
+        }).fail(function (error) {
+            Main.unwait();
+            Main.showError("Ha ocurrido un error al realizar la operación, por favor, vuelva a intentarlo.",
+                "Error");
+        });
+    };
+
     function grabaOficio(e) {
         Main.wait("Grabando...");
 
@@ -233,8 +273,8 @@
                 $("#k-editor-cell-border-style_listbox li[data-offset-index='9']").text("Heredado");
                 $("#k-editor-cell-border-style_listbox li[data-offset-index='10']").text("Ninguno");
                 $("#k-editor-cell-border-style_listbox li[data-offset-index='11']").text("Oculto");
-				
-				$("#k-editor-table-alignment").data("kendoDropDownList").bind("change", 
+
+				$("#k-editor-table-alignment").data("kendoDropDownList").bind("change",
 					function(e) {
 						$(".k-i-align-remove").attr("title", "Sin alineación");
 						$(".k-i-table-align-middle-left").attr("title", "Alineación izquierda");
@@ -242,8 +282,8 @@
 						$(".k-i-table-align-middle-right").attr("title", "Alineación derecha");
 					}
 				);
-				
-				$("#k-editor-cell-alignment").data("kendoDropDownList").bind("change", 
+
+				$("#k-editor-cell-alignment").data("kendoDropDownList").bind("change",
 					function(e) {
 						$(".k-i-align-remove").attr("title", "Sin alineación");
 						$(".k-i-table-align-top-left").attr("title", "Alineación arriba izquierda");
@@ -282,17 +322,18 @@
 
     @if (Model.TipoWord)
     {
-        <div class="form-row">
-            <div class="col-md-2">
-                <label class="label-dato-form">
-                    Adjuntar Archivo
-                </label>
-            </div>
-            <div class="col-md-4">
-                <div class="demo-section k-content wide">
-                    @if (string.IsNullOrEmpty(Model.Documento.FileName))
-                    {
-                        @(Html.Kendo().Upload()
+        <form id="formOficio" action="@Url.Action("SaveOficioWord", "Oficio")" class="form-datos">
+            <div class="form-row">
+                <div class="col-md-2">
+                    <label class="label-dato-form">
+                        Adjuntar Archivo
+                    </label>
+                </div>
+                <div class="col-md-4">
+                    <div class="demo-section k-content wide">
+                        @if (string.IsNullOrEmpty(Model.Documento.FileName))
+                        {
+                            @(Html.Kendo().Upload()
                                     .Name("Files")
                                     .Multiple(false)
                                     .HtmlAttributes(new { aria_label = "Files", @class = "upload-required" })
@@ -300,14 +341,14 @@
                                     .Events(ev => ev.Select("function onselectFile(e) { setTimeout( function() { $(':focus').blur(); }, 200); }"))
                                     .Validation(validation => validation.AllowedExtensions(WebConfigValues.AdjuntosPermitidosPlantillaOficio).MaxFileSize(50*1024*1024)
                                 ))
-                    }
-                    else
-                    {
-                        var fileName = Model.Documento.FileName;
-                        var fileExtension = "." + Model.Documento.FileName.Split('.')[1];
-                        var FileSize = Model.Documento.FileStream.Length;
+                        }
+                        else
+                        {
+                            var fileName = Model.Documento.FileName;
+                            var fileExtension = "." + Model.Documento.FileName.Split('.')[1];
+                            var FileSize = Model.Documento.FileStream.Length;
 
-                        @(Html.Kendo().Upload()
+                            @(Html.Kendo().Upload()
                                 .Name("Files")
                                 .Multiple(false)
                                 .HtmlAttributes(new { aria_label = "Files", @class = "upload-required" })
@@ -317,38 +358,63 @@
                                 .Files(files => { files.Add().Name(fileName).Extension(fileExtension).Size(FileSize); })
                                 .Validation(validation => validation.AllowedExtensions(WebConfigValues.AdjuntosPermitidosPlantillaOficio).MaxFileSize(50 * 1024 * 1024))
                             )
-                    }
-                </div>
-                <span class="k-invalid-msg" data-for="Files"></span>
-            </div>
-        </div>
-        <div class="form-row">
-            <input class="" id="TipoWord" name="TipoWord" type="text" value="True" hidden="hidden">
-        </div>
-    }
-    else
-    {
-        <form id="formOficio" action="@Url.Action("SaveOficio", "Oficio")" class="form-datos">
-            @Html.AntiForgeryToken()
-
-            @Html.HiddenFor(a => a.Id)
-            @Html.HiddenFor(a => a.NumeroOficio)
-            @Html.HiddenFor(a => a.FechaEmisionOficio)
-            @Html.HiddenFor(a => a.PlantillaId)
-            @Html.HiddenFor(a => a.TipoTramiteId)
-            @Html.HiddenFor(a => a.RequerimientoPrincipalId)
-            @Html.HiddenFor(a => a.TipoPlantillaId)
-
-            @if (Model.TipoPlantillaId == (int)TipoPlantillaOficio.DespachoIniciativa)
-            {
-                <div class="form-row ">
-                    <div class="col-md-3">
-                        <label class="label-dato-form no-wrap">
-                            Unidad Técnica<span class="marca-obligatorio" title="Este campo es obligatorio."> *</span>
-                        </label>
+                        }
                     </div>
-                    <div class="col-md-9">
-                        @(Html.Kendo().ComboBox()
+                    <span class="k-invalid-msg" data-for="Files"></span>
+                </div>
+                <div class="col-md-6"></div>
+                <div class="col-md-2 mt-3">
+                    <label class="label-dato-form">
+                        Observaciones<span class="marca-obligatorio" title="Este campo es obligatorio.">*</span>
+                    </label>
+                </div>
+                <div class="col-md-4 mt-3">
+                    <textarea name="Observaciones" rows="5" cols="20" id="observaciones" class="form-control texto-largo" data-spanleyenda="leyenda-pnMateria" data-maxlength="1000" style="width: 100% !important;" required>@Model.Observaciones</textarea>
+                    <span class="k-invalid-msg" data-for="Materia"></span>
+                    <span class="help-block-right" id="leyenda-pnMateria"> </span>
+                </div>
+            </div>
+            </form>
+            <div class="footer-modal">
+                <div class="form-row">
+                    <div class="offset-md-3 col-md-2 text-center">
+                        @{
+                            string parameters = "'" + Model.Id.ToString() + "'" + "," + "''" + "," + (string.IsNullOrEmpty(Model.NumeroOficio) ? "''" : Model.NumeroOficio)  + "," + "'false'";
+                        }
+                        <button type="button" id="btngrabaOficio" class="k-primary-blue k-button" onclick="enviarEncargadoOficio(@parameters);">Enviar</button>
+                    </div>
+                    <div class="offset-md-2 col-md-2 text-center">
+                        <button type="button" id="btncancelaOficio" class="k-danger k-button" onclick="cancelaOficio(event);">Cancelar</button>
+                    </div>
+                </div>
+            </div>
+            <div class="form-row">
+                <input class="" id="TipoWord" name="TipoWord" type="text" value="True" hidden="hidden">
+            </div>
+            }
+            else
+            {
+            <form id="formOficio" action="@Url.Action("SaveOficio", "Oficio")" class="form-datos">
+                @Html.AntiForgeryToken()
+
+                @Html.HiddenFor(a => a.Id)
+                @Html.HiddenFor(a => a.NumeroOficio)
+                @Html.HiddenFor(a => a.FechaEmisionOficio)
+                @Html.HiddenFor(a => a.PlantillaId)
+                @Html.HiddenFor(a => a.TipoTramiteId)
+                @Html.HiddenFor(a => a.RequerimientoPrincipalId)
+                @Html.HiddenFor(a => a.TipoPlantillaId)
+
+                @if (Model.TipoPlantillaId == (int)TipoPlantillaOficio.DespachoIniciativa)
+                {
+                    <div class="form-row ">
+                        <div class="col-md-3">
+                            <label class="label-dato-form no-wrap">
+                                Unidad Técnica<span class="marca-obligatorio" title="Este campo es obligatorio."> *</span>
+                            </label>
+                        </div>
+                        <div class="col-md-9">
+                            @(Html.Kendo().ComboBox()
                         .Name("UnidadTecnicaId")
                         .DataTextField("Titulo")
                         .DataValueField("Id")
@@ -356,48 +422,48 @@
                         .HtmlAttributes(new { required = "required", @class = "w-100" })
                         .Messages(Gedoc.WebApp.Helpers.KendoHelper.SetComboBoxMessages)
                         )
-                        <span class="k-invalid-msg" data-for="UnidadTecnicaId"></span><br />
+                            <span class="k-invalid-msg" data-for="UnidadTecnicaId"></span><br />
+                        </div>
                     </div>
-                </div>
-            }
-            else
-            {
-                <div class="form-row ">
-                    <div class="col-md-3">
-                        <label class="label-dato-form no-wrap">
-                            Documento de ingreso<span class="marca-obligatorio" title="Este campo es obligatorio."> *</span>
-                        </label>
+                }
+                else
+                {
+                    <div class="form-row ">
+                        <div class="col-md-3">
+                            <label class="label-dato-form no-wrap">
+                                Documento de ingreso<span class="marca-obligatorio" title="Este campo es obligatorio."> *</span>
+                            </label>
+                        </div>
+                        <div class="col-md-9">
+                            <select id="Requerimiento" name="Requerimiento" multiple required></select>
+                            <span class="k-invalid-msg" data-for="Requerimiento"></span><br />
+                        </div>
                     </div>
-                    <div class="col-md-9">
-                        <select id="Requerimiento" name="Requerimiento" multiple required></select>
-                        <span class="k-invalid-msg" data-for="Requerimiento"></span><br />
-                    </div>
-                </div>
-            }
+                }
 
-            <div class="form-row" id="rowEditor">
-                <div class="col-md-12">
+                <div class="form-row" id="rowEditor">
+                    <div class="col-md-12">
 
-                    @*Plantilla para el PDF q se genera al visualizar el oficio, tiene el encabezado y pie de página*@
-                    <script type="x/kendo-template" id="page-oficio-template">
+                        @*Plantilla para el PDF q se genera al visualizar el oficio, tiene el encabezado y pie de página*@
+                        <script type="x/kendo-template" id="page-oficio-template">
                     <div class="page-template">
                         @Html.Raw(Model.Encabezado.Replace("#", "\\#"))
                         @Html.Raw(Model.Pie.Replace("#", "\\#"))
                     </div>
-                    </script>
+                        </script>
 
-                    @*Se cambia la función de la tecla Enter: inserta un linebreak en vez de un separador de parrafo (Shift+Enter agregar separador de parrafo) -> el default del editor es al revés,*@
-                    @*<script>
-                            var editorNS = kendo.ui.editor,
-                                registerTool = editorNS.EditorUtils.registerTool,
-                                Tool = editorNS.Tool;
-                            registerTool("insertLineBreak", new Tool({ key: 13, command: editorNS.NewLineCommand }));
-                            registerTool("insertParagraph", new Tool({ key: 13, shift: true, command: editorNS.ParagraphCommand }));
-                        </script>*@
+                        @*Se cambia la función de la tecla Enter: inserta un linebreak en vez de un separador de parrafo (Shift+Enter agregar separador de parrafo) -> el default del editor es al revés,*@
+                        @*<script>
+                                var editorNS = kendo.ui.editor,
+                                    registerTool = editorNS.EditorUtils.registerTool,
+                                    Tool = editorNS.Tool;
+                                registerTool("insertLineBreak", new Tool({ key: 13, command: editorNS.NewLineCommand }));
+                                registerTool("insertParagraph", new Tool({ key: 13, shift: true, command: editorNS.ParagraphCommand }));
+                            </script>*@
 
 
-                    <div id="editorWrapper">
-                        @(Html.Kendo().Editor()
+                        <div id="editorWrapper">
+                            @(Html.Kendo().Editor()
                         .Name("Contenido")
                         .HtmlAttributes(new {style = "height:600px", aria_label = "editor", required = "required"})
                         .PasteCleanup(p => p
@@ -481,26 +547,26 @@
                         )
                         //.Value(Model.Mensaje)
                         )
-                        <span class="k-invalid-msg" data-for="Contenido"></span>
+                            <span class="k-invalid-msg" data-for="Contenido"></span>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="footer-modal">
+                    <div class="form-row">
+                        <div class="offset-md-3 col-md-2 text-center">
+                            <button type="button" id="btngrabaOficio" class="k-primary-blue k-button" onclick="grabaOficio(event);">Guardar</button>
+                        </div>
+                        <div class="offset-md-2 col-md-2 text-center">
+                            <button type="button" id="btncancelaOficio" class="k-danger k-button" onclick="cancelaOficio(event);">Cancelar</button>
+                        </div>
                     </div>
                 </div>
 
-            </div>
-
-            <div class="footer-modal">
-                <div class="form-row">
-                    <div class="offset-md-3 col-md-2 text-center">
-                        <button type="button" id="btngrabaOficio" class="k-primary-blue k-button" onclick="grabaOficio(event);">Guardar</button>
-                    </div>
-                    <div class="offset-md-2 col-md-2 text-center">
-                        <button type="button" id="btncancelaOficio" class="k-danger k-button" onclick="cancelaOficio(event);">Cancelar</button>
-                    </div>
-                </div>
-            </div>
-
-        </form>
-    }
-</div>
+            </form>
+            }
+    </div>
 
 
 

@@ -102,7 +102,7 @@ namespace Gedoc.Repositorio.Implementacion
             ingreso.FechaDocumento = datos.FechaDocumento;
             ingreso.FechaDocumento = datos.FechaDocumento;
             ingreso.TipoIngreso = string.IsNullOrWhiteSpace(datos.TipoIngreso) ? ingreso.TipoIngreso  : datos.TipoIngreso;
-            ingreso.CanalLlegadaTramiteCod = datos.CanalLlegadaTramiteCod;
+            ingreso.CanalLlegadaTramiteCod = datos.CanalLlegadaTramiteCod ?? CanalLlegada.Presencial.ToString("D");
             //ingreso.SiacTransparencia = datos.SiacTransparencia; // TODO
             #endregion
             #region Panel Adjuntos
@@ -231,7 +231,7 @@ namespace Gedoc.Repositorio.Implementacion
             ingreso.TipoDocumentoCod = datos.TipoDocumentoCod;
             ingreso.ObservacionesTipoDoc = datos.ObservacionesTipoDoc;
             ingreso.FechaDocumento = datos.FechaDocumento;
-            ingreso.CanalLlegadaTramiteCod = datos.CanalLlegadaTramiteCod;
+            ingreso.CanalLlegadaTramiteCod = datos.CanalLlegadaTramiteCod ?? CanalLlegada.Presencial.ToString("D");
             //ingreso.SiacTransparencia = datos.SiacTransparencia; // TODO
             #endregion
             #region Panel Adjuntos
@@ -794,7 +794,7 @@ namespace Gedoc.Repositorio.Implementacion
                 ingreso.FechaIngreso = datos.FechaIngreso.Date + new TimeSpan(DateTime.Now.Hour, DateTime.Now.Minute, DateTime.Now.Second);
             }
             ingreso.TipoTramiteId = datos.TipoTramiteId;
-            ingreso.CanalLlegadaTramiteCod = datos.CanalLlegadaTramiteCod;
+            ingreso.CanalLlegadaTramiteCod = datos.CanalLlegadaTramiteCod ?? CanalLlegada.Presencial.ToString("D");
             ingreso.TipoDocumentoCod = datos.TipoDocumentoCod;
             ingreso.ObservacionesTipoDoc = datos.ObservacionesTipoDoc;
             ingreso.FechaDocumento = datos.FechaDocumento;

@@ -487,7 +487,7 @@ namespace Gedoc.WebApp.Controllers
         }
 
         [HttpPost]
-        public ActionResult SaveOficioWord(OficioModel model, AdjuntoModel adjuntoModel)
+        public ActionResult SaveOficioWord(OficioModel model, AdjuntoModel adjuntoModel, IEnumerable<HttpPostedFileBase> files)
         {
             /* Para las acciones de Nuevo Oficio y Editar Oficio. El resto de las acciones se graban en EjecutaAccionOficio */
             var datos = _mapper.MapFromModelToDto<OficioModel, OficioDto>(model);

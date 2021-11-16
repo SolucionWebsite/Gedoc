@@ -482,7 +482,7 @@ namespace Gedoc.Repositorio.Implementacion
         public UsuarioDto GetUsuarioByUserName(string userName)
         {
             var usuario = db.Usuario
-                .Include(u => u.UnidadTecnicaIntegrante)
+                //.Include(u => u.UnidadTecnicaIntegrante)
                 .Include(u => u.Rol)
                 .FirstOrDefault(u =>
                     u.Username == userName &&

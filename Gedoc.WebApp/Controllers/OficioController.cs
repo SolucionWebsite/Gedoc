@@ -370,14 +370,14 @@ namespace Gedoc.WebApp.Controllers
             return View();
         }
 
-        public ActionResult FormOficio(int id, int? tramId, int? plantId, string reqsId, int? utId)
+        public ActionResult FormOficio(int id, bool? tipoWord, int? tramId, int? plantId, string reqsId, int? utId)
         {
             ViewBag.AccesoForm = ValidaAccesoUtForm();
             //ViewBag.CamposSeleccionables = _oficioSrv.GetCamposSeleccionablePorGrupos();
             var oficio = new OficioDto();
             if (id > 0)
             {
-                oficio = _oficioSrv.GetOficoById(id, true);
+                oficio = _oficioSrv.GetOficoById(id, true, tipoWord.GetValueOrDefault());
                 if (oficio.EstadoId == (int) EstadoOficio.Firmado)
                 {
                     ViewBag.AccesoForm = new ResultadoOperacion(-1, "El oficio se encuentra en estado Firmado.", null);
@@ -399,6 +399,15 @@ namespace Gedoc.WebApp.Controllers
                 _oficioSrv.SeparaEncabezadoPiePagina(oficio);
             }
             var model = _mapper.MapFromDtoToModel<OficioDto, OficioModel>(oficio);
+            model.TipoWord = tipoWord.GetValueOrDefault();
+
+            if (model.TipoWord)
+            {
+                var datos = _oficioSrv.GetPlantillaOficioById(model.PlantillaId.GetValueOrDefault());
+                string url = "Adjuntos\\Adjuntos de Plantilla Oficio\\" + datos.NombreDocumento;
+                model.Documento = _adjuntoSrv.GetArchivo(url);
+            }
+
             ViewBag.UsuarioId = EsAdmin() ? -1 : CurrentUserId;
             return View(model);
         }
@@ -472,6 +481,23 @@ namespace Gedoc.WebApp.Controllers
             //var pdfBase64 = string.IsNullOrWhiteSpace(model.PdfBase64) ? "" : model.PdfBase64.Substring(model.PdfBase64.IndexOf("base64") + 7);  // se elimina data:application/pdf;base64,
             byte[] pdfBytes = new byte[0]; // string.IsNullOrWhiteSpace(model.PdfBase64) ? new byte[0] : Convert.FromBase64String(pdfBase64);
             
+            var resultadoOper = _oficioSrv.SaveOficio(datos, pdfBytes);
+
+            return Json(resultadoOper);
+        }
+
+        [HttpPost]
+        public ActionResult SaveOficioWord(OficioModel model, AdjuntoModel adjuntoModel, IEnumerable<HttpPostedFileBase> files)
+        {
+            /* Para las acciones de Nuevo Oficio y Editar Oficio. El resto de las acciones se graban en EjecutaAccionOficio */
+            var datos = _mapper.MapFromModelToDto<OficioModel, OficioDto>(model);
+            datos.Contenido = WebUtility.HtmlDecode(datos.Contenido);
+            datos.Flujo = FlujoIngreso.Oficio;
+            datos.DatosUsuarioActual = GetDatosUsuarioActual();
+            //// Obsoleto, se utilizaba cuando se firmaba el oficio desde la ventana de Editar Oficio Firmado: Se decodifica el PDF q está en Base64
+            //var pdfBase64 = string.IsNullOrWhiteSpace(model.PdfBase64) ? "" : model.PdfBase64.Substring(model.PdfBase64.IndexOf("base64") + 7);  // se elimina data:application/pdf;base64,
+            byte[] pdfBytes = new byte[0]; // string.IsNullOrWhiteSpace(model.PdfBase64) ? new byte[0] : Convert.FromBase64String(pdfBase64);
+
             var resultadoOper = _oficioSrv.SaveOficio(datos, pdfBytes);
 
             return Json(resultadoOper);

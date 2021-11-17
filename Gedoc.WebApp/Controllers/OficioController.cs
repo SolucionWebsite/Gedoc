@@ -370,7 +370,7 @@ namespace Gedoc.WebApp.Controllers
             return View();
         }
 
-        public ActionResult FormOficio(int id, bool? tipoWord, int? tramId, int? plantId, string reqsId, int? utId)
+        public ActionResult FormOficio(int id, bool? tipoWord, int? tramId, int? plantId, string reqsId, int? utId, string accionOficio)
         {
             ViewBag.AccesoForm = ValidaAccesoUtForm();
             //ViewBag.CamposSeleccionables = _oficioSrv.GetCamposSeleccionablePorGrupos();
@@ -409,6 +409,7 @@ namespace Gedoc.WebApp.Controllers
             }
 
             ViewBag.UsuarioId = EsAdmin() ? -1 : CurrentUserId;
+            model.Accion = accionOficio;
             return View(model);
         }
 

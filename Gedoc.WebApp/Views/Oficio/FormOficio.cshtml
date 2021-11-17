@@ -382,9 +382,17 @@
                 <div class="form-row">
                     <div class="offset-md-3 col-md-2 text-center">
                         @{
-                            string parameters = "'" + Model.Id.ToString() + "'" + "," + "''" + "," + (string.IsNullOrEmpty(Model.NumeroOficio) ? "''" : Model.NumeroOficio)  + "," + "'false'";
+                            string parameters = "'" + Model.Id.ToString() + "'" + "," + "''" + "," + (string.IsNullOrEmpty(Model.NumeroOficio) ? "''" : Model.NumeroOficio) + "," + "'false'";
                         }
-                        <button type="button" id="btngrabaOficio" class="k-primary-blue k-button" onclick="enviarEncargadoOficio(@parameters);">Enviar</button>
+
+                        @if (Model.Accion != null && Model.Accion.Equals(AccionOficio.DEVOLVERPROF.ToString()))
+                        {
+                            <button type="button" id="btnDevolverOficio" class="k-primary-blue k-button" onclick="devolverProfesionalOficio(@parameters);">Enviar</button>
+                        }
+                        else
+                        {
+                            <button type="button" id="btngrabaOficio" class="k-primary-blue k-button" onclick="enviarEncargadoOficio(@parameters);">Enviar</button>
+                        }
                     </div>
                     <div class="offset-md-2 col-md-2 text-center">
                         <button type="button" id="btncancelaOficio" class="k-danger k-button" onclick="cancelaOficio(event);">Cancelar</button>

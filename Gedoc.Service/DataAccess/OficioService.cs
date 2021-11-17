@@ -841,8 +841,7 @@ namespace Gedoc.Service.DataAccess
                     UsuarioId = oficio.DatosUsuarioActual?.UsuarioId,
                     DireccionIp = oficio.DatosUsuarioActual?.DireccionIp,
                     NombrePc = oficio.DatosUsuarioActual?.NombrePc,
-                    UserAgent = oficio.DatosUsuarioActual?.UserAgent,
-                    ExtraData = oficio.Observaciones
+                    UserAgent = oficio.DatosUsuarioActual?.UserAgent
                 };
 
                 oficio.FechaModificacion = DateTime.Now;

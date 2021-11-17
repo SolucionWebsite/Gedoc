@@ -665,6 +665,7 @@ namespace Gedoc.Repositorio.Implementacion
             oficio.Contenido = datos.Contenido;
             oficio.FechaModificacion = datos.FechaModificacion;
             oficio.UsuarioModificacionId = datos.UsuarioModificacionId;
+            oficio.Observaciones = !string.IsNullOrEmpty(datos.Observaciones) ? datos.Observaciones : string.Empty;
 
             #region Relaciones de muchos-muchos
             // Update Requerimientos
@@ -734,7 +735,7 @@ namespace Gedoc.Repositorio.Implementacion
                     EtapaId = datos.EtapaId,
                     Fecha = datos.FechaUltEstado,
                     UsuarioId = datos.UsuarioModificacionId.GetValueOrDefault(0),
-                    Observaciones = datos.Observaciones
+                    Observaciones = datos.Observaciones ?? oficio.Observaciones
                 });
             }
 

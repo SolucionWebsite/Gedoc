@@ -424,7 +424,6 @@
     }*@
 
     function enviarEncargadoOficio(id, vacio, numOficio, tipoWord) {
-        debugger;
         if (tipoWord == "true") {
             Acciones.ejecutaAccionNuevaVentana(
             id == 0
@@ -468,6 +467,7 @@
                             .then(function(isOk) {
                                 if (isOk) {
                                     ejecutaAccionOficio(id, numOficio, "@AccionOficio.AENCARGADO.ToString()");
+                                    $('a').find('.k-icon.k-i-close').click();
                                 }
                             });
                         } else {
@@ -485,18 +485,70 @@
         }
     }
 
-    function devolverProfesionalOficio(id, numOficio, numDocsReq) {
-        var titulo = "Devolver a Profesional UT - ID " + id + (numDocsReq ? " - Ingreso " + numDocsReq : "");
-        Main.showPrompt(titulo, "Observaciones", "Aceptar", false, 500, true)
-            .then(function(isOk) {
-                if (isOk.result) {
-                    if (!isOk.texto) {
-                        Main.showError("Tiene que especificar un valor en el campo Observaciones.");
-                        return false;
+    function devolverProfesionalOficio(id, vacio, numOficio, tipoWord) {
+        debugger;
+        if (tipoWord == "true") {
+            Acciones.ejecutaAccionNuevaVentana(
+            id == 0
+            ? "Nuevo Oficio"
+            : "Devolver a profesional UT - " + "ID " + id + " Ingreso " + numOficio,
+            '@Url.Action("FormOficio", "Oficio")' +
+            '?id=' +
+            id +
+            '&tipoWord=' +
+            tipoWord +
+            '&accionOficio=' +
+            "@AccionOficio.DEVOLVERPROF.ToString()",
+            null,
+            id == 0 ? '100%' : "MAX",
+            "OFIC",
+            refrescaGridOfic,
+            false);
+        } else {
+            var form = $("#formOficio");
+            var validator = form.data("kendoValidator");
+            if (!validator.validate()) {
+                Main.unwait();
+                Main.showError("Por favor, revise los datos de la página. Hay datos incompletos o erróneos.");
+                return false;
+            }
+            var data = $(form).serialize();
+            var url = $(form).attr("action");
+
+            $.ajax({
+                type: "POST",
+                url: url,
+                data: data
+            }).done(function (response) {
+                Main.unwait();
+                if (response.Codigo) {
+                    if (response.Codigo > 0) {
+                        ejecutaAccionOficio(id, numOficio, "@AccionOficio.DEVOLVERPROF.ToString()");
+                        $('a').find('.k-icon.k-i-close').click();
+                    } else {
+                        Main.showError(response.Mensaje, "Error");
                     }
-                    ejecutaAccionOficio(id, numOficio, "@AccionOficio.DEVOLVERPROF.ToString()", isOk.texto);
+                } else {
+                    Main.showAlert("Error inesperado al realizar la operación, por favor, vuelva a intentarlo",
+                        "Error");
                 }
+            }).fail(function (error) {
+                Main.unwait();
+                Main.showError("Ha ocurrido un error al realizar la operación, por favor, vuelva a intentarlo.",
+                    "Error");
             });
+        }
+        @*var titulo = "Devolver a Profesional UT - ID " + id + (numDocsReq ? " - Ingreso " + numDocsReq : "");
+        Main.showPrompt(titulo, "Observaciones", "Aceptar", false, 500, true)
+        .then(function(isOk) {
+            if (isOk.result) {
+                if (!isOk.texto) {
+                    Main.showError("Tiene que especificar un valor en el campo Observaciones.");
+                    return false;
+                }
+                ejecutaAccionOficio(id, numOficio, "@AccionOficio.DEVOLVERPROF.ToString()", isOk.texto);
+            }
+        });*@
     }
 
     function enviarVisadorOficio(id, vacio, numOficio) {

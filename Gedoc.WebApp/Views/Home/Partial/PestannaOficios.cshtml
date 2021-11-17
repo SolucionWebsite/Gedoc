@@ -467,6 +467,7 @@
                             .then(function(isOk) {
                                 if (isOk) {
                                     ejecutaAccionOficio(id, numOficio, "@AccionOficio.AENCARGADO.ToString()");
+                                    $('a').find('.k-icon.k-i-close').click();
                                 }
                             });
                         } else {
@@ -523,6 +524,7 @@
                 if (response.Codigo) {
                     if (response.Codigo > 0) {
                         ejecutaAccionOficio(id, numOficio, "@AccionOficio.DEVOLVERPROF.ToString()");
+                        $('a').find('.k-icon.k-i-close').click();
                     } else {
                         Main.showError(response.Mensaje, "Error");
                     }

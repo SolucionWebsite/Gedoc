@@ -19,6 +19,7 @@ using Gedoc.Service.DataAccess.Interfaces;
 using Gedoc.Service.FirmaDigital;
 using Gedoc.Service.Pdf;
 using Gedoc.Service.Sharepoint;
+using WordToPDF;
 
 namespace Gedoc.Service.DataAccess
 {
@@ -1451,15 +1452,51 @@ namespace Gedoc.Service.DataAccess
             return result;
         }
 
-        public byte[] GetOficioPdfFromHtmlById(int oficioId, string baseUrl)
+        public byte[] GetOficioPdfFromHtmlById(int oficioId, string baseUrl, bool tipoWord)
         {
             var oficio = _repoDespacho.GetOficoById(oficioId);
-            if (oficio != null)
+
+            if (oficio != null && !tipoWord)
             {
                 return GetPdfFromHtml(oficio.Contenido, baseUrl);
             }
 
+            if (oficio != null && tipoWord)
+            {
+                return GetPdfFromWord(oficio.PlantillaId.GetValueOrDefault(), baseUrl);
+            }
+
             return new byte[0];
+        }
+
+        public byte[] GetPdfFromWord(int oficioId, string baseUrl)
+        {
+            var result = new byte[0];
+
+            if (oficioId > 0)
+            {
+                var plantilla = _repoDespacho.GetPlantillaById(oficioId);
+                string url = @"Adjuntos\Adjuntos de Plantilla Oficio\" + plantilla.NombreDocumento;
+                var path = Path.Combine(WebConfigValues.PathRepositorioLocal, url);
+                result = File.ReadAllBytes(path);
+                Word2Pdf wordToPdf = new Word2Pdf();
+
+                object inputLocation = path;
+                string extension = Path.GetExtension(path);
+                string fileWithPdfExtension = path.Replace(extension, ".pdf");
+
+                if (extension == ".doc" || extension == ".docx")
+                {
+                    object outputLocation = fileWithPdfExtension;
+                    wordToPdf.InputLocation = inputLocation;
+                    wordToPdf.OutputLocation = outputLocation;
+                    wordToPdf.Word2PdfCOnversion();
+                    result = File.ReadAllBytes(fileWithPdfExtension);
+                    File.Delete(fileWithPdfExtension);
+                }
+            }
+
+            return result;
         }
 
         public byte[] GetPdfFromHtml(string contenido, string baseUrl)
@@ -1489,7 +1526,6 @@ namespace Gedoc.Service.DataAccess
 
             return new byte[0];
         }
-
         #endregion
 
         #region Historial de oficios

@@ -36,7 +36,7 @@ namespace Gedoc.Service.DataAccess.Interfaces
         ResultadoOperacion SaveOficio(OficioDto oficio, byte[] file);
         ResultadoOperacion UpdateOficiosPendienteFirma(UsuarioActualDto datosUsuario);
         DatosArchivo GetArchivo(int oficioId);
-        byte[] GetOficioPdfFromHtmlById(int oficioId, string baseUrl);
+        byte[] GetOficioPdfFromHtmlById(int oficioId, string baseUrl, bool tipoWord);
         byte[] GetPdfFromHtml(string contenido, string baseUrl);
         DatosAjax<List<LogSistemaDto>> HistorialOficio(int oficioId);
 

@@ -551,10 +551,10 @@ namespace Gedoc.WebApp.Controllers
         /// <param name="oficioId">Id de Oficio</param>
         /// <returns>FileResult con el PDF del oficio</returns>
         [IgnoreAccessFilter]
-        public ActionResult GetOficioPdf(int oficioId)
+        public ActionResult GetOficioPdf(int oficioId, bool tipoWord = false)
         {
 
-            byte[] pdfBuffer = _oficioSrv.GetOficioPdfFromHtmlById(oficioId, BaseUrl);
+            byte[] pdfBuffer = _oficioSrv.GetOficioPdfFromHtmlById(oficioId, BaseUrl, tipoWord);
 
             FileResult fileResult = File(pdfBuffer,
                 System.Net.Mime.MediaTypeNames.Application.Octet,

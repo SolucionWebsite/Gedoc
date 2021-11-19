@@ -559,6 +559,12 @@ namespace Gedoc.Repositorio.Implementacion
             return _mapper.MapFromModelToDto<Oficio, OficioDto>(datos);
         }
 
+        public PlantillaOficioDto GetPlantillaById(int id)
+        {
+            var datos = db.PlantillaOficio.FirstOrDefault(r => r.Id == id);
+            return _mapper.MapFromModelToDto<PlantillaOficio, PlantillaOficioDto>(datos);
+        }
+
         public List<OficioDto> GetOficiosPendienteFirma()
         {
             var datos = db.Oficio

@@ -76,7 +76,7 @@
                             ? (urlArchivo && urlArchivo.startsWith("http")
                                 ? urlArchivo
                                 : "@Url.Action("GetArchivoOficio", "Oficio")" + "?oficioId=" + id)
-                            : "@Url.Action("GetOficioPdf", "Oficio")" + "?oficioId=" + id;
+                            : "@Url.Action("GetOficioPdf", "Oficio")" + "?oficioId=" + id + "&tipoWord=" + TipoWord;
                         btnAcc = "<a href='" +
                             urlDescarga +
                             "' class='mr-1' id='" +

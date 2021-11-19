@@ -47,6 +47,7 @@ namespace Gedoc.Repositorio.Interfaces
             string filterText, DateTime fechaDesde, int idUsuario, ConfigBandejaDto configBandeja);
         List<OficioDto> GetOficoAll();
         OficioDto GetOficoById(int id);
+        PlantillaOficioDto GetPlantillaById(int id);
         List<OficioDto> GetOficiosPendienteFirma();
         List<OficioObservacionDto> GetObservacionesOficio(int oficioId);
 

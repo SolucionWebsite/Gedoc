@@ -24,14 +24,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gedoc.ReportData.Wss", "Ged
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gedoc.Alertas", "Gedoc.Alertas\Gedoc.Alertas.csproj", "{08BD431D-493D-401E-B8D5-718A5C25F7BA}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Gedoc.UnitTest", "Gedoc.UnitTest", "{B508B4BF-D8F0-4925-B83F-8A12F5896600}"
-	ProjectSection(SolutionItems) = preProject
-		..\Patrimonio unit test\PRO_MejGedoc2021_27_2021\Gedoc.UnitTest\app.config = ..\Patrimonio unit test\PRO_MejGedoc2021_27_2021\Gedoc.UnitTest\app.config
-		..\Patrimonio unit test\PRO_MejGedoc2021_27_2021\Gedoc.UnitTest\Gedoc.UnitTest.csproj = ..\Patrimonio unit test\PRO_MejGedoc2021_27_2021\Gedoc.UnitTest\Gedoc.UnitTest.csproj
-		..\Patrimonio unit test\PRO_MejGedoc2021_27_2021\Gedoc.UnitTest\packages.config = ..\Patrimonio unit test\PRO_MejGedoc2021_27_2021\Gedoc.UnitTest\packages.config
-		..\Patrimonio unit test\PRO_MejGedoc2021_27_2021\Gedoc.UnitTest\UnitTest1.cs = ..\Patrimonio unit test\PRO_MejGedoc2021_27_2021\Gedoc.UnitTest\UnitTest1.cs
-	EndProjectSection
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gedoc.UnitTest", "..\Patrimonio unit test\PRO_MejGedoc2021_27_2021\Gedoc.UnitTest\Gedoc.UnitTest.csproj", "{1ADA843E-13C8-448C-A605-AF0DD788C61F}"
 EndProject
 Global

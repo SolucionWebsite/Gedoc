@@ -1471,9 +1471,9 @@ namespace Gedoc.Service.DataAccess
 
         public byte[] GetPdfFromWord(int oficioId, string baseUrl)
         {
-            /*var result = new byte[0];
+            var result = new byte[0];
 
-            if (oficioId > 0)
+            /*if (oficioId > 0)
             {
                 var plantilla = _repoDespacho.GetPlantillaById(oficioId);
                 string url = @"Adjuntos\Adjuntos de Plantilla Oficio\" + plantilla.NombreDocumento;

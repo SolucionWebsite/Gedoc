@@ -89,6 +89,8 @@
     <Reference Include="System.Xml" />
     <Reference Include="WordToPDF">
       <!--<HintPath>..\..\..\Program Files\Microsoft Visual Studio\2022\Professional\Common7\IDE\WordToPDF.dll</HintPath>-->
+      <HintPath Condition="Exists('$(ProgramFiles)\Microsoft Visual Studio\2019\Enterprise')">$(ProgramFiles)\Microsoft Visual Studio\2019\Enterprise\Common7\IDE\WordToPDF.dll</HintPath>
+      <HintPath Condition="Exists('$(ProgramFiles)\Microsoft Visual Studio\2022\Professional')">$(ProgramFiles)\Microsoft Visual Studio\2022\Professional\Common7\IDE\WordToPDF.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

@@ -24,7 +24,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gedoc.ReportData.Wss", "Ged
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gedoc.Alertas", "Gedoc.Alertas\Gedoc.Alertas.csproj", "{08BD431D-493D-401E-B8D5-718A5C25F7BA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gedoc.UnitTest", "..\Patrimonio unit test\PRO_MejGedoc2021_27_2021\Gedoc.UnitTest\Gedoc.UnitTest.csproj", "{1ADA843E-13C8-448C-A605-AF0DD788C61F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gedoc.UnitTest1", "Gedoc.UnitTest1\Gedoc.UnitTest1.csproj", "{3CFB0874-4116-417E-B508-4313E079C0B2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -68,10 +68,10 @@ Global
 		{08BD431D-493D-401E-B8D5-718A5C25F7BA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{08BD431D-493D-401E-B8D5-718A5C25F7BA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{08BD431D-493D-401E-B8D5-718A5C25F7BA}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1ADA843E-13C8-448C-A605-AF0DD788C61F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1ADA843E-13C8-448C-A605-AF0DD788C61F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1ADA843E-13C8-448C-A605-AF0DD788C61F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1ADA843E-13C8-448C-A605-AF0DD788C61F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3CFB0874-4116-417E-B508-4313E079C0B2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3CFB0874-4116-417E-B508-4313E079C0B2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3CFB0874-4116-417E-B508-4313E079C0B2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3CFB0874-4116-417E-B508-4313E079C0B2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

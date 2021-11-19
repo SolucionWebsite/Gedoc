@@ -120,6 +120,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+  <!--
     <Content Include="..\packages\Microsoft.SqlServer.Types.11.0.1\nativeBinaries\x64\msvcr100.dll">
       <Link>SqlServerTypes\x64\msvcr100.dll</Link>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -136,6 +137,7 @@
       <Link>SqlServerTypes\x86\SqlServerSpatial110.dll</Link>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    -->
     <Content Include="Connected Services\WSGedoc\Gedoc.WebReport.WSGedoc.DatosSearch.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </Content>

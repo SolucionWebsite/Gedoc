@@ -19,7 +19,7 @@ using Gedoc.Service.DataAccess.Interfaces;
 using Gedoc.Service.FirmaDigital;
 using Gedoc.Service.Pdf;
 using Gedoc.Service.Sharepoint;
-using WordToPDF;
+//using WordToPDF;
 
 namespace Gedoc.Service.DataAccess
 {

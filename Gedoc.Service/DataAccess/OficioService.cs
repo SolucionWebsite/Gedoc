@@ -19,7 +19,7 @@ using Gedoc.Service.DataAccess.Interfaces;
 using Gedoc.Service.FirmaDigital;
 using Gedoc.Service.Pdf;
 using Gedoc.Service.Sharepoint;
-using WordToPDF;
+//using WordToPDF;
 
 namespace Gedoc.Service.DataAccess
 {
@@ -1471,7 +1471,7 @@ namespace Gedoc.Service.DataAccess
 
         public byte[] GetPdfFromWord(int oficioId, string baseUrl)
         {
-            var result = new byte[0];
+            /*var result = new byte[0];
 
             if (oficioId > 0)
             {
@@ -1494,7 +1494,7 @@ namespace Gedoc.Service.DataAccess
                     result = File.ReadAllBytes(fileWithPdfExtension);
                     File.Delete(fileWithPdfExtension);
                 }
-            }
+            }*/
 
             return result;
         }

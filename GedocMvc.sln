@@ -24,6 +24,16 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gedoc.ReportData.Wss", "Ged
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gedoc.Alertas", "Gedoc.Alertas\Gedoc.Alertas.csproj", "{08BD431D-493D-401E-B8D5-718A5C25F7BA}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Gedoc.UnitTest", "Gedoc.UnitTest", "{B508B4BF-D8F0-4925-B83F-8A12F5896600}"
+	ProjectSection(SolutionItems) = preProject
+		..\Patrimonio unit test\PRO_MejGedoc2021_27_2021\Gedoc.UnitTest\app.config = ..\Patrimonio unit test\PRO_MejGedoc2021_27_2021\Gedoc.UnitTest\app.config
+		..\Patrimonio unit test\PRO_MejGedoc2021_27_2021\Gedoc.UnitTest\Gedoc.UnitTest.csproj = ..\Patrimonio unit test\PRO_MejGedoc2021_27_2021\Gedoc.UnitTest\Gedoc.UnitTest.csproj
+		..\Patrimonio unit test\PRO_MejGedoc2021_27_2021\Gedoc.UnitTest\packages.config = ..\Patrimonio unit test\PRO_MejGedoc2021_27_2021\Gedoc.UnitTest\packages.config
+		..\Patrimonio unit test\PRO_MejGedoc2021_27_2021\Gedoc.UnitTest\UnitTest1.cs = ..\Patrimonio unit test\PRO_MejGedoc2021_27_2021\Gedoc.UnitTest\UnitTest1.cs
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gedoc.UnitTest", "..\Patrimonio unit test\PRO_MejGedoc2021_27_2021\Gedoc.UnitTest\Gedoc.UnitTest.csproj", "{1ADA843E-13C8-448C-A605-AF0DD788C61F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -66,44 +76,15 @@ Global
 		{08BD431D-493D-401E-B8D5-718A5C25F7BA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{08BD431D-493D-401E-B8D5-718A5C25F7BA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{08BD431D-493D-401E-B8D5-718A5C25F7BA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1ADA843E-13C8-448C-A605-AF0DD788C61F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1ADA843E-13C8-448C-A605-AF0DD788C61F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1ADA843E-13C8-448C-A605-AF0DD788C61F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1ADA843E-13C8-448C-A605-AF0DD788C61F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {50474CA4-4FE2-4140-AA16-D1934A408A5A}
-	EndGlobalSection
-	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 10
-		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
-		SccTeamFoundationServer = https://dev.azure.com/brainsoftnet
-		SccLocalPath0 = .
-		SccProjectUniqueName1 = Gedoc.Helpers\\Gedoc.Helpers.csproj
-		SccProjectName1 = Gedoc.Helpers
-		SccLocalPath1 = Gedoc.Helpers
-		SccProjectUniqueName2 = Gedoc.Repositorio\\Gedoc.Repositorio.csproj
-		SccProjectName2 = Gedoc.Repositorio
-		SccLocalPath2 = Gedoc.Repositorio
-		SccProjectUniqueName3 = Gedoc.Service\\Gedoc.Service.csproj
-		SccProjectName3 = Gedoc.Service
-		SccLocalPath3 = Gedoc.Service
-		SccProjectUniqueName4 = Gedoc.WebApp\\Gedoc.WebApp.csproj
-		SccProjectName4 = Gedoc.WebApp
-		SccLocalPath4 = Gedoc.WebApp
-		SccProjectUniqueName5 = Gedoc.WebReport\\Gedoc.WebReport.csproj
-		SccProjectName5 = Gedoc.WebReport
-		SccLocalPath5 = Gedoc.WebReport
-		SccProjectUniqueName6 = Gedoc.Interop.Wss\\Gedoc.Interop.Wss.csproj
-		SccProjectName6 = Gedoc.Interop.Wss
-		SccLocalPath6 = Gedoc.Interop.Wss
-		SccProjectUniqueName7 = Gedoc.Etl.WinSrv\\Gedoc.Etl.WinSrv.csproj
-		SccProjectName7 = Gedoc.Etl.WinSrv
-		SccLocalPath7 = Gedoc.Etl.WinSrv
-		SccProjectUniqueName8 = Gedoc.ReportData.Wss\\Gedoc.ReportData.Wss.csproj
-		SccProjectName8 = Gedoc.ReportData.Wss
-		SccLocalPath8 = Gedoc.ReportData.Wss
-		SccProjectUniqueName9 = Gedoc.Alertas\\Gedoc.Alertas.csproj
-		SccProjectName9 = Gedoc.Alertas
-		SccLocalPath9 = Gedoc.Alertas
 	EndGlobalSection
 EndGlobal

@@ -29,7 +29,7 @@ namespace Gedoc.UnitTest
             var resultado = controlador.NuevoSolicitanteUrgencia(); //Guardar en var el resultado del método
 
             //Assert
-            Assert.AreEqual(((ViewResult)resultado).ViewName, "FormSolicitante"); //Validar nombre de la View devuelta
+            Assert.AreEqual(((ViewResult)resultado).ViewName, "FormSolicitanteUrgencia"); //Validar nombre de la View devuelta
         }
 
         [TestMethod]

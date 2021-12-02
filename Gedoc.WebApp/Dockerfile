@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/dotnet/framework/sdk:4.8  AS build
+FROM mcr.microsoft.com/dotnet/sdk  AS build
 WORKDIR /source
 
 # copy csproj and restore as distinct layers
@@ -12,7 +12,7 @@ WORKDIR /source/aspnetapp
 RUN dotnet publish -c release -o /app --no-restore
 
 # final stage/image
-FROM mcr.microsoft.com/dotnet/framework/aspnet:4.8 
+FROM mcr.microsoft.com/dotnet/aspnet
 WORKDIR /app
 COPY --from=build /app ./
 ENTRYPOINT ["dotnet", "gedocwebapp.dll"]
